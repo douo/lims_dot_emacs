@@ -3,6 +3,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes (quote ("d6a00ef5e53adf9b6fe417d2b4404895f26210c52bb8716971be106550cea257" "238b07eba71dd5d4f17c80aead6ec703407e8c32d66de9d695638834a0288898" default)))
  '(ido-everywhere nil)
  '(ido-mode (quote both) nil (ido))
  '(inhibit-startup-screen nil)
@@ -11,15 +12,13 @@
  '(mouse-avoidance-mode (quote animate) nil (avoid))
  '(mouse-drag-copy-region t)
  '(mouse-yank-at-point t)
-;; '(py-default-interpreter "python2")
-;; '(py-python-command "python2")
-)
+ '(send-mail-function (quote smtpmail-send-it)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-)
+ )
 ;; 
 (defun d-add-load-path-dfs (base)
   ;; 加载目录 base 中的 init.el

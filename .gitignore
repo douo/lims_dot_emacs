@@ -4,6 +4,8 @@
 /.emacs.desktop.lock
 .elc
 auto-save-list
+tutorial
+elpa
 tramp
 .\#*
 
