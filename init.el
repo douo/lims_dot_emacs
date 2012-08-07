@@ -9,6 +9,7 @@
  '(inhibit-startup-screen nil)
  '(initial-buffer-choice nil)
  '(make-backup-files nil)
+ '(markdown-command "\"E:/Program Files/Markdown_1.0.1/Markdown.pl\"")
  '(mouse-avoidance-mode (quote animate) nil (avoid))
  '(mouse-drag-copy-region t)
  '(mouse-yank-at-point t)
