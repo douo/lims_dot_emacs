@@ -1,12 +1,11 @@
-;; À´×Ô  http://docs.huihoo.com/homepage/shredderyin/wiki/SimpleConfig.html
-;; À¨ºÅÆ¥ÅäÊ±ÏÔÊ¾ÁíÍâÒ»±ßµÄÀ¨ºÅ£¬¶ø²»ÊÇ·³ÈËµÄÌøµ½ÁíÒ»¸öÀ¨ºÅ
+;; æ¥è‡ª  http://docs.huihoo.com/homepage/shredderyin/wiki/SimpleConfig.html
+;; æ‹¬å·åŒ¹é…æ—¶æ˜¾ç¤ºå¦å¤–ä¸€è¾¹çš„æ‹¬å·ï¼Œè€Œä¸æ˜¯çƒ¦äººçš„è·³åˆ°å¦ä¸€ä¸ªæ‹¬å·
 (show-paren-mode t)
 (setq show-paren-style 'parentheses)
-;; ÔÚ±êÌâÀ¸ÏÔÊ¾fileµÄÃû×Ö
+;; åœ¨æ ‡é¢˜æ æ˜¾ç¤ºfileçš„åå­—
 (setq frame-title-format "emacs@%f")
 
 
-
-;; ÄÚ½¨ ido
+;; å†…å»º ido
 (require 'ido)
 (require 'php-mode)

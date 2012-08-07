@@ -22,7 +22,7 @@
 )
 ;; 
 (defun d-add-load-path-dfs (base)
-  ;; ¼ÓÔØÄ¿Â¼ base ÖĞµÄ init.el
+  ;; åŠ è½½ç›®å½• base ä¸­çš„ init.el
   (add-to-list 'load-path base)
   (let ((init_file (concat base "/init.el")))
   ;;   (when (file-exists-p init_file)
@@ -30,12 +30,12 @@
   ;;  )
   )
 
-  (dolist (f (directory-files base))  ;;ÀàËÆÓÚ for(f : set)µÄ½á¹¹
+  (dolist (f (directory-files base))  ;;ç±»ä¼¼äº for(f : set)çš„ç»“æ„
     (let ((name (concat base "/" f)))
-      (when (and (file-directory-p name) ;;µ±name ÊÇÒ»¸öÄ¿Â¼Ê± ·µ»Øt
+      (when (and (file-directory-p name) ;;å½“name æ˜¯ä¸€ä¸ªç›®å½•æ—¶ è¿”å›t
                  (not (equal f ".."))
                  (not (equal f ".")))
-	;; Èç¹û×ÓÄ¿Â¼ÖĞÓĞinit.el Ôò¼ÌĞø¼ÓÔØ
+	;; å¦‚æœå­ç›®å½•ä¸­æœ‰init.el åˆ™ç»§ç»­åŠ è½½
 	(let ((init_file (concat name "/init.el")))
 	  (when (file-exists-p init_file)
 	    (d-add-load-path-dfs name)
@@ -44,10 +44,10 @@
 	)
       )))
 
-;; ¿ªÊ¼É¨ÃèÄ¿Â¼
+;; å¼€å§‹æ‰«æç›®å½•
 (d-add-load-path-dfs "~/.emacs.d/extensions")
 
 
-;; ÆäËû
+;; å…¶ä»–
 (setq user-full-name "Tiou Lims")
 (setq user-mail-address "dourokinga@gmail.com")
