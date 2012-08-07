@@ -4,7 +4,8 @@
 (setq show-paren-style 'parentheses)
 ;; 在标题栏显示file的名字
 (setq frame-title-format "emacs@%f")
-
+;; 设置默认写入文件的编码为 utf-8-unix
+(setq default-buffer-file-coding-system 'utf-8-unix)
 
 ;; 内建 ido
 (require 'ido)
