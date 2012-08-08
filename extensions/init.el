@@ -10,3 +10,7 @@
 ;; 内建 ido
 (require 'ido)
 (require 'php-mode)
+
+;; 加载 markdown 模式
+(autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t) 
+(setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
