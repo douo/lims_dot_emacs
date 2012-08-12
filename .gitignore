@@ -12,3 +12,6 @@ tramp
 # Org-mode
 .org-id-locations
 *_archive
+
+# Mac 
+.DS_Store
