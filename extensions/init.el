@@ -14,3 +14,7 @@
 ;; 加载 markdown 模式
 (autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t) 
 (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
+
+;; yaml mode
+(require 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
