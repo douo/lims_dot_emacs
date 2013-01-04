@@ -15,6 +15,7 @@
 (autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t) 
 (setq auto-mode-alist (cons '("\\.md" . markdown-mode) auto-mode-alist))
 
+
 ;; yaml mode
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
@@ -22,3 +23,6 @@
 
 ;; mustache mode http://mustache.github.com/
 (require 'mustache-mode)
+
+;; 关闭 markdown-mode 中继承自 text-mode 的 auto-fill-mode， 似乎只在aquamacs中才会
+(add-hook 'markdown-mode (lambda () (auto-fill-mode -1)))
