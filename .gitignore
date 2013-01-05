@@ -7,6 +7,7 @@ auto-save-list
 tutorial
 elpa
 tramp
+eshell
 .\#*
 
 # Org-mode
