@@ -26,3 +26,10 @@
 
 ;; 关闭 markdown-mode 中继承自 text-mode 的 auto-fill-mode， 似乎只在aquamacs中才会
 (add-hook 'markdown-mode (lambda () (auto-fill-mode -1)))
+
+
+;; 设置 org 常用键
+(global-set-key "\C-cl" 'org-store-link)
+(global-set-key "\C-cc" 'org-capture)
+(global-set-key "\C-ca" 'org-agenda)
+(global-set-key "\C-cb" 'org-iswitchb)
