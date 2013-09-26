@@ -26,7 +26,7 @@
 ;; Author: Jason R. Blevins <jrblevin@sdf.org>
 ;; Maintainer: Jason R. Blevins <jrblevin@sdf.org>
 ;; Created: May 24, 2007
-;; Version: 1.9
+;; Version: 2.0
 ;; Keywords: Markdown, GitHub Flavored Markdown, itex
 ;; URL: http://jblevins.org/projects/markdown-mode/
 
@@ -55,15 +55,15 @@
 ;;
 ;;  [Markdown]: http://daringfireball.net/projects/markdown/
 ;;
-;; The latest stable version is markdown-mode 1.9, released on January 25, 2013:
+;; The latest stable version is markdown-mode 2.0, released on March 24, 2013:
 ;;
 ;;    * [markdown-mode.el][]
 ;;    * [Screenshot][][^theme]
 ;;    * [Release notes][]
 ;;
 ;;  [markdown-mode.el]: http://jblevins.org/projects/markdown-mode/markdown-mode.el
-;;  [screenshot]: http://jblevins.org/projects/markdown-mode/screenshots/20110812-001.png
-;;  [release notes]: http://jblevins.org/projects/markdown-mode/rev-1-9
+;;  [screenshot]: http://jblevins.org/projects/markdown-mode/screenshots/20130131-002.png
+;;  [release notes]: http://jblevins.org/projects/markdown-mode/rev-2-0
 ;;
 ;; [^theme]: The theme used in the screenshot is
 ;;   [color-theme-twilight](https://github.com/crafterm/twilight-emacs).
@@ -72,7 +72,7 @@
 ;;
 ;;    * Debian and Ubuntu Linux: [emacs-goodies-el][]
 ;;    * RedHat and Fedora Linux: [emacs-goodies][]
-;;    * OpenBSD: [textproc/markdown-mode][]
+;;    * NetBSD: [textproc/markdown-mode][]
 ;;    * Arch Linux (AUR): [emacs-markdown-mode-git][]
 ;;    * MacPorts: [markdown-mode.el][macports-package] ([pending][macports-ticket])
 ;;    * FreeBSD: [textproc/markdown-mode.el][freebsd-port]
@@ -100,40 +100,48 @@
 
 ;; Make sure to place `markdown-mode.el` somewhere in the load-path and add
 ;; the following lines to your `.emacs` file to associate markdown-mode
-;; with `.text` files:
+;; with `.text`, `.markdown`, and `.md` files:
 ;;
 ;;     (autoload 'markdown-mode "markdown-mode"
 ;;        "Major mode for editing Markdown files" t)
 ;;     (add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
+;;     (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+;;     (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
 ;;
-;; There is no consensus on an official file extension so change `.text` to
-;; `.mdwn`, `.md`, `.mdt`, or whatever you call your markdown files.
+;; There is no official Markdown file extension, nor is there even a
+;; _de facto_ standard, so you can easily add, change, or remove any
+;; of the file extensions above as needed.
 
 ;;; Usage:
 
-;; Keybindings for element insertion have the form `C-c [letter]`
-;; where `[letter]` has a mnemonic association to the element being
-;; inserted.  Movement and cycling commands tend to be associated with
-;; paired delimiters such as `M-[` and `M-]` or `C-c <` and `C-c >`.
+;; Keybindings are grouped by prefixes based on their function.  For
+;; example, the commands for inserting links are grouped under `C-c
+;; C-a`, where the `C-a` is a mnemonic for the HTML `<a>` tag.  In
+;; other cases, the connection to HTML is not direct.  For example,
+;; commands dealing with headings begin with `C-c C-t` (mnemonic:
+;; titling).  The primary commands in each group will are described
+;; below.  You can obtain a list of all keybindings by pressing `C-c
+;; C-h`.  Movement and shifting commands tend to be associated with
+;; paired delimiters such as `M-{` and `M-}` or `C-c <` and `C-c >`.
 ;; Outline navigation keybindings the same as in `org-mode'.  Finally,
 ;; commands for running Markdown or doing maintenance on an open file
 ;; are grouped under the `C-c C-c` prefix.  The most commonly used
 ;; commands are described below.  You can obtain a list of all
 ;; keybindings by pressing `C-c C-h`.
 ;;
-;;   * Hyperlinks (`l`, `L`, `u`)
+;;   * Hyperlinks: `C-c C-a`
 ;;
-;;     `C-c l` inserts an inline link of the form `[text](url)`.  The
-;;     link text is determined as follows.  First, if there is an
-;;     active region (i.e., when transient mark mode is on and the
-;;     mark is active), use it as the link text.  Second, if the point
-;;     is at a word, use that word as the link text.  In these two
-;;     cases, the original text will be replaced with the link and
-;;     point will be left at the position for inserting a URL.
-;;     Otherwise, insert empty link markup and place the point for
-;;     inserting the link text.
+;;     In this group, `C-c C-a l` inserts an inline link of the form
+;;     `[text](url)`.  The link text is determined as follows.  First,
+;;     if there is an active region (i.e., when transient mark mode is
+;;     on and the mark is active), use it as the link text.  Second,
+;;     if the point is at a word, use that word as the link text.  In
+;;     these two cases, the original text will be replaced with the
+;;     link and point will be left at the position for inserting a
+;;     URL.  Otherwise, insert empty link markup and place the point
+;;     for inserting the link text.
 ;;
-;;     `C-c L` inserts a reference link of the form `[text][label]`
+;;     `C-c C-a L` inserts a reference link of the form `[text][label]`
 ;;     and, optionally, a corresponding reference label definition.
 ;;     The link text is determined in the same way as with an inline
 ;;     link (using the region, when active, or the word at the point),
@@ -150,42 +158,54 @@
 ;;     reference definition and will be used to populate the title
 ;;     attribute when converted to XHTML.
 ;;
-;;     `C-c u` inserts a bare url, delimited by angle brackets.  When
+;;     `C-c C-a u` inserts a bare url, delimited by angle brackets.  When
 ;;     there is an active region, the text in the region is used as the
 ;;     URL.  If the point is at a URL, that url is used.  Otherwise,
 ;;     insert angle brackets and position the point in between them
 ;;     for inserting the URL.
 ;;
-;;   * Images (`i` and `I`)
+;;     `C-c C-a f` inserts a footnote marker at the point, inserts a
+;;     footnote definition below, and positions the point for
+;;     inserting the footnote text.  Note that footnotes are an
+;;     extension to Markdown and are not supported by all processors.
 ;;
-;;     `C-c i` inserts markup for an inline image, using the
+;;     `C-c C-a w` behaves much like the inline link insertion command
+;;     and inserts a wiki link of the form `[[WikiLink]]`.  If there
+;;     is an active region, use the region as the link text.  If the
+;;     point is at a word, use the word as the link text.  If there is
+;;     no active region and the point is not at word, simply insert
+;;     link markup.  Note that wiki links are an extension to Markdown
+;;     and are not supported by all processors.
+;;
+;;   * Images: `C-c C-i`
+;;
+;;     `C-c C-i i` inserts markup for an inline image, using the
 ;;     active region or the word at point, if any, as the alt text.
-;;     `C-c I` behaves similarly and inserts a reference-style image.
+;;     `C-c C-i I` behaves similarly and inserts a reference-style
+;;     image.
 ;;
-;;   * Italic (`e`), Bold (`s`), and Inline Code (`c`)
+;;   * Styles: `C-c C-s`
 ;;
-;;     `C-c e` inserts markup to make a region or word italic (`e` for
-;;     `<em>` or emphasis).  If there is an active region, make the
-;;     region italic.  If the point is at a non-italic word, make the
-;;     word italic.  If the point is at an italic word or phrase,
+;;     `C-c C-s e` inserts markup to make a region or word italic (`e`
+;;     for `<em>` or emphasis).  If there is an active region, make
+;;     the region italic.  If the point is at a non-italic word, make
+;;     the word italic.  If the point is at an italic word or phrase,
 ;;     remove the italic markup.  Otherwise, simply insert italic
-;;     delimiters and place the cursor in between them.
-;;     Similarly, use `C-c s` for bold (`<strong>`) and `C-c c`
-;;     for inline code (`<code>`).
+;;     delimiters and place the cursor in between them.  Similarly,
+;;     use `C-c C-s s` for bold (`<strong>`) and `C-c C-s c` for
+;;     inline code (`<code>`).
 ;;
-;;   * Blockquotes (`b`, `B`) and Preformatted Code (`p`, `P`)
-;;
-;;     `C-c b` inserts a blockquote using the active region, if any,
-;;     or starts a new blockquote.  `C-c B` is a variation which
+;;     `C-c C-s b` inserts a blockquote using the active region, if any,
+;;     or starts a new blockquote.  `C-c C-s C-b` is a variation which
 ;;     always operates on the region, regardless of whether it is
 ;;     active or not.  The appropriate amount of indentation, if any,
 ;;     is calculated automatically given the surrounding context, but
 ;;     may be adjusted later using the region indentation commands.
 ;;
-;;     `C-c p` behaves similarly for inserting preformatted code
-;;     blocks, with `C-c P` being the region-only counterpart.
+;;     `C-c C-s p` behaves similarly for inserting preformatted code
+;;     blocks, with `C-c C-s C-p` being the region-only counterpart.
 ;;
-;;   * Headings (`h`, `H`, `1`, ..., `6`, `!`, `@`)
+;;   * Headings: `C-c C-t`
 ;;
 ;;     All heading insertion commands use the text in the active
 ;;     region, if any, as the heading text.  Otherwise, if the current
@@ -193,17 +213,19 @@
 ;;     Finally, the setext commands will prompt for heading text if
 ;;     there is no active region and the current line is blank.
 ;;     
-;;     `C-c h` inserts a heading with automatically chosen type and
-;;     level (both determined by the previous heading).  `C-c H`
+;;     `C-c C-t h` inserts a heading with automatically chosen type and
+;;     level (both determined by the previous heading).  `C-c C-t H`
 ;;     behaves similarly, but uses setext (underlined) headings when
 ;;     possible, still calculating the level automatically.
 ;;     In cases where the automatically-determined level is not what
-;;     you intended, the level can be quickly promoted or demoted with
-;;     `C-[` or `C-]`.
+;;     you intended, the level can be quickly promoted or demoted
+;;     (as described below).  Alternatively, a `C-u` prefix can be
+;;     given to insert a heading promoted by one level or a `C-u C-u`
+;;     prefix can be given to insert a heading demoted by one level.
 ;;
-;;     To insert a heading of a specific level and type, use `C-c 1`
-;;     through `C-c 6` for atx (hash mark) headings and `C-c !` or
-;;     `C-c @` for setext headings of level one or two, respectively.
+;;     To insert a heading of a specific level and type, use `C-c C-t 1`
+;;     through `C-c C-t 6` for atx (hash mark) headings and `C-c C-t !` or
+;;     `C-c C-t @` for setext headings of level one or two, respectively.
 ;;     Note that `!` is `S-1` and `@` is `S-2`.
 ;;
 ;;     If the point is at a heading, these commands will replace the
@@ -212,7 +234,7 @@
 ;;     press `C-c C-k` to kill the heading and press `C-y` to yank the
 ;;     heading text back into the buffer.
 ;;
-;;   * Horizontal rules (`-`)
+;;   * Horizontal Rules: `C-c -`
 ;;
 ;;     `C-c -` inserts a horizontal rule.  By default, insert the
 ;;     first string in the list `markdown-hr-strings' (the most
@@ -220,24 +242,7 @@
 ;;     With a numeric prefix `N`, insert the string in position `N`
 ;;     (counting from 1).
 ;;
-;;   * Footnotes (`f`)
-;;
-;;     `C-c f` inserts a footnote marker at the point, inserts a
-;;     footnote definition below, and positions the point for inserting
-;;     the footnote text.  Pressing `C-c C-j` moves the point between the
-;;     footnote marker and footnote text.  Press `C-c C-k` to kill the
-;;     footnote and add the text to the kill ring.
-;;
-;;   * Wiki links (`w`)
-;;
-;;     `C-c w` behaves much like the inline link insertion command and
-;;     inserts a wiki link of the form `[[WikiLink]]`.  If there is an
-;;     active region, use the region as the link text.  If the point
-;;     is at a word, use the word as the link text.  If there is no
-;;     active region and the point is not at word, simply insert link
-;;     markup.
-;;
-;;   * Markdown and Maintenance Commands (`C-c C-c [letter]`)
+;;   * Markdown and Maintenance Commands: `C-c C-c`
 ;;
 ;;     *Compile:* `C-c C-c m` will run Markdown on the current buffer
 ;;     and show the output in another buffer.  *Preview*: `C-c C-c p`
@@ -275,7 +280,7 @@
 ;;     `C-c C-c ]` completes all headings and normalizes all horizontal
 ;;     rules in the buffer.
 ;;
-;;   * Following Links (`C-c C-o`)
+;;   * Following Links: `C-c C-o`
 ;;
 ;;     Press `C-c C-o` when the point is on an inline or reference
 ;;     link to open the URL in a browser.  When the point is at a
@@ -283,7 +288,7 @@
 ;;     or in the other window with the `C-u` prefix).  Use `M-p` and
 ;;     `M-n` to quickly jump to the previous or next link of any type.
 ;;
-;;   * Jumping (`C-c C-j`)
+;;   * Jumping: `C-c C-j`
 ;;
 ;;     Use `C-c C-j` to jump from the object at point to its counterpart
 ;;     elsewhere in the text, when possible.  Jumps between reference
@@ -293,15 +298,18 @@
 ;;     to each link.  You may press `TAB` or `S-TAB` to jump between
 ;;     buttons in this window.
 ;;
-;;   * Promotion and Demotion (`C-c C--`, `C-c C-=`, `M-LEFT`, `M-RIGHT`)
+;;   * Promotion and Demotion: `C-c C--` and `C-c C-=`
 ;;
 ;;     Headings, horizontal rules, and list items can be promoted and
-;;     demoted.  For headings, "promotion" means *decreasing* the
-;;     level (i.e., moving from `<h2>` to `<h1>`) while "demotion"
-;;     means *increasing* the level.  For horizontal rules, promotion
-;;     and demotion means moving backward or forward through the list
-;;     of rule strings in `markdown-hr-strings'.  Press `C-c C--` or
-;;     `M-LEFT` to promote the element at the point if possible.
+;;     demoted, as well as bold and italic text.  For headings,
+;;     "promotion" means *decreasing* the level (i.e., moving from
+;;     `<h2>` to `<h1>`) while "demotion" means *increasing* the
+;;     level.  For horizontal rules, promotion and demotion means
+;;     moving backward or forward through the list of rule strings in
+;;     `markdown-hr-strings'.  For bold and italic text, promotion and
+;;     demotion means changing the markup from underscores to asterisks.
+;;     Press `C-c C--` or `M-LEFT` to promote the element at the point
+;;     if possible.
 ;;
 ;;     To remember these commands, note that `-` is for decreasing the
 ;;     level (promoting), and `=` (on the same key as `+`) is for
@@ -309,23 +317,17 @@
 ;;     arrow keys indicate the direction that the atx heading markup
 ;;     is moving in when promoting or demoting.
 ;;
-;;   * Completion and Cycling (`C-c C-[`, `C-c C-]`)
+;;   * Completion: `C-c C-]`
 ;;
 ;;     Complete markup is in normalized form, which means, for
 ;;     example, that the underline portion of a setext header is the
 ;;     same length as the heading text, or that the number of leading
 ;;     and trailing hash marks of an atx header are equal and that
-;;     there is no extra whitespace in the header text.
-;;     Cycling means promotion or demotion for most items, but the
-;;     markup of bold and italic text can also be cycled between
-;;     asterisks and underscore.
+;;     there is no extra whitespace in the header text.  `C-c C-]`
+;;     completes the markup at the point, if it is determined to be
+;;     incomplete.
 ;;
-;;     `C-c C-]` completes the markup at the markup at the point,
-;;     if it is determined to be incomplete, or cycles the markup
-;;     by promoting it.  Similarly, `C-c C-[` completes the markup
-;;     or cycles it in reverse.
-;;
-;;   * Editing lists (`M-RET`, `M-UP`, `M-DOWN`, `M-LEFT`, `M-RIGHT`)
+;;   * Editing Lists: `M-RET`, `M-UP`, `M-DOWN`, `M-LEFT`, and `M-RIGHT`
 ;;
 ;;     New list items can be inserted with `M-RET`.  This command
 ;;     determines the appropriate marker (one of the possible
@@ -339,7 +341,7 @@
 ;;     Existing list items can be moved up or down with `M-UP` or
 ;;     `M-DOWN` and indented or exdented with `M-RIGHT` or `M-LEFT`.
 ;;
-;;   * Shifting the region (`C-c <`, `C-c >`)
+;;   * Shifting the Region: `C-c <` and `C-c >`
 ;;
 ;;     Text in the region can be indented or exdented as a group using
 ;;     `C-c >` to indent to the next indentation point (calculated in
@@ -347,7 +349,7 @@
 ;;     indentation point.  These keybindings are the same as those for
 ;;     similar commands in `python-mode'.
 ;;
-;;   * Killing Elements (`C-c C-k`)
+;;   * Killing Elements: `C-c C-k`
 ;;
 ;;     Press `C-c C-k` to kill the thing at point and add important
 ;;     text, without markup, to the kill ring.  Possible things to
@@ -358,7 +360,7 @@
 ;;     kill ring), footnote markers and text (kill both marker and
 ;;     text, add text to kill ring), and list items.
 ;;
-;;   * Outline Navigation (`C-c C-n`, `C-c C-p`, `C-c C-f`, `C-c C-b`, `C-c C-u`)
+;;   * Outline Navigation: `C-c C-n`, `C-c C-p`, `C-c C-f`, `C-c C-b`, and `C-c C-u`
 ;;
 ;;     Navigation between headings is possible using `outline-mode'.
 ;;     Use `C-c C-n` and `C-c C-p` to move between the next and previous
@@ -367,17 +369,18 @@
 ;;     at the point.  Finally, `C-c C-u` will move up to a lower-level
 ;;     (higher precedence) visible heading.
 ;;
-;;   * Movement by Block (`M-[`, `M-]`) and Paragraph (`M-{`, `M-}`)
+;;   * Movement by Paragraph or Block: `M-{` and `M-}`
 ;;
-;;     markdown-mode supports the usual Emacs paragraph movement with
-;;     `M-{` and `M-}`.  These commands treat list items as
-;;     paragraphs, so they will stop at each line within a block of
-;;     list items.  Additionally, markdown-mode includes movement
-;;     commands, `M-[` and `M-]` for jumping to the beginning or end
-;;     of an entire block of text (with blocks being separated by at
-;;     least one blank line).
+;;     The definition of a "paragraph" is slightly different in
+;;     markdown-mode than, say, text-mode, because markdown-mode
+;;     supports filling for list items and respects hard line breaks,
+;;     both of which break paragraphs.  So, markdown-mode overrides
+;;     the usual paragraph navigation commands `M-{` and `M-}` so that
+;;     with a `C-u` prefix, these commands jump to the beginning or
+;;     end of an entire block of text, respectively, where "blocks"
+;;     are separated by one or more lines.
 ;;
-;;   * Movement by Defun (`C-M-a`, `C-M-e`, `C-M-h`)
+;;   * Movement by Defun: `C-M-a`, `C-M-e`, and `C-M-h`
 ;;
 ;;     The usual Emacs commands can be used to move by defuns
 ;;     (top-level major definitions).  In markdown-mode, a defun is a
@@ -389,7 +392,7 @@
 ;; As noted, many of the commands above behave differently depending
 ;; on whether Transient Mark mode is enabled or not.  When it makes
 ;; sense, if Transient Mark mode is on and the region is active, the
-;; command applies to the text in the region (e.g., `C-c b` makes the
+;; command applies to the text in the region (e.g., `C-c C-s s` makes the
 ;; region bold).  For users who prefer to work outside of Transient
 ;; Mark mode, since Emacs 22 it can be enabled temporarily by pressing
 ;; `C-SPC C-SPC`.  When this is not the case, many commands then
@@ -398,16 +401,16 @@
 ;; When applicable, commands that specifically act on the region even
 ;; outside of Transient Mark mode have the same keybinding as their
 ;; standard counterpart, but the letter is uppercase.  For example,
-;; `markdown-insert-blockquote' is bound to `C-c b` and only acts on
+;; `markdown-insert-blockquote' is bound to `C-c C-s b` and only acts on
 ;; the region in Transient Mark mode while `markdown-blockquote-region'
-;; is bound to `C-c B` and always applies to the region (when nonempty).
+;; is bound to `C-c C-s B` and always applies to the region (when nonempty).
 ;;
 ;; Note that these region-specific functions are useful in many
 ;; cases where it may not be obvious.  For example, yanking text from
 ;; the kill ring sets the mark at the beginning of the yanked text
 ;; and moves the point to the end.  Therefore, the (inactive) region
-;; contains the yanked text.  So, `C-y` followed by `C-c B` will yank
-;; text and turn it into a blockquote.
+;; contains the yanked text.  So, `C-y` followed by `C-c C-s C-b` will
+;; yank text and turn it into a blockquote.
 ;;
 ;; markdown-mode attempts to be flexible in how it handles
 ;; indentation.  When you press `TAB` repeatedly, the point will cycle
@@ -475,11 +478,6 @@
 ;;     automatically indent new lines when the enter key is pressed
 ;;     (default: `t')
 ;;
-;;   * `markdown-follow-wiki-link-on-enter' - set to a non-nil value
-;;     to automatically open a linked document in a new buffer if the
-;;     cursor is an wiki link
-;;     (default: `t')
-;;
 ;;   * `markdown-wiki-link-alias-first' - set to a non-nil value to
 ;;     treat aliased wiki links like `[[link text|PageName]]`
 ;;     (default: `t').  When set to nil, they will be treated as
@@ -499,12 +497,15 @@
 ;;   * `markdown-content-type' - when set to a nonempty string, an
 ;;     `http-equiv` attribute will be included in the XHTML `<head>`
 ;;     block (default: `""`).  If needed, the suggested values are
-;;     `application/xhtml+xml` or `text/html`.
+;;     `application/xhtml+xml` or `text/html`.  See also:
+;;     `markdown-coding-system'.
 ;;
 ;;   * `markdown-coding-system' - used for specifying the character
-;;     set identifier in the `http-equiv` attribute (see
-;;     `markdown-content-type') (default: `nil').  When set to `nil',
-;;     `buffer-file-coding-system' will be used (and falling back to
+;;     set identifier in the `http-equiv` attribute when included
+;;     (default: `nil').  See `markdown-content-type', which must
+;;     be set before this variable has any effect.  When set to `nil',
+;;     `buffer-file-coding-system' will be used to automatically
+;;     determine the coding system string (falling back to
 ;;     `iso-8859-1' when unavailable).  Common settings are `utf-8'
 ;;     and `iso-latin-1'.
 ;;
@@ -544,16 +545,14 @@
 ;;; Extensions:
 
 ;; Besides supporting the basic Markdown syntax, markdown-mode also
-;; includes syntax highlighting for `[[Wiki Links]]` by default. Wiki
-;; links may be followed automatically by pressing the enter key when
-;; your curser is on a wiki link or by pressing `C-c C-o`. The
-;; auto-following on enter key may be controlled with the
-;; `markdown-follow-wiki-link-on-enter' customization.  Use `M-p` and
-;; `M-n` to quickly jump to the previous and next wiki links,
-;; respectively.  Aliased or piped wiki links of the form
-;; `[[link text|PageName]]` are also supported.  Since some wikis
-;; reverse these components, set `markdown-wiki-link-alias-first'
-;; to nil to treat them as `[[PageName|link text]]`.
+;; includes syntax highlighting for `[[Wiki Links]]` by default.  Wiki
+;; links may be followed by pressing `C-c C-o` when the point
+;; is at a wiki link.  Use `M-p` and `M-n` to quickly jump to the
+;; previous and next links (including links of other types).
+;; Aliased or piped wiki links of the form `[[link text|PageName]]`
+;; are also supported.  Since some wikis reverse these components, set
+;; `markdown-wiki-link-alias-first' to nil to treat them as
+;; `[[PageName|link text]]`.
 ;;
 ;; [SmartyPants][] support is possible by customizing `markdown-command'.
 ;; If you install `SmartyPants.pl` at, say, `/usr/local/bin/smartypants`,
@@ -593,7 +592,7 @@
 ;; file named `Wiki-link` with the same extension as the current file.
 ;;
 ;; GFM code blocks, with optional programming language keywords, will
-;; be highlighted.  They can be inserted with `C-c C`.  If there
+;; be highlighted.  They can be inserted with `C-c C-s P`.  If there
 ;; is an active region, the text in the region will be placed inside
 ;; the code block.  You will be prompted for the name of the language,
 ;; but may press enter to continue without naming a language.
@@ -683,6 +682,7 @@
 ;;   * Michael Dwyer <mdwyer@ehtech.in> for `gfm-mode' underscore regexp.
 ;;   * Chris Lott <chris@chrislott.org> for suggesting reference label
 ;;     completion.
+;;   * Gunnar Franke <Gunnar.Franke@gmx.de> for a completion bug report.
 
 ;;; Bugs:
 
@@ -708,6 +708,7 @@
 ;;   * 2011-08-12: [Version 1.8][]
 ;;   * 2011-08-15: [Version 1.8.1][]
 ;;   * 2013-01-25: [Version 1.9][]
+;;   * 2013-03-24: [Version 2.0][]
 ;;
 ;; [Version 1.3]: http://jblevins.org/projects/markdown-mode/rev-1-3
 ;; [Version 1.5]: http://jblevins.org/projects/markdown-mode/rev-1-5
@@ -716,18 +717,20 @@
 ;; [Version 1.8]: http://jblevins.org/projects/markdown-mode/rev-1-8
 ;; [Version 1.8.1]: http://jblevins.org/projects/markdown-mode/rev-1-8-1
 ;; [Version 1.9]: http://jblevins.org/projects/markdown-mode/rev-1-9
+;; [Version 2.0]: http://jblevins.org/projects/markdown-mode/rev-2-0
 
 
 ;;; Code:
 
 (require 'easymenu)
 (require 'outline)
+(require 'thingatpt)
 (eval-when-compile (require 'cl))
 
 
 ;;; Constants =================================================================
 
-(defconst markdown-mode-version "2.0-pre"
+(defconst markdown-mode-version "2.0"
   "Markdown mode version number.")
 
 (defconst markdown-output-buffer-name "*markdown-output*"
@@ -812,12 +815,11 @@ promotion and demotion functions."
   :type 'function)
 
 (defcustom markdown-indent-on-enter t
-  "Automatically indent new lines when enter key is pressed."
-  :group 'markdown
-  :type 'boolean)
-
-(defcustom markdown-follow-wiki-link-on-enter t
-  "Follow wiki link at point (if any) when the enter key is pressed."
+  "Automatically indent new lines when enter key is pressed.
+When this variable is set to t, pressing RET will call
+`newline-and-indent'.  When set to nil, define RET to call
+`newline' as usual.  In the latter case, you can still use
+auto-indentation by pressing \\[newline-and-indent]."
   :group 'markdown
   :type 'boolean)
 
@@ -1770,11 +1772,13 @@ because `thing-at-point-looking-at' does not work reliably with
   (interactive)
   (save-excursion
     (let ((old-point (point))
-          (end-of-block (progn (markdown-end-of-block) (point))))
+          (end-of-block (progn (markdown-end-of-block) (point)))
+          found)
       (markdown-beginning-of-block)
       (while (and (markdown-match-code end-of-block)
+                  (setq found t)
                   (< (match-end 0) old-point)))
-      (and (match-beginning 0) ; matched something
+      (and found                              ; matched something
            (<= (match-beginning 0) old-point) ; match contains old-point
            (>= (match-end 0) old-point)))))
 
@@ -1866,7 +1870,7 @@ because `thing-at-point-looking-at' does not work reliably with
   "Match GFM quoted code blocks from point to LAST."
   (let (open lang body close all)
     (cond ((and (eq major-mode 'gfm-mode)
-                (search-forward-regexp "^\\(```\\)\\(\\w+\\)?$" last t))
+                (search-forward-regexp "^\\(```\\)\\([^[:space:]]+[[:space:]]*\\)?$" last t))
            (beginning-of-line)
            (setq open (list (match-beginning 1) (match-end 1))
                  lang (list (match-beginning 2) (match-end 2)))
@@ -1925,12 +1929,12 @@ This helps improve font locking for block constructs such as pre blocks."
   (eval-when-compile (defvar font-lock-beg) (defvar font-lock-end))
   (save-excursion
     (goto-char font-lock-beg)
-    (let ((found (or (re-search-backward "\n\n" nil t) (point-min))))
-      (goto-char font-lock-end)
-      (when (re-search-forward "\n\n" nil t)
-        (beginning-of-line)
-        (setq font-lock-end (point)))
-      (setq font-lock-beg found))))
+    (unless (looking-back "\n\n")
+      (let ((found (or (re-search-backward "\n\n" nil t) (point-min))))
+        (goto-char font-lock-end)
+        (when (re-search-forward "\n\n" nil t)
+          (setq font-lock-end (match-beginning 0))
+          (setq font-lock-beg found))))))
 
 
 ;;; Syntax Table ==============================================================
@@ -2317,9 +2321,11 @@ argument is given via ARG.
 With a numeric prefix valued 1 to 6, insert a header of the given
 level, with the type being determined automatically (note that
 only level 1 or 2 setext headers are possible).
-With \\[universal-argument], insert a level-one setext header.
-With \\[universal-argument] \\[universal-argument], insert a
-level two setext header.
+
+With a \\[universal-argument] prefix (i.e., when ARG is (4)),
+promote the heading by one level.
+With two \\[universal-argument] prefixes (i.e., when ARG is (16)),
+demote the heading by one level.
 When SETEXT is non-nil, prefer setext-style headers when
 possible (levels one and two).
 
@@ -2334,23 +2340,23 @@ See `markdown-insert-header' for more details about how the
 header text is determined."
   (interactive "*P")
   (let (level)
-    (cond ((equal arg '(4))             ; level-one setext with C-u
-           (setq setext t)
-           (setq level 1))
-          ((equal arg '(16))            ; level-two setext with C-u C-u
-           (setq setext t)
-           (setq level 2))
-          (t                            ; automatic with numeric override
-           (save-excursion
-             (when (re-search-backward markdown-regex-header nil t)
-               ;; level of previous header
-               (setq level (markdown-outline-level))
-               ;; match groups 1 and 2 indicate setext headers
-               (setq setext (or setext (match-end 1) (match-end 3)))))
-           ;; use prefix if given, or level of previous header
-           (setq level (if arg (prefix-numeric-value arg) level))
-           ;; setext headers must be level one or two
-           (and level (setq setext (and setext (<= level 2))))))
+    (save-excursion
+      (when (re-search-backward markdown-regex-header nil t)
+        ;; level of previous header
+        (setq level (markdown-outline-level))
+        ;; match groups 1 and 2 indicate setext headers
+        (setq setext (or setext (match-end 1) (match-end 3)))))
+    ;; check prefix argument
+    (cond
+     ((and (equal arg '(4)) (> level 1)) ;; C-u
+      (decf level))
+     ((and (equal arg '(16)) (< level 6)) ;; C-u C-u
+      (incf level))
+     (arg ;; numeric prefix
+      (setq level (prefix-numeric-value arg))))
+    ;; setext headers must be level one or two
+    (and level (setq setext (and setext (<= level 2))))
+    ;; insert the heading
     (markdown-insert-header level nil setext)))
 
 (defun markdown-insert-header-setext-dwim (&optional arg)
@@ -2839,21 +2845,12 @@ duplicate positions, which are handled up by calling functions."
     ;; Return reversed list
     (reverse positions)))
 
-(defun markdown-do-normal-return ()
-  "Insert a newline and optionally indent the next line."
-  (newline)
-  (if markdown-indent-on-enter
-      (funcall indent-line-function)))
-
 (defun markdown-enter-key ()
-  "Handle RET according to context.
-If there is a wiki link at the point, follow it unless
-`markdown-follow-wiki-link-on-enter' is nil.  Otherwise, process
-it in the usual way."
+  "Handle RET according to to the value of `markdown-indent-on-enter'."
   (interactive)
-  (if (and markdown-follow-wiki-link-on-enter (markdown-wiki-link-p))
-      (markdown-follow-wiki-link-at-point)
-    (markdown-do-normal-return)))
+  (if markdown-indent-on-enter
+      (newline-and-indent)
+    (newline)))
 
 (defun markdown-exdent-or-delete (arg)
   "Handle BACKSPACE by cycling through indentation points.
@@ -2937,7 +2934,8 @@ and that there is no extraneous whitespace in the text."
 Add or remove hash marks to the end of the header to match the
 beginning.  Ensure that there is only a single space between hash
 marks and header text.  Removes extraneous whitespace from header text.
-Assumes match data is available for `markdown-regex-header-atx'."
+Assumes match data is available for `markdown-regex-header-atx'.
+Return nil if markup was complete and non-nil if markup was completed."
   (when (markdown-incomplete-atx-p)
     (let* ((new-marker (make-marker))
            (new-marker (set-marker new-marker (match-end 2))))
@@ -2968,14 +2966,16 @@ extraneous whitespace in the text."
   "Complete and normalize setext headers.
 Add or remove underline characters to match length of header
 text.  Removes extraneous whitespace from header text.  Assumes
-match data is available for `markdown-regex-header-setext'."
+match data is available for `markdown-regex-header-setext'.
+Return nil if markup was complete and non-nil if markup was completed."
   (when (markdown-incomplete-setext-p)
     (let* ((text (markdown-compress-whitespace-string (match-string 1)))
            (char (char-after (match-beginning 2)))
            (level (if (char-equal char ?-) 2 1)))
       (goto-char (match-beginning 0))
       (delete-region (match-beginning 0) (match-end 0))
-      (markdown-insert-header level text t))))
+      (markdown-insert-header level text t)
+      t)))
 
 (defun markdown-incomplete-hr-p ()
   "Return non-nil if hr is not in `markdown-hr-strings' and nil otherwise.
@@ -2987,8 +2987,11 @@ Assumes match data is available for `markdown-regex-hr'."
 If horizontal rule string is a member of `markdown-hr-strings',
 do nothing.  Otherwise, replace with the car of
 `markdown-hr-strings'.
-Assumes match data is available for `markdown-regex-hr'."
-  (replace-match (car markdown-hr-strings)))
+Assumes match data is available for `markdown-regex-hr'.
+Return nil if markup was complete and non-nil if markup was completed."
+  (when (markdown-incomplete-hr-p)
+    (replace-match (car markdown-hr-strings))
+    t))
 
 (defun markdown-complete ()
   "Complete markup of object near point or in region when active.
@@ -3001,25 +3004,44 @@ See `markdown-complete-at-point' and `markdown-complete-region'."
 
 (defun markdown-complete-at-point ()
   "Complete markup of object near point.
-Handle all objects in `markdown-complete-alist', in
-order."
+Handle all elements of `markdown-complete-alist' in order."
   (interactive "*")
-  (loop for (regexp . function) in markdown-complete-alist
-        until (thing-at-point-looking-at (eval regexp))
-        finally (funcall function)))
+  (let ((list markdown-complete-alist) found changed)
+    (while list
+      (let ((regexp (eval (caar list)))
+            (function (cdar list)))
+        (setq list (cdr list))
+        (when (thing-at-point-looking-at regexp)
+          (setq found t)
+          (setq changed (funcall function))
+          (setq list nil))))
+    (if found
+        (or changed (error "Markup at point is complete"))
+      (error "Nothing to complete at point"))))
 
 (defun markdown-complete-region (beg end)
   "Complete markup of objects in region from BEG to END.
-Handle all objects in `markdown-complete-alist', in
-order."
+Handle all objects in `markdown-complete-alist', in order.  Each
+match is checked to ensure that a previous regexp does not also
+match."
   (interactive "*r")
-  (let* ((end-marker (make-marker))
-         (end-marker (set-marker end-marker end)))
-    (loop for (regexp . function) in markdown-complete-alist
-          do (save-excursion
-               (goto-char beg)
-               (while (re-search-forward (eval regexp) end-marker t)
-                 (funcall function))))))
+  (let ((end-marker (set-marker (make-marker) end))
+        previous)
+    (dolist (element markdown-complete-alist)
+      (let ((regexp (eval (car element)))
+            (function (cdr element)))
+        (goto-char beg)
+        (while (re-search-forward regexp end-marker 'limit)
+          (when (match-string 0)
+            ;; Make sure this is not a match for any of the preceding regexps.
+            ;; This prevents mistaking an HR for a Setext subheading.
+            (let (match)
+              (save-match-data
+                (dolist (prev-regexp previous)
+                  (or match (setq match (looking-back prev-regexp)))))
+              (unless match
+                (save-excursion (funcall function))))))
+        (add-to-list 'previous regexp)))))
 
 (defun markdown-complete-buffer ()
   "Complete markup for all objects in the current buffer."
@@ -3117,40 +3139,41 @@ Assumes match data is available for `markdown-regex-italic'."
 (defvar markdown-mode-map
   (let ((map (make-keymap)))
     ;; Element insertion
-    (define-key map (kbd "C-c l") 'markdown-insert-link)
-    (define-key map (kbd "C-c L") 'markdown-insert-reference-link-dwim)
-    (define-key map (kbd "C-c u") 'markdown-insert-uri)
-    (define-key map (kbd "C-c w") 'markdown-insert-wiki-link)
-    (define-key map (kbd "C-c i") 'markdown-insert-image)
-    (define-key map (kbd "C-c I") 'markdown-insert-reference-image)
-    (define-key map (kbd "C-c 1") 'markdown-insert-header-atx-1)
-    (define-key map (kbd "C-c 2") 'markdown-insert-header-atx-2)
-    (define-key map (kbd "C-c 3") 'markdown-insert-header-atx-3)
-    (define-key map (kbd "C-c 4") 'markdown-insert-header-atx-4)
-    (define-key map (kbd "C-c 5") 'markdown-insert-header-atx-5)
-    (define-key map (kbd "C-c 6") 'markdown-insert-header-atx-6)
-    (define-key map (kbd "C-c !") 'markdown-insert-header-setext-1)
-    (define-key map (kbd "C-c @") 'markdown-insert-header-setext-2)
-    (define-key map (kbd "C-c h") 'markdown-insert-header-dwim)
-    (define-key map (kbd "C-c H") 'markdown-insert-header-setext-dwim)
-    (define-key map (kbd "C-c s") 'markdown-insert-bold)
-    (define-key map (kbd "C-c e") 'markdown-insert-italic)
-    (define-key map (kbd "C-c c") 'markdown-insert-code)
-    (define-key map (kbd "C-c b") 'markdown-insert-blockquote)
-    (define-key map (kbd "C-c B") 'markdown-blockquote-region)
-    (define-key map (kbd "C-c p") 'markdown-insert-pre)
-    (define-key map (kbd "C-c P") 'markdown-pre-region)
-    (define-key map (kbd "C-c -") 'markdown-insert-hr)
-    (define-key map (kbd "C-c f") 'markdown-insert-footnote)
+    (define-key map "\C-c\C-al" 'markdown-insert-link)
+    (define-key map "\C-c\C-aL" 'markdown-insert-reference-link-dwim)
+    (define-key map "\C-c\C-au" 'markdown-insert-uri)
+    (define-key map "\C-c\C-af" 'markdown-insert-footnote)
+    (define-key map "\C-c\C-aw" 'markdown-insert-wiki-link)
+    (define-key map "\C-c\C-ii" 'markdown-insert-image)
+    (define-key map "\C-c\C-iI" 'markdown-insert-reference-image)
+    (define-key map "\C-c\C-th" 'markdown-insert-header-dwim)
+    (define-key map "\C-c\C-tH" 'markdown-insert-header-setext-dwim)
+    (define-key map "\C-c\C-t1" 'markdown-insert-header-atx-1)
+    (define-key map "\C-c\C-t2" 'markdown-insert-header-atx-2)
+    (define-key map "\C-c\C-t3" 'markdown-insert-header-atx-3)
+    (define-key map "\C-c\C-t4" 'markdown-insert-header-atx-4)
+    (define-key map "\C-c\C-t5" 'markdown-insert-header-atx-5)
+    (define-key map "\C-c\C-t6" 'markdown-insert-header-atx-6)
+    (define-key map "\C-c\C-t!" 'markdown-insert-header-setext-1)
+    (define-key map "\C-c\C-t@" 'markdown-insert-header-setext-2)
+    (define-key map "\C-c\C-ss" 'markdown-insert-bold)
+    (define-key map "\C-c\C-se" 'markdown-insert-italic)
+    (define-key map "\C-c\C-sc" 'markdown-insert-code)
+    (define-key map "\C-c\C-sb" 'markdown-insert-blockquote)
+    (define-key map "\C-c\C-s\C-b" 'markdown-blockquote-region)
+    (define-key map "\C-c\C-sp" 'markdown-insert-pre)
+    (define-key map "\C-c\C-s\C-p" 'markdown-pre-region)
+    (define-key map "\C-c-" 'markdown-insert-hr)
+    ;; Element insertion (deprecated)
+    (define-key map "\C-c\C-ar" 'markdown-insert-reference-link-dwim)
+    (define-key map "\C-c\C-tt" 'markdown-insert-header-setext-1)
+    (define-key map "\C-c\C-ts" 'markdown-insert-header-setext-2)
     ;; Element removal
     (define-key map (kbd "C-c C-k") 'markdown-kill-thing-at-point)
     ;; Promotion, Demotion, Completion, and Cycling
     (define-key map (kbd "C-c C--") 'markdown-promote)
     (define-key map (kbd "C-c C-=") 'markdown-demote)
-    (define-key map (kbd "M-<left>") 'markdown-promote)
-    (define-key map (kbd "M-<right>") 'markdown-demote)
-    (define-key map (kbd "C-c C-]") 'markdown-complete-or-cycle)
-    (define-key map (kbd "C-c C-[") 'markdown-complete-or-reverse-cycle)
+    (define-key map (kbd "C-c C-]") 'markdown-complete)
     ;; Following and Jumping
     (define-key map (kbd "C-c C-o") 'markdown-follow-thing-at-point)
     (define-key map (kbd "C-c C-j") 'markdown-jump)
@@ -3183,19 +3206,27 @@ Assumes match data is available for `markdown-regex-italic'."
     ;; List editing
     (define-key map (kbd "M-<up>") 'markdown-move-up)
     (define-key map (kbd "M-<down>") 'markdown-move-down)
+    (define-key map (kbd "M-<left>") 'markdown-promote)
+    (define-key map (kbd "M-<right>") 'markdown-demote)
     (define-key map (kbd "M-<return>") 'markdown-insert-list-item)
     ;; Movement
-    (define-key map (kbd "M-[") 'markdown-beginning-of-block)
-    (define-key map (kbd "M-]") 'markdown-end-of-block)
+    (define-key map (kbd "M-{") 'markdown-backward-paragraph)
+    (define-key map (kbd "M-}") 'markdown-forward-paragraph)
     (define-key map (kbd "M-n") 'markdown-next-link)
     (define-key map (kbd "M-p") 'markdown-previous-link)
+    ;; Alternative keys (in case of problems with the arrow keys)
+    (define-key map (kbd "C-c C-x u") 'markdown-move-up)
+    (define-key map (kbd "C-c C-x d") 'markdown-move-down)
+    (define-key map (kbd "C-c C-x l") 'markdown-promote)
+    (define-key map (kbd "C-c C-x r") 'markdown-demote)
+    (define-key map (kbd "C-c C-x m") 'markdown-insert-list-item)
     map)
   "Keymap for Markdown major mode.")
 
 (defvar gfm-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map markdown-mode-map)
-    (define-key map (kbd "C-c C") 'markdown-insert-gfm-code-block)
+    (define-key map (kbd "C-c C-s P") 'markdown-insert-gfm-code-block)
     map)
   "Keymap for `gfm-mode'.
 See also `markdown-mode-map'.")
@@ -3257,8 +3288,7 @@ See also `markdown-mode-map'.")
      ["Up to parent heading" outline-up-heading])
     "---"
     ("Completion and Cycling"
-     ["Complete or cycle" markdown-complete-or-cycle]
-     ["Complete or reverse cycle" markdown-complete-or-reverse-cycle]
+     ["Complete" markdown-complete]
      ["Promote" markdown-promote]
      ["Demote" markdown-demote])
     ("List editing"
@@ -3576,10 +3606,10 @@ the point is inside ordered list, insert the next number followed
 by a period.  Use the previous list item to determine the amount
 of whitespace to place before and after list markers.
 
-With a \\[universal-argument] prefix (i.e., when ARG is 4),
+With a \\[universal-argument] prefix (i.e., when ARG is (4)),
 decrease the indentation by one level.
 
-With two \\[universal-argument] prefixes (i.e., when ARG is 16),
+With two \\[universal-argument] prefixes (i.e., when ARG is (16)),
 increase the indentation by one level."
   (interactive "p")
   (let (bounds item-indent marker indent new-indent new-loc)
@@ -3929,6 +3959,30 @@ move back to the ARG-th preceding section."
   (skip-syntax-backward "-")
   (forward-line))
 
+(defun markdown-forward-paragraph (arg)
+  "Move forward one or more paragraphs or by one block.
+When ARG is nil or a numeric prefix, call `forward-paragraph'
+with ARG.  When called with \\[universal-argument], call
+`markdown-end-of-block' instead."
+  (interactive "P")
+  (or arg (setq arg 1))
+  (cond ((integerp arg)
+         (forward-paragraph arg))
+        ((equal arg '(4))
+         (markdown-end-of-block))))
+
+(defun markdown-backward-paragraph (arg)
+  "Move backward one or more paragraphs or by one block.
+When ARG is nil or a numeric prefix, call `backward-paragraph'
+with ARG.  When called with \\[universal-argument], call
+`markdown-beginning-of-block' instead."
+  (interactive "P")
+  (or arg (setq arg 1))
+  (cond ((integerp arg)
+         (backward-paragraph arg))
+        ((equal arg '(4))
+         (markdown-beginning-of-block))))
+
 (defun markdown-end-of-block-element ()
   "Move the point to the start of the next block unit.
 Stops at blank lines, list items, headers, and horizontal rules."
@@ -3986,22 +4040,30 @@ Calls `markdown-move-list-item-down'."
 (defun markdown-promote ()
   "Either promote header or list item at point or cycle markup.
 See `markdown-cycle-atx', `markdown-cycle-setext', and
-`markdown-demote-list-item'."
+`markdown-promote-list-item'."
   (interactive)
   (let (bounds)
     (cond
      ;; Promote atx header
      ((thing-at-point-looking-at markdown-regex-header-atx)
-      (markdown-cycle-atx -1 t))
+      (markdown-cycle-atx -1))
      ;; Promote setext header
      ((thing-at-point-looking-at markdown-regex-header-setext)
-      (markdown-cycle-setext -1 t))
+      (markdown-cycle-setext -1))
      ;; Promote horizonal rule
      ((thing-at-point-looking-at markdown-regex-hr)
-      (markdown-cycle-hr -1 t))
+      (markdown-cycle-hr -1))
      ;; Promote list item
      ((setq bounds (markdown-cur-list-item-bounds))
-      (markdown-promote-list-item)))))
+      (markdown-promote-list-item))
+     ;; Promote bold
+     ((thing-at-point-looking-at markdown-regex-bold)
+      (markdown-cycle-bold))
+     ;; Promote italic
+     ((thing-at-point-looking-at markdown-regex-italic)
+      (markdown-cycle-italic))
+     (t
+      (error "Nothing to promote at point")))))
 
 (defun markdown-demote ()
   "Either demote header or list item at point or cycle or remove markup.
@@ -4012,60 +4074,24 @@ See `markdown-cycle-atx', `markdown-cycle-setext', and
     (cond
      ;; Demote atx header
      ((thing-at-point-looking-at markdown-regex-header-atx)
-      (markdown-cycle-atx 1 t))
+      (markdown-cycle-atx 1))
      ;; Demote setext header
      ((thing-at-point-looking-at markdown-regex-header-setext)
-      (markdown-cycle-setext 1 t))
+      (markdown-cycle-setext 1))
      ;; Demote horizonal rule
      ((thing-at-point-looking-at markdown-regex-hr)
-      (markdown-cycle-hr 1 t))
-     ;; Promote list item
+      (markdown-cycle-hr 1))
+     ;; Demote list item
      ((setq bounds (markdown-cur-list-item-bounds))
       (markdown-demote-list-item))
-     ;; Create a new level one ATX header
+     ;; Demote bold
+     ((thing-at-point-looking-at markdown-regex-bold)
+      (markdown-cycle-bold))
+     ;; Demote italic
+     ((thing-at-point-looking-at markdown-regex-italic)
+      (markdown-cycle-italic))
      (t
-      (markdown-insert-header-atx-1)))))
-
-(defun markdown-complete-or-cycle (arg)
-  "Complete or cycle markup of object at point or complete objects in region.
-If there is an active region, complete markup in region.
-Otherwise, complete or cycle markup of object near point.
-When ARG is non-nil, cycle backwards when cycling."
-  (interactive "*P")
-  (if (markdown-use-region-p)
-      ;; Complete markup in region
-      (markdown-complete-region (region-beginning) (region-end))
-    ;; Complete or cycle markup at point
-    (let ((dir (if arg -1 1))
-          bounds)
-      (cond
-       ;; atx header
-       ((thing-at-point-looking-at markdown-regex-header-atx)
-        (if (markdown-incomplete-atx-p)
-            (markdown-complete-atx)
-          (markdown-cycle-atx dir)))
-       ;; setext header
-       ((thing-at-point-looking-at markdown-regex-header-setext)
-        (if (markdown-incomplete-setext-p)
-            (markdown-complete-setext)
-          (markdown-cycle-setext dir)))
-       ;; horizonal rule
-       ((thing-at-point-looking-at markdown-regex-hr)
-        (if (markdown-incomplete-hr-p)
-            (markdown-complete-hr)
-          (markdown-cycle-hr dir)))
-       ;; bold
-       ((thing-at-point-looking-at markdown-regex-bold)
-        (markdown-cycle-bold))
-       ;; italic
-       ((thing-at-point-looking-at markdown-regex-italic)
-        (markdown-cycle-italic))))))
-
-(defun markdown-complete-or-reverse-cycle ()
-  "Complete or reverse cycle markup at point or complete objects in region.
-Call `markdown-complete-or-cycle' with prefix argument."
-  (interactive)
-  (markdown-complete-or-cycle t))
+      (error "Nothing to demote at point")))))
 
 
 ;;; Commands ==================================================================
@@ -4239,8 +4265,6 @@ current filename, but with the extension removed and replaced with .html."
 
 
 ;;; Links =====================================================================
-
-(require 'thingatpt)
 
 (defun markdown-link-p ()
   "Return non-nil when `point' is at a non-wiki link.
@@ -4576,7 +4600,7 @@ if ARG is omitted or nil."
        'markdown-end-of-defun)
   ;; Paragraph filling
   (set (make-local-variable 'paragraph-start)
-       "\f\\|[ \t]*$\\|[ \t]*[*+-] \\|[ \t]*[0-9]+\\.\\|[ \t]*: ")
+       "\f\\|[ \t]*$\\|[ \t]*[*+-] \\|[ \t]*[0-9]+\\.[ \t]\\|[ \t]*: ")
   (set (make-local-variable 'paragraph-separate)
        "\\(?:[ \t\f]\\|.*  \\)*$")
   (set (make-local-variable 'adaptive-fill-first-line-regexp)
@@ -4617,7 +4641,9 @@ if ARG is omitted or nil."
   ;; do the initial link fontification
   (markdown-fontify-buffer-wiki-links))
 
-;;(add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
+;;;###autoload(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+;;;###autoload(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+;;;###autoload(add-to-list 'auto-mode-alist '("\\.text\\'" . markdown-mode))
 
 
 ;;; GitHub Flavored Markdown Mode  ============================================
@@ -4627,7 +4653,7 @@ if ARG is omitted or nil."
    ;; GFM features to match first
    (list
     (cons 'markdown-match-gfm-code-blocks '((1 markdown-pre-face)
-                                            (2 markdown-language-keyword-face)
+                                            (2 markdown-language-keyword-face t t)
                                             (3 markdown-pre-face)
                                             (4 markdown-pre-face))))
    ;; Basic Markdown features (excluding possibly overridden ones)
