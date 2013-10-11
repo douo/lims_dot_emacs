@@ -14,6 +14,9 @@
 ;; slim http://slim-lang.com
 (require 'slim-mode)
 
+;; haml https://github.com/nex3/haml-mode
+(require 'haml-mode)
+
 ;; 加载 markdown 模式
 (autoload 'markdown-mode "markdown-mode" "Major mode for editing Markdown files" t) 
 (setq auto-mode-alist (cons '("\\.md\\'" . markdown-mode) auto-mode-alist))
