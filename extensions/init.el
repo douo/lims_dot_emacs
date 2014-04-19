@@ -30,6 +30,7 @@
 
 ;; mustache mode http://mustache.github.com/
 (require 'mustache-mode)
+(setq auto-mode-alist (cons '("\\.html\\'" . markdown-mode) auto-mode-alist))
 
 ;; 关闭 markdown-mode 中继承自 text-mode 的 auto-fill-mode， 似乎只在aquamacs中才会
 (add-hook 'markdown-mode (lambda () (auto-fill-mode -1)))
