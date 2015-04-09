@@ -38,7 +38,11 @@
 
 ;; 关闭 markdown-mode 中继承自 text-mode 的 auto-fill-mode， 似乎只在aquamacs中才会
 (add-hook 'markdown-mode (lambda () (auto-fill-mode -1)))
-
+ 
+;; scss mode
+(require 'scss-mode)
+(autoload 'scss-mode "scss-mode")
+(add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
 
 ;; 设置 org 常用键
 (global-set-key "\C-cl" 'org-store-link)
