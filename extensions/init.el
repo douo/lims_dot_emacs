@@ -14,10 +14,6 @@
 ;; slim http://slim-lang.com
 (require 'slim-mode)
 
-;; haml https://github.com/nex3/haml-mode
-(require 'haml-mode)
-
-
 ;; scss
 (setq auto-mode-alist (cons '("\\.scss\\'" . css-mode) auto-mode-alist))
 
