@@ -10,6 +10,21 @@ tramp
 eshell
 .\#*
 
+.cache/
+cache/
+autosave/
+backups/
+eshell/
+transient/
+places
+recentf
+history
+projectile-bookmarks.eld
+.persistent-scratch
+*.elc
+*.data
+
+
 # Org-mode
 .org-id-locations
 *_archive
