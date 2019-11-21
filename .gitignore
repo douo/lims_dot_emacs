@@ -23,6 +23,7 @@ projectile-bookmarks.eld
 .persistent-scratch
 *.elc
 *.data
+abbrev_defs
 
 
 # Org-mode
