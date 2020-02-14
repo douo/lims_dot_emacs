@@ -209,7 +209,7 @@
 ;; 空格可视化
 (use-package whitespace
   :init
-  (dolist (hook '(prog-mode-hook text-mode-hook))
+  (dolist (hook '(prog-mode-hook))
     (add-hook hook #'whitespace-mode))
   (add-hook 'before-save-hook #'whitespace-cleanup)
   :config
@@ -359,7 +359,12 @@
            (selected-file (completing-read "Select article: " files nil t)))
       (insert (format "{%% post_url %s %%}" selected-file)))))
 
-;; 其他模式
+
+(use-package lua-mode
+  :ensure t
+  :mode "\\.lua\\'")
+
+
 (use-package adoc-mode
   :ensure t
   :mode "\\.adoc\\'")
@@ -370,6 +375,13 @@
 (use-package cask-mode
   :ensure t)
 
+(use-package load-relative
+  :ensure t)
+
+(load-relative "lisp/uci-mode.el") ;; openwrt uci config file
+(require 'uci-mode)
+
+
 ;; End
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -378,7 +390,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package))))
+    (load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
