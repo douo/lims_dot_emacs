@@ -225,6 +225,14 @@
   ;; invert the navigation direction if the the completion popup-isearch-match
   ;; is displayed on top (happens near the bottom of windows)
   (setq company-tooltip-flip-when-above t)
+  (progn
+    ;; Use Company for completion
+    (bind-key [remap completion-at-point] #'company-complete company-mode-map)
+
+    (setq company-tooltip-align-annotations t
+          ;; Easy navigation to candidates with M-<n>
+          company-show-numbers t)
+    (setq company-dabbrev-downcase nil))
   (global-company-mode))
 
 
@@ -330,6 +338,30 @@
   (setq ruby-insert-encoding-magic-comment nil)
   (add-hook 'ruby-mode-hook #'subword-mode))
 
+;; golang
+;; 需安装 gocode goimports
+(use-package company-go
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'company
+    (add-to-list 'company-backends 'company-go)))
+(use-package go-mode
+  :ensure t
+  :init
+  (progn
+    (setq gofmt-command "goimports")
+    (add-hook 'before-save-hook 'gofmt-before-save)
+    (bind-key [remap find-tag] #'godef-jump))
+  :config
+  (add-hook 'go-mode-hook 'electric-pair-mode))
+
+(use-package go-eldoc
+  :ensure t
+  :defer
+  :init
+  (add-hook 'go-mode-hook 'go-eldoc-setup))
+
 ;; Markdown
 (use-package markdown-mode
   :ensure t
@@ -362,3 +394,16 @@
   :ensure t)
 
 ;; End
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(company-go cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
