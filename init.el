@@ -339,22 +339,27 @@
   (add-hook 'ruby-mode-hook #'subword-mode))
 
 ;; golang
+(use-package lsp-mode
+  :ensure t
+  :commands (lsp lsp-deferred)
+  :hook (go-mode . lsp-deferred))
+
+;; Set up before-save hooks to format buffer and add/delete imports.
+;; Make sure you don't have other gofmt/goimports hooks enabled.
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+
+;; Optional - provides fancier overlays.
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode)
+
 ;; 需安装 gocode goimports
-(use-package company-go
-  :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'company
-    (add-to-list 'company-backends 'company-go)))
 (use-package go-mode
-  :ensure t
-  :init
-  (progn
-    (setq gofmt-command "goimports")
-    (add-hook 'before-save-hook 'gofmt-before-save)
-    (bind-key [remap find-tag] #'godef-jump))
-  :config
-  (add-hook 'go-mode-hook 'electric-pair-mode))
+  :ensure t)
+
 
 (use-package go-eldoc
   :ensure t
