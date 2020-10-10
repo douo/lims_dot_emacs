@@ -9,6 +9,7 @@ elpa
 tramp
 eshell
 .\#*
+.lsp-*
 
 .cache/
 cache/
