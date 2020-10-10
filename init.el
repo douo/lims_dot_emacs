@@ -425,6 +425,7 @@
 (use-package lsp-mode
   :ensure t
   :commands (lsp lsp-deferred)
+  :hook (python-mode . lsp-deferred)
   :hook (go-mode . lsp-deferred))
 
 ;; if you are ivy user
