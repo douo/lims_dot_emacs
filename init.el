@@ -1,3 +1,9 @@
+;;; init.el --- douo's emacs config
+;;; Commentary:
+;;
+;;; 个人用
+;;
+;;; Code:
 ;; 根据操作系统执行代码
 (defmacro with-system (type &rest body)
   "Evaluate BODY if `system-type' equals TYPE."
