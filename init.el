@@ -81,6 +81,7 @@
   (package-refresh-contents))
 
 ;; 安装 use-package
+;;https://phenix3443.github.io/notebook/emacs/modes/use-package-manual.html
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 
@@ -143,87 +144,10 @@
   (setq avy-background t))
 
 (use-package which-key
-  :defer 10
+  :ensure t
   :config
-  (progn
-    (setq which-key-popup-type 'side-window) ;Default
-    ;; (setq which-key-popup-type 'minibuffer)
+  (which-key-mode))
 
-    (setq which-key-compute-remaps t) ;Show correct descriptions for remapped keys
-
-    (setq which-key-allow-multiple-replacements t) ;Default = nil
-
-    (setq which-key-replacement-alist
-          '(
-            ;; Replacements for how part or whole of FUNCTION is replaced when
-            ;; which-key displays
-            ;;   KEY → FUNCTION
-            ;; Eg: After "d" in `calc', display "6 → calc-hex-radix" as "6 → 🖩hex-radix"
-            ((nil . "Prefix Command")           . (nil . "prefix"))
-            ((nil . "which-key-show-next-page") . (nil . "wk next pg"))
-            ((nil . "\\`calc-")                  . (nil . "")) ;Hide "calc-" prefixes when listing M-x calc keys
-            ((nil . "\\`artist-select-op-")      . (nil . "")) ;Make artist-mode function names less verbose
-            ((nil . "\\`artist-select-")         . (nil . "sel-"))
-            ((nil . "\\`artist-toggle-")         . (nil . "toggle-"))
-            ((nil . "modi/")                    . (nil . "m/")) ;The car is intentionally not "\\`modi/" to cover cases like `hydra-toggle/modi/..'.
-            ((nil . "\\`hydra-\\(.+\\)/body\\'")      . (nil . "h/\\1"))
-            ((nil . "\\`org-babel-")             . (nil . "ob/"))
-            ;; Replacements for how KEY is replaced when which-key displays
-            ;;   KEY → FUNCTION
-            ;; Eg: After "C-c", display "right → winner-redo" as "⇨ → winner-redo"
-            (("<\\(.*\\)-?left>"   . nil)         . ("\\1⇦" . nil))
-            (("<\\(.*\\)-?right>"  . nil)         . ("\\1⇨" . nil))
-            (("<\\(.*\\)-?up>"     . nil)         . ("\\1⇧" . nil))
-            (("<\\(.*\\)-?down>"   . nil)         . ("\\1⇩" . nil))
-            (("<\\(.*\\)-?return>" . nil)         . ("\\1⏎" . nil))
-            (("RET" . nil)                      . ("⏎" . nil))
-            (("<\\(.*\\)-?delete>" . nil)         . ("\\1⮽" . nil)) ;Delete key
-            (("DEL"  . nil)                     . ("BS" . nil)) ;Backspace key
-            (("<\\(.*\\)-?backspace>" . nil)      . ("\\1BS" . nil)) ;Backspace key
-            (("<\\(.*\\)-?tab>"   . nil)          . ("\\1TAB" . nil))
-            (("SPC"   . nil)                    . ("⼐" . nil))
-            (("<\\(.*\\)-?next>"   . nil)         . ("\\1PgDn" . nil))
-            (("<\\(.*\\)-?prior>"  . nil)         . ("\\1PgUp" . nil))
-            ))
-    ;; Use cool unicode characters if available
-    (with-eval-after-load 'setup-font-check
-      (when font-symbola-p
-        (add-to-list 'which-key-replacement-alist '((nil . "\\`calc-") . (nil . "🖩")))
-        (add-to-list 'which-key-replacement-alist '((nil . "\\`engine/search-") . (nil . "🔎 "))))) ;engine-mode
-
-    ;; Change what string to display for a given *complete* key binding
-    ;; Eg: After "C-x", display "8 → +unicode" instead of "8 → +prefix"
-    (which-key-add-key-based-replacements
-      "C-x 8"   "unicode"
-      "C-x a"   "abbrev/expand"
-      "C-x r"   "rectangle/register/bookmark"
-      "C-x v"   "version control"
-      "C-c /"   "engine-mode-map"
-      "C-c C-v" "org-babel"
-      "C-x 8 0" "ZWS")
-
-    ;; Highlight certain commands
-    (defface modi/which-key-highlight-2-face
-      '((t . (:inherit which-key-command-description-face :foreground "indian red")))
-      "Another face for highlighting commands in `which-key'.")
-
-    (defface modi/which-key-highlight-3-face
-      '((t . (:inherit which-key-command-description-face :foreground "DarkOrange3")))
-      "Another face for highlighting commands in `which-key'.")
-
-    (setq which-key-highlighted-command-list
-          '(("\\`hydra-" . which-key-group-description-face)
-            ;; Highlight using the `modi/which-key-highlight-2-face'
-            ("\\`modi/" . modi/which-key-highlight-2-face)
-            ;; Highlight using the `modi/which-key-highlight-3-face'
-            ("\\`bookmark-" . modi/which-key-highlight-3-face)
-            ("\\`counsel-" . modi/which-key-highlight-3-face)
-            ;; Highlight using the default `which-key-highlighted-command-face'
-            "\\`describe-"
-            "\\(rectangle-\\)\\|\\(-rectangle\\)"
-            "\\`org-"))
-
-    (which-key-mode 1)))
 
 
 
@@ -431,18 +355,28 @@
 ;; if you are ivy user
 (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
 
+;; Optional - provides fancier overlays.
+(use-package lsp-ui
+  :ensure t
+  :commands lsp-ui-mode)
+
+
 
 ;; 主模式
 
 ;; ruby
-(use-package inf-ruby
-  :ensure t
-  :config
-  (add-hook 'ruby-mode-hook #'inf-ruby-minor-mode))
+
 (use-package ruby-mode
   :config
   (setq ruby-insert-encoding-magic-comment nil)
   (add-hook 'ruby-mode-hook #'subword-mode))
+
+
+;;provides a REPL buffer connected to a Ruby subprocess.
+(use-package inf-ruby
+  :ensure t
+  :config
+  (add-hook 'ruby-mode-hook #'inf-ruby-minor-mode))
 
 ;; golang
 
@@ -453,21 +387,9 @@
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 
-;; Optional - provides fancier overlays.
-(use-package lsp-ui
-  :ensure t
-  :commands lsp-ui-mode)
-
-;; 需安装 gocode goimports
+;; 需安装 goimports gopls
 (use-package go-mode
   :ensure t)
-
-
-(use-package go-eldoc
-  :ensure t
-  :defer
-  :init
-  (add-hook 'go-mode-hook 'go-eldoc-setup))
 
 ;; Markdown
 (use-package markdown-mode
@@ -519,8 +441,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   (quote
-    (load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package))))
+   '(ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
