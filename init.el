@@ -448,6 +448,10 @@
 (use-package cask-mode
   :ensure t)
 
+(use-package nginx-mode
+  :ensure t
+  )
+
 (use-package load-relative
   :ensure t)
 
