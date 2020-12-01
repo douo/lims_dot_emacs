@@ -63,6 +63,9 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 
+;; 加载本机特殊配置
+(load-relative "local.el")
+
 ;;初始化包管理器
 (require 'package)
 (package-initialize)
@@ -84,8 +87,9 @@
 ;;https://phenix3443.github.io/notebook/emacs/modes/use-package-manual.html
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
+(eval-when-compile
+  (require 'use-package))
 
-(require 'use-package)
 (setq use-package-verbose t)
 
 (use-package recentf
@@ -120,6 +124,7 @@
 (use-package paren
   :config
   (show-paren-mode +1))
+
 
 ;; 自动补全引号、括号等
 (use-package elec-pair
@@ -162,6 +167,12 @@
 ;; https://agel.readthedocs.io/en/latest/index.html
 (use-package ag
   :ensure t)
+
+;; rg
+(use-package rg
+  :ensure t
+  :config
+  (rg-enable-default-bindings))
 
 ;; https://github.com/magnars/expand-region.el
 (use-package expand-region
@@ -336,6 +347,7 @@
   (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
   (global-set-key (kbd "C-c g") 'counsel-git)
   (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c c-j") 'counsel-imenu)
   (global-set-key (kbd "C-c a") 'counsel-ag)
   (global-set-key (kbd "C-x l") 'counsel-locate)
   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history))
@@ -349,8 +361,10 @@
 (use-package lsp-mode
   :ensure t
   :commands (lsp lsp-deferred)
-  :hook (python-mode . lsp-deferred)
-  :hook (go-mode . lsp-deferred))
+  :hook ((python-mode . lsp-deferred)
+         (lsp-mode . lsp-enable-which-key-integration)
+         (go-mode . lsp-deferred))
+  )
 
 ;; if you are ivy user
 (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
@@ -359,10 +373,21 @@
 (use-package lsp-ui
   :ensure t
   :commands lsp-ui-mode)
-
-
+;; https://emacs-lsp.github.io/lsp-mode/page/performance/
+(setq gc-cons-threshold 100000000)
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; 主模式
+;; python
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
+(use-package pyenv-mode
+  :ensure t
+)
+
 
 ;; ruby
 
@@ -417,10 +442,6 @@
   :mode "\\.lua\\'")
 
 
-(use-package adoc-mode
-  :ensure t
-  :mode "\\.adoc\\'")
-
 (use-package yaml-mode
   :ensure t)
 
@@ -448,3 +469,4 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+(put 'set-goal-column 'disabled nil)
