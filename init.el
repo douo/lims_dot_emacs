@@ -164,10 +164,6 @@
   :ensure t
   :bind (("M-g t" . git-timemachine)))
 
-;; https://agel.readthedocs.io/en/latest/index.html
-(use-package ag
-  :ensure t)
-
 ;; rg
 (use-package rg
   :ensure t
@@ -267,7 +263,7 @@
          ([(shift return)] . crux-smart-open-line)
          ([(control shift return)] . crux-smart-open-line-above)
          ([remap kill-whole-line] . crux-kill-whole-line)
-         ("C-c s" . crux-ispell-word-then-abbrev)))
+         ))
 
 (use-package undo-tree
   :ensure t
@@ -384,10 +380,11 @@
   :hook (python-mode . (lambda ()
                           (require 'lsp-pyright)
                           (lsp))))  ; or lsp-deferred
-(use-package pyenv-mode
-  :ensure t
-)
 
+(use-package pyvenv
+  :ensure t
+  :init
+  (setenv "WORKON_HOME" "~/.pyenv/versions"))
 
 ;; ruby
 
