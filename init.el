@@ -64,6 +64,7 @@
 (set-keyboard-coding-system 'utf-8)
 
 ;; 加载本机特殊配置
+(require 'load-relative)
 (load-relative "local.el")
 
 ;;初始化包管理器
