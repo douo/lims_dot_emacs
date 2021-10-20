@@ -70,7 +70,7 @@
 ;;初始化包管理器
 (require 'package)
 (package-initialize)
-(setq package-archives
+;;(setq package-archives
       ;; TNUA ELPA
       ;; '(("gnu"   . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
       ;;   ("melpa" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
@@ -78,8 +78,8 @@
       ;; '(("gnu"   . "https://elpa.emacs-china.org/gnu/")
       ;; ("melpa" . "https://elpa.emacs-china.org/melpa/")))
       ;; 163
-      '(("gnu"   . "http://mirrors.163.com/elpa/gnu/")
-        ("melpa" . "http://mirrors.163.com/elpa/melpa/")))
+      ;;'(("gnu"   . "http://mirrors.163.com/elpa/gnu/")
+      ;;  ("melpa" . "http://mirrors.163.com/elpa/melpa/")))
 ;; update the package metadata is the local cache is missing
 (unless package-archive-contents
   (package-refresh-contents))
@@ -332,6 +332,12 @@
   (setq ivy-use-group-face-if-no-groups t)
   (global-set-key "\C-s" 'swiper))
 
+(use-package org
+  :ensure t
+  :config
+  (global-set-key (kbd "C-c c") 'org-capture)
+  (setq org-default-notes-file "~/writing/org/inbox.org"))
+
 (use-package counsel
   :ensure t
   :config
@@ -344,7 +350,7 @@
   (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
   (global-set-key (kbd "C-c g") 'counsel-git)
   (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  (global-set-key (kbd "C-c c-j") 'counsel-imenu)
+  (global-set-key (kbd "C-c C-j") 'counsel-imenu)
   (global-set-key (kbd "C-c a") 'counsel-ag)
   (global-set-key (kbd "C-x l") 'counsel-locate)
   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history))
@@ -464,7 +470,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(org org-real ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
