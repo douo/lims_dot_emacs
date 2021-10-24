@@ -337,26 +337,60 @@
   (setq ivy-use-group-face-if-no-groups t)
   (global-set-key "\C-s" 'swiper))
 
+
+(defun my-org-agenda-skip-all-siblings-but-first ()
+  "Skip all but the first non-done entry."
+  (let (should-skip-entry)
+    (unless (org-current-is-todo)
+      (setq should-skip-entry t))
+    (save-excursion
+      (while (and (not should-skip-entry) (org-goto-sibling t))
+        (when (org-current-is-todo)
+          (setq should-skip-entry t))))
+    (when should-skip-entry
+      (or (outline-next-heading)
+          (goto-char (point-max))))))
+
+(defun org-current-is-todo ()
+  (string= "TODO" (org-get-todo-state)))
+
 (use-package org
   :ensure t
   :config
   (global-set-key (kbd "C-c c") 'org-capture)
-  (setq org-default-notes-file "~/writing/_gtd/inbox.org")
-  (setq douo/org-agenda-directory "~/writing/_gtd/")
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (setq org-default-notes-file "~/Writing/_gtd/inbox.org")
+  (setq douo/org-agenda-directory "~/Writing/_gtd/")
+  (setq org-agenda-files `(,(concat douo/org-agenda-directory "gtd.org")
+                             ,(concat douo/org-agenda-directory "maybe.org")
+                             ,(concat douo/org-agenda-directory "tickler.org")))
   (setq org-capture-templates
         `(("t" "TODO [inbox]" entry
-           (file (concat douo/org-agenda-directory "inbox.org") )
+           (file+headline ,(concat douo/org-agenda-directory "inbox.org") "Tasks")
            "* TODO %i%?")
           ("T" "Tickler [inbox]" entry
-           (file+headline (concat douo/org-agenda-directory "inbox.org") "Tickler")
+           (file+headline ,(concat douo/org-agenda-directory "inbox.org") "Tickler")
            "* %i%? \n %U"))
         )
-
+  (setq org-refile-targets `(
+                             (,(concat douo/org-agenda-directory "gtd.org") :maxlevel . 3)
+                             (,(concat douo/org-agenda-directory "maybe.org") :level . 1)
+                             (,(concat douo/org-agenda-directory "tickler.org") :maxlevel . 2)))
+  (setq org-tag-alist '(
+                        ("@work." . ?c)
+                        ("@home" . ?h)
+                        ("@pc" . ?p)
+                        ("@shopping" . ?s )
+                        ("@town" . ?t )))
   (setq org-todo-keywords
-        '((sequence "TODO" "|" "DONE" "ABORT")))
+        '((sequence "TODO(t)" "WAITING(w)" "|" "DONE(d)" "ABORT(a)")))
   (setq org-log-done 'time)
   (setq org-todo-keyword-faces
         '(("ABORT" . org-verbatim)))
+  (setq org-agenda-custom-commands
+      '(("c" "Ahead the Computer " tags-todo "@pc"
+         ((org-agenda-overriding-header "Ahead the Computer")
+          (org-agenda-skip-function #'my-org-agenda-skip-all-siblings-but-first)))))
   )
 
 (use-package counsel
@@ -372,7 +406,7 @@
   (global-set-key (kbd "C-c g") 'counsel-git)
   (global-set-key (kbd "C-c j") 'counsel-git-grep)
   (global-set-key (kbd "C-c C-j") 'counsel-imenu)
-  (global-set-key (kbd "C-c a") 'counsel-ag)
+  (global-set-key (kbd "C-c R") 'counsel-rg)
   (global-set-key (kbd "C-x l") 'counsel-locate)
   (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history))
 
@@ -511,6 +545,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
+ '(org-agenda-files '("~/Writing/_gtd/gtd.org" "~/Writing/_gtd/inbox.org"))
  '(package-selected-packages
    '(org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
