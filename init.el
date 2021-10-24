@@ -66,6 +66,7 @@
 ;; 加载本机特殊配置
 (load-relative "local.el")
 
+
 ;;初始化包管理器
 (require 'package)
 (package-initialize)
@@ -74,11 +75,12 @@
       ;; '(("gnu"   . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
       ;;   ("melpa" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
       ;; Emacs China ELPA
-      ;; '(("gnu"   . "https://elpa.emacs-china.org/gnu/")
-      ;; ("melpa" . "https://elpa.emacs-china.org/melpa/")))
+         '(("org" . "https://orgmode.org/elpa/")
+           ("gnu"   . "https://elpa.emacs-china.org/gnu/")
+           ("melpa" . "https://elpa.emacs-china.org/melpa/")))
       ;; 163
-      '(("gnu"   . "http://mirrors.163.com/elpa/gnu/")
-        ("melpa" . "http://mirrors.163.com/elpa/melpa/")))
+      ;; '(("gnu"   . "http://mirrors.163.com/elpa/gnu/")
+      ;;  ("melpa" . "http://mirrors.163.com/elpa/melpa/")))
 ;; update the package metadata is the local cache is missing
 (unless package-archive-contents
   (package-refresh-contents))
@@ -220,7 +222,7 @@
     (add-hook hook #'whitespace-mode))
   (add-hook 'before-save-hook #'whitespace-cleanup)
   :config
-  ; (setq whitespace-line-column 80) ;; limit line length
+   (setq whitespace-line-column 256) ;; limit line length
   (setq whitespace-style '(face tabs empty trailing lines-tail)))
 
 ;; temporarily highlight changes from yanking, etc
@@ -377,14 +379,35 @@
 ;; python
 (use-package lsp-pyright
   :ensure t
-  :hook (python-mode . (lambda ()
+  :hook (
+         (python-mode . (lambda ()
                           (require 'lsp-pyright)
-                          (lsp))))  ; or lsp-deferred
+                          (lsp)))
+         (web-mode . lsp-deferred)
+         )
+
+  )  ; or lsp-deferred
+
 
 (use-package pyvenv
   :ensure t
   :init
   (setenv "WORKON_HOME" "~/.pyenv/versions"))
+
+;; typescript
+;; web-mode
+;; (setq web-mode-markup-indent-offset 2)
+;; (setq web-mode-code-indent-offset 2)
+;; (setq web-mode-css-indent-offset 2)
+(use-package web-mode
+  :ensure t
+  :mode (("\\.js\\'" . web-mode)
+	 ("\\.jsx\\'" .  web-mode)
+	 ("\\.ts\\'" . web-mode)
+	 ("\\.tsx\\'" . web-mode)
+	 ("\\.html\\'" . web-mode))
+  :commands web-mode)
+
 
 ;; ruby
 
@@ -400,6 +423,7 @@
   :config
   (add-hook 'ruby-mode-hook #'inf-ruby-minor-mode))
 
+
 ;; golang
 
 ;; Set up before-save hooks to format buffer and add/delete imports.
@@ -412,6 +436,7 @@
 ;; 需安装 goimports gopls
 (use-package go-mode
   :ensure t)
+
 
 ;; Markdown
 (use-package markdown-mode
@@ -463,7 +488,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
