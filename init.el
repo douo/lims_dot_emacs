@@ -12,7 +12,7 @@
      ,@body))
 ;; 设置 emacsformacosx option 作为 meta 键
 (with-system darwin
-   (setq mac-option-modifier   'meta))
+  (setq mac-option-modifier   'meta))
 ;; 自动加载外部修改过的文件
 (global-auto-revert-mode 1)
 ;; 禁止 Emacs 自动生成备份文件，例如 init.el~ 。
@@ -62,24 +62,21 @@
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
-
-;; 加载本机特殊配置
-(require 'load-relative)
-(load-relative "local.el")
-
 ;;初始化包管理器
 (require 'package)
+(add-to-list 'package-archives
+             '("melpa-stable" . "https://stable.melpa.org/packages/"))
 (package-initialize)
 ;;(setq package-archives
-      ;; TNUA ELPA
-      ;; '(("gnu"   . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-      ;;   ("melpa" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
-      ;; Emacs China ELPA
-      ;; '(("gnu"   . "https://elpa.emacs-china.org/gnu/")
-      ;; ("melpa" . "https://elpa.emacs-china.org/melpa/")))
-      ;; 163
-      ;;'(("gnu"   . "http://mirrors.163.com/elpa/gnu/")
-      ;;  ("melpa" . "http://mirrors.163.com/elpa/melpa/")))
+;; TNUA ELPA
+;; '(("gnu"   . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+;;   ("melpa" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
+;; Emacs China ELPA
+;; '(("gnu"   . "https://elpa.emacs-china.org/gnu/")
+;; ("melpa" . "https://elpa.emacs-china.org/melpa/")))
+;; 163
+;;'(("gnu"   . "http://mirrors.163.com/elpa/gnu/")
+;;  ("melpa" . "http://mirrors.163.com/elpa/melpa/")))
 ;; update the package metadata is the local cache is missing
 (unless package-archive-contents
   (package-refresh-contents))
@@ -92,6 +89,12 @@
   (require 'use-package))
 
 (setq use-package-verbose t)
+
+(use-package load-relative
+  :ensure t)
+;; 加载本机特殊配置
+(load-relative "local.el")
+
 
 (use-package recentf
   :bind (("C-x C-r" . 'recentf-open-files))
@@ -221,7 +224,7 @@
     (add-hook hook #'whitespace-mode))
   (add-hook 'before-save-hook #'whitespace-cleanup)
   :config
-  ; (setq whitespace-line-column 80) ;; limit line length
+                                        ; (setq whitespace-line-column 80) ;; limit line length
   (setq whitespace-style '(face tabs empty trailing lines-tail)))
 
 ;; temporarily highlight changes from yanking, etc
@@ -311,6 +314,8 @@
   :config
   (add-hook 'after-init-hook #'global-flycheck-mode))
 
+
+
 (use-package ivy
   :ensure t
   :config
@@ -336,7 +341,23 @@
   :ensure t
   :config
   (global-set-key (kbd "C-c c") 'org-capture)
-  (setq org-default-notes-file "~/writing/org/inbox.org"))
+  (setq org-default-notes-file "~/writing/_gtd/inbox.org")
+  (setq douo/org-agenda-directory "~/writing/_gtd/")
+  (setq org-capture-templates
+        `(("t" "TODO [inbox]" entry
+           (file (concat douo/org-agenda-directory "inbox.org") )
+           "* TODO %i%?")
+          ("T" "Tickler [inbox]" entry
+           (file+headline (concat douo/org-agenda-directory "inbox.org") "Tickler")
+           "* %i%? \n %U"))
+        )
+
+  (setq org-todo-keywords
+        '((sequence "TODO" "|" "DONE" "ABORT")))
+  (setq org-log-done 'time)
+  (setq org-todo-keyword-faces
+        '(("ABORT" . org-verbatim)))
+  )
 
 (use-package counsel
   :ensure t
@@ -385,8 +406,8 @@
 (use-package lsp-pyright
   :ensure t
   :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp))))  ; or lsp-deferred
+                         (require 'lsp-pyright)
+                         (lsp))))  ; or lsp-deferred
 
 (use-package pyvenv
   :ensure t
@@ -456,9 +477,6 @@
   :ensure t
   )
 
-(use-package load-relative
-  :ensure t)
-
 (load-relative "lisp/uci-mode.el") ;; openwrt uci config file
 (require 'uci-mode)
 
@@ -469,8 +487,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(flycheck-global-modes '(not org-mode))
  '(package-selected-packages
-   '(org org-real ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(deft org org-real ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
