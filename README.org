@@ -1,0 +1,49 @@
+* Intro
+  参考自 [[https://github.com/bbatsov/emacs.d/blob/965d39c245bdbe79e88dd228756a9cf621670ac0/init.el][emacs.d/init.el at master · bbatsov/emacs.d]]
+
+* 环境变量
+  不同主机通过配置环境变量自定义，目前所用环境变量
+
+- RG_EXECUTABLE
+- WRITING_HOME
+- GTD_HOME
+
+** Mac Gui 环境变量
+
+新建 ~/Library/LaunchAgents/environment.plist:
+
+#+BEGIN_SRC xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>my.startup</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>sh</string>
+    <string>-c</string>
+    <string>
+    launchctl setenv PRODUCTS_PATH /Users/mortimer/Projects/my_products
+    launchctl setenv ANDROID_NDK_HOME /Applications/android-ndk
+    launchctl setenv PATH $PATH:/Applications/gradle/bin
+    </string>
+
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+</dict>
+</plist>
+#+END_SRC
+
+#+begin_src shell
+launchctl load ~/Library/LaunchAgents/environment.plist
+launchctl start ~/Library/LaunchAgents/environment.plist
+#+end_src
+
+参考：[[https://stackoverflow.com/a/26586170/851344][Setting environment variables via launchd.conf no longer works in OS X Yosemite/El Capitan/macOS Sierra/Mojave?]]
+
+* TODO
+- [ ] company
+- [ ] ivy 家族
+- [ ] crux

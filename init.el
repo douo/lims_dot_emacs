@@ -15,6 +15,12 @@
 (with-system darwin
   (setq mac-option-modifier   'meta))
 
+;; windows
+(with-system windows-nt
+  (setq w32-pass-rwindow-to-system nil)
+  (setq w32-rwindow-modifier 'super) ; Right Windows key
+  (w32-register-hot-key [s-]))
+
 
 ;; 自动加载外部修改过的文件
 (global-auto-revert-mode 1)
@@ -69,6 +75,9 @@
 (require 'package)
 (add-to-list 'package-archives
              '("melpa-stable" . "https://stable.melpa.org/packages/"))
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/") t)
+
 (package-initialize)
 ;;(setq package-archives
 ;; TNUA ELPA
@@ -362,22 +371,22 @@
   :config
   (global-set-key (kbd "C-c c") 'org-capture)
   (global-set-key (kbd "C-c a") 'org-agenda)
-  (setq org-default-notes-file (concat gtd-home "inbox.org"))
-  (setq org-agenda-files `(,(concat douo/gtd-home "gtd.org")
-                             ,(concat douo/gtd-home "maybe.org")
-                             ,(concat douo/gtd-home "tickler.org")))
+  (setq org-default-notes-file (concat douo/gtd-home "/inbox.org"))
+  (setq org-agenda-files `(,(concat douo/gtd-home "/gtd.org")
+                             ,(concat douo/gtd-home "/maybe.org")
+                             ,(concat douo/gtd-home "/tickler.org")))
   (setq org-capture-templates
         `(("t" "TODO [inbox]" entry
-           (file+headline ,(concat douo/gtd-home "inbox.org") "Tasks")
+           (file+headline ,(concat douo/gtd-home "/inbox.org") "Tasks")
            "* TODO %i%?")
           ("T" "Tickler [inbox]" entry
-           (file+headline ,(concat douo/gtd-home "inbox.org") "Tickler")
+           (file+headline ,(concat douo/gtd-home "/inbox.org") "Tickler")
            "* %i%? \n %U"))
         )
   (setq org-refile-targets `(
-                             (,(concat douo/gtd-home "gtd.org") :maxlevel . 3)
-                             (,(concat douo/gtd-home "maybe.org") :level . 1)
-                             (,(concat douo/gtd-home "tickler.org") :maxlevel . 2)))
+                             (,(concat douo/gtd-home "/gtd.org") :maxlevel . 3)
+                             (,(concat douo/gtd-home "/maybe.org") :level . 1)
+                             (,(concat douo/gtd-home "/tickler.org") :maxlevel . 2)))
   (setq org-tag-alist '(
                         ("@work." . ?c)
                         ("@home" . ?h)
@@ -548,7 +557,7 @@
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
  '(package-selected-packages
-   '(org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
