@@ -7,12 +7,15 @@
 ;; 根据操作系统执行代码
 (defmacro with-system (type &rest body)
   "Evaluate BODY if `system-type' equals TYPE."
+  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Indenting-Macros.html
   (declare (indent defun))
   `(when (eq system-type ',type)
      ,@body))
 ;; 设置 emacsformacosx option 作为 meta 键
 (with-system darwin
   (setq mac-option-modifier   'meta))
+
+
 ;; 自动加载外部修改过的文件
 (global-auto-revert-mode 1)
 ;; 禁止 Emacs 自动生成备份文件，例如 init.el~ 。
@@ -92,7 +95,7 @@
 
 (use-package load-relative
   :ensure t)
-;; 加载本机特殊配置
+;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
 
 
@@ -359,23 +362,22 @@
   :config
   (global-set-key (kbd "C-c c") 'org-capture)
   (global-set-key (kbd "C-c a") 'org-agenda)
-  (setq org-default-notes-file "~/Writing/_gtd/inbox.org")
-  (setq douo/org-agenda-directory "~/Writing/_gtd/")
-  (setq org-agenda-files `(,(concat douo/org-agenda-directory "gtd.org")
-                             ,(concat douo/org-agenda-directory "maybe.org")
-                             ,(concat douo/org-agenda-directory "tickler.org")))
+  (setq org-default-notes-file (concat gtd-home "inbox.org"))
+  (setq org-agenda-files `(,(concat douo/gtd-home "gtd.org")
+                             ,(concat douo/gtd-home "maybe.org")
+                             ,(concat douo/gtd-home "tickler.org")))
   (setq org-capture-templates
         `(("t" "TODO [inbox]" entry
-           (file+headline ,(concat douo/org-agenda-directory "inbox.org") "Tasks")
+           (file+headline ,(concat douo/gtd-home "inbox.org") "Tasks")
            "* TODO %i%?")
           ("T" "Tickler [inbox]" entry
-           (file+headline ,(concat douo/org-agenda-directory "inbox.org") "Tickler")
+           (file+headline ,(concat douo/gtd-home "inbox.org") "Tickler")
            "* %i%? \n %U"))
         )
   (setq org-refile-targets `(
-                             (,(concat douo/org-agenda-directory "gtd.org") :maxlevel . 3)
-                             (,(concat douo/org-agenda-directory "maybe.org") :level . 1)
-                             (,(concat douo/org-agenda-directory "tickler.org") :maxlevel . 2)))
+                             (,(concat douo/gtd-home "gtd.org") :maxlevel . 3)
+                             (,(concat douo/gtd-home "maybe.org") :level . 1)
+                             (,(concat douo/gtd-home "tickler.org") :maxlevel . 2)))
   (setq org-tag-alist '(
                         ("@work." . ?c)
                         ("@home" . ?h)
@@ -545,7 +547,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
- '(org-agenda-files '("~/Writing/_gtd/gtd.org" "~/Writing/_gtd/inbox.org"))
  '(package-selected-packages
    '(org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
