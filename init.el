@@ -373,8 +373,8 @@
   (global-set-key (kbd "C-c a") 'org-agenda)
   (setq org-default-notes-file (concat douo/gtd-home "/inbox.org"))
   (setq org-agenda-files `(,(concat douo/gtd-home "/gtd.org")
-                             ,(concat douo/gtd-home "/maybe.org")
-                             ,(concat douo/gtd-home "/tickler.org")))
+                             ,(concat douo/gtd-home "/tickler.org")
+                             ))
   (setq org-capture-templates
         `(("t" "TODO [inbox]" entry
            (file+headline ,(concat douo/gtd-home "/inbox.org") "Tasks")
@@ -545,6 +545,10 @@
   :ensure t
   )
 
+(use-package transpose-frame
+  :ensure t
+  )
+ (require 'remember)
 (load-relative "lisp/uci-mode.el") ;; openwrt uci config file
 (require 'uci-mode)
 
@@ -557,7 +561,7 @@
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
  '(package-selected-packages
-   '(lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(transpose-frame lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
