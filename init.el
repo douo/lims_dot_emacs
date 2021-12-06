@@ -350,57 +350,10 @@
   (global-set-key "\C-s" 'swiper))
 
 
-(defun my-org-agenda-skip-all-siblings-but-first ()
-  "Skip all but the first non-done entry."
-  (let (should-skip-entry)
-    (unless (org-current-is-todo)
-      (setq should-skip-entry t))
-    (save-excursion
-      (while (and (not should-skip-entry) (org-goto-sibling t))
-        (when (org-current-is-todo)
-          (setq should-skip-entry t))))
-    (when should-skip-entry
-      (or (outline-next-heading)
-          (goto-char (point-max))))))
-
-(defun org-current-is-todo ()
-  (string= "TODO" (org-get-todo-state)))
 
 (use-package org
   :ensure t
   :config
-  ;; (global-set-key (kbd "C-c c") 'org-capture)
-  ;; (global-set-key (kbd "C-c a") 'org-agenda)
-  ;; (setq org-default-notes-file (concat douo/gtd-home "/inbox.org"))
-  ;; (setq org-agenda-files `(,(concat douo/gtd-home "/gtd.org")
-  ;;                                ,(concat douo/gtd-home "/tickler.org")))
-  ;; (setq org-capture-templates
-  ;;       `(("t" "TODO [inbox]" entry
-  ;;          (file+headline ,(concat douo/gtd-home "/inbox.org") "Tasks")
-  ;;          "* TODO %i%?")
-  ;;         ("T" "Tickler [inbox]" entry
-  ;;          (file+headline ,(concat douo/gtd-home "/inbox.org") "Tickler")
-  ;;          "* %i%? \n %U"))
-  ;;       )
-  ;; (setq org-refile-targets `(
-  ;;                            (,(concat douo/gtd-home "/gtd.org") :maxlevel . 3)
-  ;;                            (,(concat douo/gtd-home "/maybe.org") :level . 1)
-  ;;                            (,(concat douo/gtd-home "/tickler.org") :maxlevel . 2)))
-  ;; (setq org-tag-alist '(
-  ;;                       ("@work." . ?c)
-  ;;                       ("@home" . ?h)
-  ;;                       ("@pc" . ?p)
-  ;;                       ("@shopping" . ?s )
-  ;;                       ("@town" . ?t )))
-  ;; (setq org-todo-keywords
-  ;;       '((sequence "TODO(t)" "WAITING(w)" "|" "DONE(d)" "ABORT(a)")))
-  ;; (setq org-log-done 'time)
-  ;; (setq org-todo-keyword-faces
-  ;;       '(("ABORT" . org-verbatim)))
-  ;; (setq org-agenda-custom-commands
-  ;;     '(("c" "Ahead the Computer " tags-todo "@pc"
-  ;;        ((org-agenda-overriding-header "Ahead the Computer")
-  ;;         (org-agenda-skip-function #'my-org-agenda-skip-all-siblings-but-first)))))
   )
 
 
@@ -412,7 +365,7 @@
   :config
   (setq org-gtd-directory douo/gtd-home)
   (setq org-agenda-files `(,org-gtd-directory))
-;; a useful view to see what can be accomplished today
+  ;; a useful view to see what can be accomplished today
   (setq org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
   (setq org-capture-templates
       `(("i" "Inbox"
@@ -423,13 +376,17 @@
          entry (file ,(org-gtd-inbox-path))
          "* %?\n%U\n\n  %i\n  %a"
          :kill-buffer t)))
+  (setq org-refile-targets `(
+                             (,(concat douo/gtd-home "/incubate.org") :maxlevel . 1)
+                             (,(concat douo/gtd-home "/actionable.org") :maxlevel . 2)
+                             ))
+
   (bind-key "C-c c" 'org-gtd-clarify-finalize)
   :bind (("C-c d c" . org-gtd-capture)
          ("C-c d a" . org-agenda-list)
          ("C-c d p" . org-gtd-process-inbox)
          ("C-c d n" . org-gtd-show-all-next)
          ("C-c d s" . org-gtd-show-stuck-projects))
-
   )
 
 ;; this allows you use `(,org-gtd-directory) for your agenda files
@@ -441,6 +398,19 @@
 (use-package org-capture
   :ensure nil
   :after org-gtd)
+
+(use-package org-agenda-property
+  :ensure t
+  :config
+  (setq org-agenda-property-list '("DELEGATED_TO"))
+  )
+
+(use-package org-edna
+  :ensure t
+  :config
+  (setq org-edna-use-inheritance t)
+  (org-edna-mode 1)
+  )
 
 (use-package counsel
   :ensure t
@@ -594,8 +564,6 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
- '(org-agenda-files
-   '("/Volumes/Pickle/Writing/_gtd/gtd.org" "/Volumes/Pickle/Writing/_gtd/maybe.org"))
  '(package-selected-packages
    '(org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
