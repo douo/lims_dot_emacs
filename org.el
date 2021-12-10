@@ -1,7 +1,21 @@
+(defun douo/generate-quick-note (path)
+  (expand-file-name (format-time-string "%Y/%m/%Y-%m-%d.org")
+                    path))
+
+;; config
 (use-package org
   :ensure t
   :config
-  :bind (("C-c a" . org-agenda))
+  ;; a useful view to see what can be accomplished today
+  (setq org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
+  (setq org-refile-targets `(
+                             (,(concat douo/gtd-home "/incubate.org") :maxlevel . 1)
+                             (,(concat douo/gtd-home "/actionable.org") :maxlevel . 2)
+                             ))
+
+  :bind (("C-c a" . org-agenda)
+         ("C-c c" . org-capture)
+         )
   )
 
 (use-package org-gtd
@@ -11,32 +25,33 @@
   :config
   (setq org-gtd-directory douo/gtd-home)
   (setq org-agenda-files `(,org-gtd-directory))
-  ;; a useful view to see what can be accomplished today
-  (setq org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
   (setq org-capture-templates
-      `(("i" "Inbox"
-         entry (file ,(org-gtd-inbox-path))
-         "* %?\n%U\n\n  %i"
-         :kill-buffer t)
-        ("l" "Todo with link"
-         entry (file ,(org-gtd-inbox-path))
-         "* %?\n%U\n\n  %i\n  %a"
-         :kill-buffer t)))
-  (setq org-refile-targets `(
-                             (,(concat douo/gtd-home "/incubate.org") :maxlevel . 1)
-                             (,(concat douo/gtd-home "/actionable.org") :maxlevel . 2)
-                             ))
+        `(
+          ("i" "Inbox"
+           entry (file ,(org-gtd-inbox-path))
+           "* %?\n%U\n\n  %i"
+           :kill-buffer t)
+          ("l" "Todo with link"
+           entry (file ,(org-gtd-inbox-path))
+           "* %?\n%U\n\n  %i\n  %a"
+           :kill-buffer t)
+          ("q" "Quick Note"
+           plain (file ,(douo/generate-quick-note (concat douo/writing-home "/_notes/Quick")))
+           "%i\n%U\n%?\n"
+           )
+          )
+        )
 
-  (bind-key "C-c c" 'org-gtd-clarify-finalize)
+  (bind-key "C-c C" 'org-gtd-clarify-finalize)
   ;; 重写 incubate，去除强制 schedule
   (defun org-gtd--incubate ()
-  "Process GTD inbox item by incubating it.
+    "Process GTD inbox item by incubating it.
 Allow the user apply user-defined tags from
 `org-tag-persistent-alist', `org-tag-alist' or file-local tags in
 the inbox.  Refile to `org-gtd-incubate-file-basename'."
-  (org-gtd--clarify-item)
-  (org-gtd--decorate-item)
-  (org-gtd--refile-incubate))
+    (org-gtd--clarify-item)
+    (org-gtd--decorate-item)
+    (org-gtd--refile-incubate))
 
   :bind (("C-c d c" . org-gtd-capture)
          ("C-c d a" . org-agenda-list)
