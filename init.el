@@ -73,11 +73,10 @@
 (set-keyboard-coding-system 'utf-8)
 ;;初始化包管理器
 (require 'package)
-(add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/"))
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
-
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 (package-initialize)
 ;;(setq package-archives
 ;; TNUA ELPA
@@ -494,9 +493,33 @@
 (use-package transpose-frame
   :ensure t
   )
- (require 'remember)
+(require 'remember)
 (load-relative "lisp/uci-mode.el") ;; openwrt uci config file
 (require 'uci-mode)
+
+(use-package sis
+  :ensure t
+  :config
+  ;; macos
+  ;; 使用系统输入法
+  ;; 需要先安装 https://github.com/laishulu/macism
+  (with-system darwin
+    (sis-ism-lazyman-config
+     "com.apple.keylayout.ABC" ;; 英文输入法
+     "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
+  ;; enable the /cursor color/ mode
+  (sis-global-cursor-color-mode t)
+  ;; enable the /respect/ mode
+  (sis-global-respect-mode t)
+  ;; enable the /context/ mode for all buffers
+  (sis-global-context-mode t)
+  ;; enable the /inline english/ mode for all buffers
+  (sis-global-inline-mode t)
+  (setq sis-inline-tighten-head-rule 0)
+  ;;(setq sis-inline-tighten-tail-rule 0)
+  )
+
+
 
 
 (load-relative "org.el")
@@ -509,7 +532,7 @@
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
  '(package-selected-packages
-   '(transpose-frame org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(sis transpose-frame org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
