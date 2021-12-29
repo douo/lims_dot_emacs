@@ -1,5 +1,5 @@
 (defun douo/generate-quick-note (path)
-  (expand-file-name (format-time-string "%Y/%m/%Y-%m-%d.org")
+  (expand-file-name (format-time-string "%Y/%m/note-%Y-%m-%d.org")
                     path))
 
 ;; config
