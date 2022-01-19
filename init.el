@@ -386,6 +386,9 @@
 ;; Optional - provides fancier overlays.
 (use-package lsp-ui
   :ensure t
+  :config
+  ;; https://github.com/emacs-lsp/lsp-ui/issues/299
+  (setq lsp-ui-doc-enable nil)
   :commands lsp-ui-mode)
 ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
 (setq gc-cons-threshold 100000000)
