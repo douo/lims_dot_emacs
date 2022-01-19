@@ -331,46 +331,56 @@
   :config
   (add-hook 'after-init-hook #'global-flycheck-mode))
 
-
-
-(use-package ivy
-  :ensure t
-  :config
-  (ivy-mode 1)
-  (setq ivy-use-virtual-buffers t)
-  (setq enable-recursive-minibuffers t)
-  (global-set-key (kbd "C-c C-r") 'ivy-resume)
-  (global-set-key (kbd "<f6>") 'ivy-resume))
-
 (use-package ace-window
   :ensure t
   :config
   (global-set-key (kbd "s-w") 'ace-window)
   (global-set-key [remap other-window] 'ace-window))
 
-(use-package swiper
+
+;; Enable vertico
+(use-package vertico
+  :ensure t
+  :init
+  (vertico-mode)
+  :custom
+  (vertico-cycle t)
+  ;; Different scroll margin
+  ;; (setq vertico-scroll-margin 0)
+
+  ;; Show more candidates
+  ;; (setq vertico-count 20)
+
+  ;; Grow and shrink the Vertico minibuffer
+  ;; (setq vertico-resize t)
+
+  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+  ;; (setq vertico s-cycle t)
+  )
+;; Persist history over Emacs restarts. Vertico sorts by history position.
+;; 可以实现访问越频繁的项越靠前
+(use-package savehist
+  :ensure t
+  :init
+  (savehist-mode))
+
+;; Enable richer annotations using the Marginalia package
+(use-package marginalia
+  :after vertico
+  :ensure t
+  :custom
+  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+  :init
+  ;; Must be in the :init section of use-package such that the mode gets
+  ;; enabled right away. Note that this forces loading the package.
+  (marginalia-mode))
+
+;; end vertico
+
+(use-package which-key
   :ensure t
   :config
-  (setq ivy-use-group-face-if-no-groups t)
-  (global-set-key "\C-s" 'swiper))
-
-
-(use-package counsel
-  :ensure t
-  :config
-  (global-set-key (kbd "M-x") 'counsel-M-x)
-  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-  (global-set-key (kbd "<f1> l") 'counsel-find-library)
-  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-  (global-set-key (kbd "C-c g") 'counsel-git)
-  (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  (global-set-key (kbd "C-c C-j") 'counsel-imenu)
-  (global-set-key (kbd "C-c R") 'counsel-rg)
-  (global-set-key (kbd "C-x l") 'counsel-locate)
-  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history))
+  (which-key-mode))
 
 ;; temporarily highlight changes from yanking, etc
 (use-package volatile-highlights
@@ -385,9 +395,6 @@
          (lsp-mode . lsp-enable-which-key-integration)
          (go-mode . lsp-deferred))
   )
-
-;; if you are ivy user
-(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
 
 ;; Optional - provides fancier overlays.
 (use-package lsp-ui
