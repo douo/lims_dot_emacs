@@ -157,20 +157,20 @@
 (use-package avy
   :ensure t
   :bind (("C-." . avy-goto-word-or-subword-1)
+         ("C-。" . avy-goto-word-or-subword-1)
          ("M-g c" . avy-goto-char)
          ("M-g f" . avy-goto-line)
          )
   :config
   (setq avy-background t))
-
-(use-package which-key
+;; avy 支持拼音
+(use-package ace-pinyin
   :ensure t
   :config
-  (which-key-mode))
-
-
-
-
+  ;;(setq ace-pinyin-treat-word-as-char nil)
+  (setq ace-pinyin-simplified-chinese-only-p nil)
+  (ace-pinyin-global-mode +1)
+  )
 ;; git
 (use-package magit
   :ensure t
@@ -189,6 +189,13 @@
 (use-package expand-region
   :ensure t
   :bind ("C-=" . er/expand-region))
+;; 更强大的 kill&yank
+;; 代替 expand-region?
+(use-package easy-kill
+  :ensure t
+  :config
+  (global-set-key [remap kill-ring-save] 'easy-kill))
+
 
 ;; 显示匹配数量
 (use-package anzu
@@ -197,12 +204,6 @@
          ("C-M-%" . anzu-query-replace-regexp))
   :config
   (global-anzu-mode))
-
-;; 更强大的 kill&yank
-(use-package easy-kill
-  :ensure t
-  :config
-  (global-set-key [remap kill-ring-save] 'easy-kill))
 
 ;;On OS X (and perhaps elsewhere) the $PATH environment variable and
 ;; `exec-path' used by a windowed Emacs instance will usually be the
@@ -222,7 +223,12 @@
 
 ;; 用不同颜色区别嵌套的括号引号等
 (use-package rainbow-delimiters
-  :ensure t)
+  :ensure t
+  :config
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+  )
+
+;; 代码中的颜色值可视化
 (use-package rainbow-mode
   :ensure t
   :config
@@ -235,7 +241,7 @@
     (add-hook hook #'whitespace-mode))
   (add-hook 'before-save-hook #'whitespace-cleanup)
   :config
-  (setq whitespace-line-column 256) ;; limit line length
+  (setq whitespace-line-column nil) ;; limit line length
   (setq whitespace-style '(face tabs empty trailing lines-tail)))
 
 ;; temporarily highlight changes from yanking, etc
@@ -510,6 +516,11 @@
     (sis-ism-lazyman-config
      "com.apple.keylayout.ABC" ;; 英文输入法
      "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
+  (setq sis-prefix-override-keys (list "C-c" "C-x" "C-h"
+                                       ;; avy
+                                       "M-g" "C-。"
+                                       ;; easy-kill
+                                       ))
   ;; enable the /cursor color/ mode
   (sis-global-cursor-color-mode t)
   ;; enable the /respect/ mode
@@ -535,11 +546,15 @@
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
  '(package-selected-packages
-   '(sis transpose-frame org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window ivy undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(marginalia ace-pinyin vertico sis transpose-frame org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(rainbow-delimiters-depth-1-face ((t (:foreground "#f48fb1"))))
+ '(rainbow-delimiters-depth-2-face ((t (:foreground "#90caf9"))))
+ '(rainbow-delimiters-depth-3-face ((t (:foreground "#ffab91"))))
+ '(rainbow-delimiters-depth-4-face ((t (:foreground "#ce93d8"))))
+ '(rainbow-delimiters-depth-5-face ((t (:foreground "#a5d6a7")))))
 (put 'set-goal-column 'disabled nil)
