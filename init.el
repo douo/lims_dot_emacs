@@ -338,6 +338,15 @@
   (global-set-key [remap other-window] 'ace-window))
 
 
+;; alternative to the built-in Emacs help that provides much more contextual information.
+(use-package helpful
+  :ensure t
+  :bind
+  ("C-h f" . helpful-callable)
+  ("C-h v" . helpful-variable)
+  ("C-h k" . helpful-key)
+  )
+
 ;; Enable vertico
 (use-package vertico
   :ensure t
@@ -345,18 +354,8 @@
   (vertico-mode)
   :custom
   (vertico-cycle t)
-  ;; Different scroll margin
-  ;; (setq vertico-scroll-margin 0)
-
-  ;; Show more candidates
-  ;; (setq vertico-count 20)
-
-  ;; Grow and shrink the Vertico minibuffer
-  ;; (setq vertico-resize t)
-
-  ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
-  ;; (setq vertico s-cycle t)
   )
+
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
 ;; 可以实现访问越频繁的项越靠前
 (use-package savehist
@@ -728,7 +727,7 @@
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
  '(package-selected-packages
-   '(embark-consult orderless consult marginalia ace-pinyin vertico sis transpose-frame org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(helpful embark-consult orderless consult marginalia ace-pinyin vertico sis transpose-frame org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
