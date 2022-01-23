@@ -106,6 +106,10 @@
 ;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
 
+;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
+(use-package pinyinlib
+  :ensure t)
+
 
 (use-package recentf
   :bind (("C-x C-r" . 'recentf-open-files))
@@ -156,11 +160,9 @@
 ;; https://github.com/abo-abo/avy
 (use-package avy
   :ensure t
-  :bind (("C-." . avy-goto-word-or-subword-1)
-         ("C-。" . avy-goto-word-or-subword-1)
-         ("M-g c" . avy-goto-char)
-         ("M-g f" . avy-goto-line)
-         )
+  :bind
+  ("M-g w" . avy-goto-word-or-subword-1)
+  ("M-g c" . avy-goto-char)
   :config
   (setq avy-background t))
 ;; avy 支持拼音
@@ -422,6 +424,7 @@
          ("M-g i" . consult-imenu)
          ("M-g I" . consult-imenu-multi)
          ;; M-s bindings (search-map)
+         ("C-s" . consult-line)
          ("M-s d" . consult-find)
          ("M-s D" . consult-locate)
          ("M-s g" . consult-grep)
@@ -519,7 +522,7 @@
   :init
 
   ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
+   (setq prefix-help-command #'embark-prefix-help-command)
 
   :config
 
@@ -541,6 +544,13 @@
 
 (use-package orderless
   :ensure t
+  :after (pinyinlib)
+  :preface
+  ;; https://emacs-china.org/t/vertico/17913/3
+  (defun completion--regex-pinyin (str)
+    (orderless-regexp (pinyinlib-build-regexp-string str)))
+  :config
+  (add-to-list 'orderless-matching-styles 'completion--regex-pinyin)
   :custom (completion-styles '(orderless)))
 ;; end vertico
 
@@ -691,8 +701,8 @@
      "com.apple.keylayout.ABC" ;; 英文输入法
      "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
   (setq sis-prefix-override-keys (list "C-c" "C-x" "C-h"
-                                       ;; avy
-                                       "M-g" "C-。"
+                                       ;; avy & consult
+                                       "M-g" "C-。" "M-s"
                                        ;; easy-kill
                                        ))
   ;; enable the /cursor color/ mode
