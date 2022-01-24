@@ -8,8 +8,7 @@
   :custom
   ;; a useful view to see what can be accomplished today
   (org-refile-targets `(
-                        (,(concat douo/gtd-home "/incubate.org") :maxlevel . 1)
-                        (,(concat douo/gtd-home "/actionable.org") :maxlevel . 2)
+                        (,(concat douo/gtd-home "/tasks.org") :maxlevel . 2)
                         ))
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
@@ -23,7 +22,7 @@
   :custom
   (org-gtd-directory douo/gtd-home)
   :bind
-  (("C-c d c" . org-gtd-capture)
+  (("C-c c" . org-gtd-capture)
    ("C-c d e" . org-gtd-engage)
    ("C-c d p" . org-gtd-process-inbox)
    ("C-c d n" . org-gtd-show-all-next)
@@ -37,12 +36,26 @@
 ;; this allows you use `(,org-gtd-directory) for your agenda files
 (use-package org-agenda
   :ensure nil
-  :after org-gtd)
+  :after org-gtd
+  :custom
+  (org-agenda-files `(,org-gtd-directory))
+  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
+  )
 
 ;; this allows you to use (org-gtd-inbox-path) for your capture destinations
 (use-package org-capture
   :ensure nil
-  :after org-gtd)
+  :after org-gtd
+  :custom
+  (org-capture-templates
+        `(
+          ("q" "Quick Note"
+           plain (file ,(douo/generate-quick-note (concat douo/writing-home "/_notes/Quick")))
+           "%i\n%U\n%?\n"
+           :kill-buffer t)
+          )
+        )
+  )
 
 (use-package org-agenda-property
   :ensure t
