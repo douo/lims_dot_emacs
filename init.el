@@ -700,6 +700,15 @@
     (sis-ism-lazyman-config
      "com.apple.keylayout.ABC" ;; 英文输入法
      "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
+  ;;https://github.com/daipeihust/im-select
+  ;;只能切换不同语言的输入法，拼音输入法的中英文切换无法识别
+  (with-system windows-nt
+    (sis-ism-lazyman-config
+     "1033" ;; 英文输入法
+     "2052" ;; 拼音输入法
+     'im-select)
+    )
+
   (setq sis-prefix-override-keys (list "C-c" "C-x" "C-h"
                                        ;; avy & consult
                                        "M-g" "C-。" "M-s"
