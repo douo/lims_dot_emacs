@@ -110,6 +110,32 @@
 (use-package pinyinlib
   :ensure t)
 
+(use-package sis
+  :ensure t
+  :config
+  ;; macos
+  ;; 使用系统输入法
+  ;; 需要先安装 https://github.com/laishulu/macism
+  (with-system darwin
+    (sis-ism-lazyman-config
+     "com.apple.keylayout.ABC" ;; 英文输入法
+     "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
+  (setq sis-prefix-override-keys (list "C-c" "C-x" "C-h"
+                                       ;; avy & consult
+                                       "M-g" "C-。" "M-s"
+                                       ;; easy-kill
+                                       ))
+  ;; enable the /cursor color/ mode
+  (sis-global-cursor-color-mode t)
+  ;; enable the /respect/ mode
+  (sis-global-respect-mode t)
+  ;; enable the /context/ mode for all buffers
+  (sis-global-context-mode t)
+  ;; enable the /inline english/ mode for all buffers
+  (sis-global-inline-mode t)
+  (setq sis-inline-tighten-head-rule 0)
+  ;;(setq sis-inline-tighten-tail-rule 0)
+  )
 
 (use-package recentf
   :bind (("C-x C-r" . 'recentf-open-files))
@@ -132,6 +158,7 @@
   (setq uniquify-after-kill-buffer-p t)
   ;; don't muck with special buffers
   (setq uniquify-ignore-buffers-re "^\\*"))
+
 
 ;; saveplace 上次保存文件时光标的位置
 (use-package saveplace
@@ -198,7 +225,6 @@
   :config
   (global-set-key [remap kill-ring-save] 'easy-kill))
 
-
 ;; 显示匹配数量
 (use-package anzu
   :ensure t
@@ -257,6 +283,12 @@
   :ensure t
   :config
   (super-save-mode +1))
+
+;; 旋转 frame 布局
+(use-package transpose-frame
+  :ensure t
+  )
+
 
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
 (use-package crux
@@ -571,6 +603,10 @@
   :hook ((python-mode . lsp-deferred)
          (lsp-mode . lsp-enable-which-key-integration)
          (go-mode . lsp-deferred))
+  :custom
+  ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
+  (gc-cons-threshold 100000000)
+  (read-process-output-max (* 1024 1024)) ;; 1mb
   )
 
 ;; Optional - provides fancier overlays.
@@ -580,9 +616,6 @@
   ;; https://github.com/emacs-lsp/lsp-ui/issues/299
   (setq lsp-ui-doc-enable nil)
   :commands lsp-ui-mode)
-;; https://emacs-lsp.github.io/lsp-mode/page/performance/
-(setq gc-cons-threshold 100000000)
-(setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 ;; 主模式
 ;; python
@@ -596,7 +629,6 @@
          )
 
   )  ; or lsp-deferred
-
 
 (use-package pyvenv
   :ensure t
@@ -621,20 +653,22 @@
 ;; ruby
 
 (use-package ruby-mode
-  :config
-  (setq ruby-insert-encoding-magic-comment nil)
-  (add-hook 'ruby-mode-hook #'subword-mode))
+  :ensure t
+  :custom
+  (ruby-insert-encoding-magic-comment nil)
+  :hook
+  (ruby-mode . #'subword-mode))
 
 
 ;;provides a REPL buffer connected to a Ruby subprocess.
 (use-package inf-ruby
   :ensure t
-  :config
-  (add-hook 'ruby-mode-hook #'inf-ruby-minor-mode))
+  :after ruby-mode
+  :hook
+  (ruby-mode . #'inf-ruby-minor-mode))
 
 
 ;; golang
-
 ;; Set up before-save hooks to format buffer and add/delete imports.
 ;; Make sure you don't have other gofmt/goimports hooks enabled.
 (defun lsp-go-install-save-hooks ()
@@ -645,15 +679,15 @@
 ;; 需安装 goimports gopls
 (use-package go-mode
   :ensure t)
-
+;; end golang
 
 ;; Markdown
 (use-package markdown-mode
   :ensure t
   :mode (("\\.md\\'" . gfm-mode)
          ("\\.markdown\\'" . gfm-mode))
-  :config
-  (setq markdown-fontify-code-blocks-natively t)
+  :custom
+  (markdown-fontify-code-blocks-natively t)
   :preface
   (defun jekyll-insert-image-url ()
     (interactive)
@@ -683,41 +717,9 @@
   :ensure t
   )
 
-(use-package transpose-frame
-  :ensure t
-  )
-(require 'remember)
+
 (load-relative "lisp/uci-mode.el") ;; openwrt uci config file
 (require 'uci-mode)
-
-(use-package sis
-  :ensure t
-  :config
-  ;; macos
-  ;; 使用系统输入法
-  ;; 需要先安装 https://github.com/laishulu/macism
-  (with-system darwin
-    (sis-ism-lazyman-config
-     "com.apple.keylayout.ABC" ;; 英文输入法
-     "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
-  (setq sis-prefix-override-keys (list "C-c" "C-x" "C-h"
-                                       ;; avy & consult
-                                       "M-g" "C-。" "M-s"
-                                       ;; easy-kill
-                                       ))
-  ;; enable the /cursor color/ mode
-  (sis-global-cursor-color-mode t)
-  ;; enable the /respect/ mode
-  (sis-global-respect-mode t)
-  ;; enable the /context/ mode for all buffers
-  (sis-global-context-mode t)
-  ;; enable the /inline english/ mode for all buffers
-  (sis-global-inline-mode t)
-  (setq sis-inline-tighten-head-rule 0)
-  ;;(setq sis-inline-tighten-tail-rule 0)
-  )
-
-
 
 
 (load-relative "org.el")

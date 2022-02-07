@@ -43,7 +43,5 @@ launchctl start ~/Library/LaunchAgents/environment.plist
 
 参考：[[https://stackoverflow.com/a/26586170/851344][Setting environment variables via launchd.conf no longer works in OS X Yosemite/El Capitan/macOS Sierra/Mojave?]]
 
-* TODO
-- [ ] company
-- [ ] ivy 家族
-- [ ] crux
+* 外部服务
+** python
