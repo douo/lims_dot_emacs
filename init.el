@@ -622,7 +622,9 @@
   )  ; or lsp-deferred
 
 ;; 只有安装了 conda 才启用
-(when (file-exists-p (getenv "CONDA_EXE"))
+(when (and
+       (getenv "CONDA_EXE")
+       (file-exists-p (getenv "CONDA_EXE")))
   (use-package conda
   :ensure t
   :config
