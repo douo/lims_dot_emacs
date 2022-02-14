@@ -43,5 +43,13 @@ launchctl start ~/Library/LaunchAgents/environment.plist
 
 参考：[[https://stackoverflow.com/a/26586170/851344][Setting environment variables via launchd.conf no longer works in OS X Yosemite/El Capitan/macOS Sierra/Mojave?]]
 
-* 外部服务
+* 开发
+
 ** python
+
+需要安装 [[https://github.com/microsoft/pyright][pyright]]
+
+启用 conda.el 需要 emacs 运行环境中找到环境变量:
+
+- CONDA_EXE
+- CONDA_PREFIX_1

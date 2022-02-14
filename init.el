@@ -621,10 +621,18 @@
 
   )  ; or lsp-deferred
 
-(use-package pyvenv
+;; 只有安装了 conda 才启用
+(when (file-exists-p (getenv "CONDA_EXE"))
+  (use-package conda
   :ensure t
-  :init
-  (setenv "WORKON_HOME" "~/.pyenv/versions"))
+  :config
+  (conda-env-initialize-interactive-shells)
+  (conda-env-initialize-eshell)
+  :custom
+  (conda-home-directory (expand-file-name (getenv "CONDA_PREFIX_1")))
+  (conda-env-home-directory (expand-file-name (getenv "CONDA_PREFIX_1")))
+  )
+  )
 
 ;; typescript
 ;; web-mode
@@ -757,7 +765,7 @@
  ;; If there is more than one, they won't work right.
  '(flycheck-global-modes '(not org-mode))
  '(package-selected-packages
-   '(helpful embark-consult orderless consult marginalia ace-pinyin vertico sis transpose-frame org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
+   '(conda helpful embark-consult orderless consult marginalia ace-pinyin vertico sis transpose-frame org-gtd lsp-pyright org org-real web-mode typescript-mode ruby-eldoc load-relative uci-mode cask-mode yaml-mode adoc-mode markdown-mode inf-ruby counsel swiper ace-window undo-tree crux super-save flycheck company volatile-highlights rainbow-mode rainbow-delimiters move-text exec-path-from-shell easy-kill anzu expand-region ag git-timemachine magit avy material-theme use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
