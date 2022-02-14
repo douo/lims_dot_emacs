@@ -110,32 +110,6 @@
 (use-package pinyinlib
   :ensure t)
 
-(use-package sis
-  :ensure t
-  :config
-  ;; macos
-  ;; 使用系统输入法
-  ;; 需要先安装 https://github.com/laishulu/macism
-  (with-system darwin
-    (sis-ism-lazyman-config
-     "com.apple.keylayout.ABC" ;; 英文输入法
-     "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
-  (setq sis-prefix-override-keys (list "C-c" "C-x" "C-h"
-                                       ;; avy & consult
-                                       "M-g" "C-。" "M-s"
-                                       ;; easy-kill
-                                       ))
-  ;; enable the /cursor color/ mode
-  (sis-global-cursor-color-mode t)
-  ;; enable the /respect/ mode
-  (sis-global-respect-mode t)
-  ;; enable the /context/ mode for all buffers
-  (sis-global-context-mode t)
-  ;; enable the /inline english/ mode for all buffers
-  (sis-global-inline-mode t)
-  (setq sis-inline-tighten-head-rule 0)
-  ;;(setq sis-inline-tighten-tail-rule 0)
-  )
 
 (use-package recentf
   :bind (("C-x C-r" . 'recentf-open-files))
@@ -269,8 +243,7 @@
     (add-hook hook #'whitespace-mode))
   (add-hook 'before-save-hook #'whitespace-cleanup)
   :config
-  (setq whitespace-line-column nil) ;; limit line length
-  (setq whitespace-style '(face tabs empty trailing lines-tail)))
+  (setq whitespace-style '(face tabs empty trailing )))
 
 ;; temporarily highlight changes from yanking, etc
 (use-package volatile-highlights
@@ -427,6 +400,20 @@
 ;; Example configuration for Consult
 (use-package consult
   :ensure t
+  :preface
+  ;; exclude Tramp buffers from preview
+  (defun consult-buffer-state-no-tramp ()
+  "Buffer state function that doesn't preview Tramp buffers."
+  (let ((orig-state (consult--buffer-state))
+        (filter (lambda (cand restore)
+                  (if (or restore
+                          (let ((buffer (get-buffer cand)))
+                            (and buffer
+                                 (not (file-remote-p (buffer-local-value 'default-directory buffer))))))
+                      cand
+                    nil))))
+    (lambda (cand restore)
+      (funcall orig-state (funcall filter cand restore) restore))))
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
@@ -541,6 +528,10 @@
   ;; (setq consult-project-root-function #'vc-root-dir)
   ;;;; 4. locate-dominating-file
   ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+  ;; Do not preview EXWM windows or Tramp buffers
+  :custom
+  (consult--source-buffer
+      (plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
   )
 
 (use-package embark
@@ -724,6 +715,40 @@
 
 (load-relative "org.el")
 
+(use-package sis
+  :ensure t
+  :config
+  ;; macos
+  ;; 使用系统输入法
+  ;; 需要先安装 https://github.com/laishulu/macism
+  (with-system darwin
+    (sis-ism-lazyman-config
+     "com.apple.keylayout.ABC" ;; 英文输入法
+     "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
+  ;;https://github.com/daipeihust/im-select
+  ;;只能切换不同语言的输入法，拼音输入法的中英文切换无法识别
+  (with-system windows-nt
+    (sis-ism-lazyman-config
+     "1033" ;; 英文输入法
+     "2052" ;; 拼音输入法
+     'im-select)
+    )
+  (setq sis-prefix-override-keys (list "C-c" "C-x" "C-h"
+                                       ;; avy & consult
+                                       "M-g" "C-。" "M-s"
+                                       ;; easy-kill
+                                       ))
+  ;; enable the /cursor color/ mode
+  (sis-global-cursor-color-mode t)
+  ;; enable the /respect/ mode
+  (sis-global-respect-mode t)
+  ;; enable the /context/ mode for all buffers
+  (sis-global-context-mode t)
+  ;; enable the /inline english/ mode for all buffers
+  (sis-global-inline-mode t)
+  (setq sis-inline-tighten-head-rule 0)
+  ;;(setq sis-inline-tighten-tail-rule 0)
+  )
 ;; End
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
