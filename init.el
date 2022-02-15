@@ -631,7 +631,7 @@
   (conda-env-initialize-interactive-shells)
   (conda-env-initialize-eshell)
   :custom
-  (conda-home-directory (expand-file-name (getenv "CONDA_PREFIX_1")))
+  (conda-anaconda-home (expand-file-name (getenv "CONDA_PREFIX_1")))
   (conda-env-home-directory (expand-file-name (getenv "CONDA_PREFIX_1")))
   )
   )
