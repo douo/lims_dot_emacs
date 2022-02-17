@@ -52,4 +52,4 @@ launchctl start ~/Library/LaunchAgents/environment.plist
 启用 conda.el 需要 emacs 运行环境中找到环境变量:
 
 - CONDA_EXE
-- CONDA_PREFIX_1
+- 满足 ~CONDA_EXE=$CONDA_HOME/bin/conda~
