@@ -402,17 +402,17 @@
   :preface
   ;; exclude Tramp buffers from preview
   (defun consult-buffer-state-no-tramp ()
-  "Buffer state function that doesn't preview Tramp buffers."
-  (let ((orig-state (consult--buffer-state))
-        (filter (lambda (cand restore)
-                  (if (or restore
-                          (let ((buffer (get-buffer cand)))
-                            (and buffer
-                                 (not (file-remote-p (buffer-local-value 'default-directory buffer))))))
-                      cand
-                    nil))))
-    (lambda (cand restore)
-      (funcall orig-state (funcall filter cand restore) restore))))
+    "Buffer state function that doesn't preview Tramp buffers."
+    (let ((orig-state (consult--buffer-state))
+          (filter (lambda (cand restore)
+                    (if (or restore
+                            (let ((buffer (get-buffer cand)))
+                              (and buffer
+                                   (not (file-remote-p (buffer-local-value 'default-directory buffer))))))
+                        cand
+                      nil))))
+      (lambda (cand restore)
+        (funcall orig-state (funcall filter cand restore) restore))))
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
@@ -530,7 +530,7 @@
   ;; Do not preview EXWM windows or Tramp buffers
   :custom
   (consult--source-buffer
-      (plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
+   (plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
   )
 
 (use-package embark
@@ -544,7 +544,7 @@
   :init
 
   ;; Optionally replace the key help with a completing-read interface
-   (setq prefix-help-command #'embark-prefix-help-command)
+  (setq prefix-help-command #'embark-prefix-help-command)
 
   :config
 
@@ -624,15 +624,18 @@
 (when (and
        (getenv "CONDA_EXE")
        (file-exists-p (getenv "CONDA_EXE")))
-  (use-package conda
-  :ensure t
-  :config
-  (conda-env-initialize-interactive-shells)
-  (conda-env-initialize-eshell)
-  :custom
-  (conda-anaconda-home (expand-file-name (getenv "CONDA_PREFIX_1")))
-  (conda-env-home-directory (expand-file-name (getenv "CONDA_PREFIX_1")))
-  )
+  (let ((home
+        (file-name-directory (directory-file-name (file-name-directory (getenv "CONDA_EXE"))))))
+    (use-package conda
+      :ensure t
+      :config
+      (conda-env-initialize-interactive-shells)
+      (conda-env-initialize-eshell)
+      :custom
+      (conda-anaconda-home (expand-file-name home))
+      (conda-env-home-directory (expand-file-name home))
+      )
+    )
   )
 
 ;; typescript
