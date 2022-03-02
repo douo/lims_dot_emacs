@@ -1,7 +1,22 @@
 (defun douo/generate-quick-note (path)
-  (expand-file-name (format-time-string "%Y/%m/note-%Y-%m-%d.org")
-                    path))
+  (let ((file
+         (expand-file-name (format-time-string "%Y/%m/note-%Y-%m-%d.org") path)))
 
+    (if (f-exists? file)
+        file
+      (progn
+        (mkdir (f-dirname file) t)
+        (f-write-text
+         (concat "#+TITLE: " (format-time-string "%Y年%m月%d日杂记") "\n"
+                 "#+date: " (format-time-string "[%Y-%m-%d]") "\n\n")
+         'utf-8
+         file
+         )
+        file
+        )
+      )
+    )
+)
 ;; config
 (use-package org
   :ensure t
