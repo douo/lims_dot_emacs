@@ -2,6 +2,20 @@
   (expand-file-name (format-time-string "%Y/%m/note-%Y-%m-%d.org")
                     path))
 
+
+;; https://emacs.stackexchange.com/a/2559/30746
+;; FYI: 手动补全 C-c C-x C-f *
+;; FYI: org-emphasize
+(defvar org-electric-pairs '((?* . ?*) (?~ . ?~) (?+ . ?+) (?_ . ?_) (?= . ?=)))
+(defun org-add-electric-pairs ()
+  "自动补全文本强调（emphasis）语法的分隔符."
+  (setq-local
+   electric-pair-pairs (append electric-pair-pairs org-electric-pairs))
+  (setq-local
+   electric-pair-text-pairs electric-pair-pairs)
+  )
+
+
 ;; config
 (use-package org
   :ensure t
@@ -13,6 +27,8 @@
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          )
+  :hook
+  (org-mode . org-add-electric-pairs)
   )
 
 (use-package org-gtd
