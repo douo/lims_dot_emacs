@@ -17,6 +17,16 @@
     )
   )
 
+(defun douo/insert-header-from-note-name ()
+  (interactive)
+  (let ((date (encode-time (org-parse-time-string (substring (buffer-name) 5 -4)))))
+    (save-excursion
+      (goto-char (point-min))
+    (insert (concat "#+TITLE: " (org-format-time-string "%Y年%m月%d日杂记" date nil)  "\n"
+                 "#+date: " (format-time-string "[%Y-%m-%d]" date) "\n\n")
+      )))
+  )
+
 ;; https://emacs.stackexchange.com/a/2559/30746
 ;; FYI: 手动补全 C-c C-x C-f *
 ;; FYI: org-emphasize
