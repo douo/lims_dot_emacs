@@ -235,6 +235,15 @@
   :config
   (add-hook 'prog-mode-hook #'rainbow-mode))
 
+;; Virtual comments
+;; 为文件增加注释，与文件保存分离
+(use-package virtual-comment
+  :ensure t
+  :config
+  (add-hook 'prog-mode-hook #'virtual-comment-mode)
+  )
+
+
 ;; 空格可视化
 (use-package whitespace
   :init
