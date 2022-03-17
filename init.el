@@ -593,6 +593,14 @@
   :hook ((python-mode . lsp-deferred)
          (lsp-mode . lsp-enable-which-key-integration)
          (go-mode . lsp-deferred))
+  :config
+  ;; tramp 模式下支持 pyright(arch linux)
+  ;; 踩坑 https://github.com/emacs-lsp/lsp-mode/issues/953
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-tramp-connection '("pyright-langserver" "--stdio"))
+                    :major-modes '(python-mode)
+                    :remote? t
+                    :server-id 'pyls-remote))
   :custom
   ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
   (gc-cons-threshold 100000000)
@@ -637,6 +645,7 @@
       )
     )
   )
+
 
 ;; typescript
 ;; web-mode
