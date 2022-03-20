@@ -341,11 +341,6 @@
   (global-company-mode))
 
 
-(use-package flycheck
-  :ensure t
-  :config
-  (add-hook 'after-init-hook #'global-flycheck-mode))
-
 (use-package ace-window
   :ensure t
   :config
@@ -596,46 +591,22 @@
   :config
   (volatile-highlights-mode +1))
 
-(use-package lsp-mode
+(use-package flymake
+  :ensure t)
+
+(use-package eglot
   :ensure t
-  :commands (lsp lsp-deferred)
-  :hook ((python-mode . lsp-deferred)
-         (lsp-mode . lsp-enable-which-key-integration)
-         (go-mode . lsp-deferred))
-  :config
-  ;; tramp 模式下支持 pyright(arch linux)
-  ;; 踩坑 https://github.com/emacs-lsp/lsp-mode/issues/953
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-tramp-connection '("pyright-langserver" "--stdio"))
-                    :major-modes '(python-mode)
-                    :remote? t
-                    :server-id 'pyls-remote))
   :custom
-  ;; https://emacs-lsp.github.io/lsp-mode/page/performance/
-  (gc-cons-threshold 100000000)
-  (read-process-output-max (* 1024 1024)) ;; 1mb
+  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver")))
+  :hook
+  (python-mode . eglot-ensure)
   )
 
-;; Optional - provides fancier overlays.
-(use-package lsp-ui
-  :ensure t
-  :config
-  ;; https://github.com/emacs-lsp/lsp-ui/issues/299
-  (setq lsp-ui-doc-enable nil)
-  :commands lsp-ui-mode)
 
 ;; 主模式
-;; python
-(use-package lsp-pyright
-  :ensure t
-  :hook (
-         (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp)))
-         (web-mode . lsp-deferred)
-         )
 
-  )  ; or lsp-deferred
+
+;; python
 
 ;; 只有安装了 conda 才启用
 (when (and
@@ -690,13 +661,6 @@
 
 
 ;; golang
-;; Set up before-save hooks to format buffer and add/delete imports.
-;; Make sure you don't have other gofmt/goimports hooks enabled.
-(defun lsp-go-install-save-hooks ()
-  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-  (add-hook 'before-save-hook #'lsp-organize-imports t t))
-(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
-
 ;; 需安装 goimports gopls
 (use-package go-mode
   :ensure t)
