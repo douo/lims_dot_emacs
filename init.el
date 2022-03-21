@@ -764,3 +764,22 @@
   ;;(setq sis-inline-tighten-tail-rule 0)
   )
 ;; End
+
+
+;; Fix
+
+;; 规避 macOS child-frame 全屏黑屏
+;; https://emacs-china.org/t/mac/11848/8?u=douo
+(if (featurep 'cocoa)
+    (progn
+      (setq ns-use-native-fullscreen nil)
+      (setq ns-use-fullscreen-animation nil)
+
+      (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
+
+      (run-at-time "2sec" nil
+                   (lambda ()
+                     (toggle-frame-fullscreen)
+                     )))
+  (require 'fullscreen)
+  (fullscreen))
