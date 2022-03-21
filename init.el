@@ -2,6 +2,12 @@
 ;;; Commentary:
 ;;
 ;;; 个人用
+
+;; Move customization variables to sparate file
+(setq custom-file (locate-user-emacs-file "custom-vars.el"))
+(load custom-file 'noerror 'nomessage)
+
+
 ;;
 ;;; Code:
 ;; 根据操作系统执行代码
@@ -70,7 +76,13 @@
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
+
 ;;初始化包管理器
+
+;; https://emacs.stackexchange.com/questions/37904/how-do-i-work-out-what-the-problem-is-with-the-emacs-package-system/56067#56067
+(custom-set-variables
+
+ '(gnutls-algorithm-priority "normal:-vers-tls1.3"))
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
@@ -596,10 +608,11 @@
 
 (use-package eglot
   :ensure t
-  :custom
-  (add-to-list 'eglot-server-programs '(python-mode . ("pyright-langserver")))
   :hook
-  (python-mode . eglot-ensure)
+  ((prog-mode . (lambda ()
+                 (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode 'makefile-mode))
+                 (eglot-ensure)
+                 )))
   )
 
 
@@ -744,7 +757,3 @@
   ;;(setq sis-inline-tighten-tail-rule 0)
   )
 ;; End
-
-;; Move customization variables to sparate file
-(setq custom-file (locate-user-emacs-file "custom-vars.el"))
-(load custom-file 'noerror 'nomessage)
