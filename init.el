@@ -802,10 +802,12 @@
 ;; End
 
 
-;; Fix
+;; 在 mode-line 显示时间
+(display-time-mode)
 
+;; Fix
 ;; 规避 macOS child-frame 全屏黑屏
-;; https://emacs-china.org/t/mac/11848/8?u=douo
+;; https://emacs-china.org/t/mac/11848/8
 (with-system darwin
   (if (featurep 'cocoa)
       (progn
