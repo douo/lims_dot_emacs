@@ -110,6 +110,8 @@
 (eval-when-compile
   (require 'use-package))
 
+(require 'minibuffer)
+
 (setq use-package-verbose t)
 
 (use-package load-relative
@@ -353,6 +355,10 @@
   ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
   ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
   ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+
+  ;; 配合 eglot
+  ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
+  (completion-category-overrides '((eglot (styles orderless))))
   :init
   (corfu-global-mode)
   )
@@ -552,6 +558,13 @@
   :custom
   (consult--source-buffer
    (plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
+  ;; 用于 tui , corfu fallback 到 completion-in-region
+  (completion-in-region-function
+      (lambda (&rest args)
+        (apply (if vertico-mode
+                   #'consult-completion-in-region
+                 #'completion--in-region)
+               args)))
   )
 
 (use-package embark
@@ -613,8 +626,6 @@
 
 (use-package eglot
   :ensure t
-  :custom
-  (completion-category-overrides '((eglot (styles orderless))))
   :hook
   ((prog-mode . (lambda ()
                  (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode 'makefile-mode))
