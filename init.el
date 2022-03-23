@@ -801,6 +801,26 @@
   )
 ;; End
 
+;; root 权限打开文件
+;; 在 dired 配合 embark 使用最佳
+;;
+(use-package tramp
+  :config
+  (defun sudo-find-file (file)
+    "Opens FILE with root privileges."
+    (interactive "FFind file: ")
+    (set-buffer
+     (find-file (concat "/sudo::" (expand-file-name file)))))
+  (global-set-key (kbd "C-c f") 'sudo-find-file)
+  (defun sudo-remote-find-file (file)
+    "Opens repote FILE with root privileges."
+    (interactive "FFind file: ")
+    (setq begin (replace-regexp-in-string  "scp" "ssh" (car (split-string file ":/"))))
+    (setq end (car (cdr (split-string file "@"))))
+    (set-buffer
+     (find-file (format "%s" (concat begin "|sudo:root@" end)))))
+  )
+
 
 ;; 在 mode-line 显示时间
 (display-time-mode)
