@@ -803,7 +803,7 @@
 
 ;; root 权限打开文件
 ;; 在 dired 配合 embark 使用最佳
-;;
+;; https://emacs.stackexchange.com/a/17726/30746
 (use-package tramp
   :config
   (defun sudo-find-file (file)
@@ -811,7 +811,6 @@
     (interactive "FFind file: ")
     (set-buffer
      (find-file (concat "/sudo::" (expand-file-name file)))))
-  (global-set-key (kbd "C-c f") 'sudo-find-file)
   (defun sudo-remote-find-file (file)
     "Opens repote FILE with root privileges."
     (interactive "FFind file: ")
