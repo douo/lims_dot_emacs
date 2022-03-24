@@ -824,10 +824,10 @@
 ;; 在 mode-line 显示时间
 (display-time-mode)
 
-;; Fix
-;; 规避 macOS child-frame 全屏黑屏
-;; https://emacs-china.org/t/mac/11848/8
+;; macOS Fix
 (with-system darwin
+  ;; 规避 macOS child-frame 全屏黑屏
+  ;; https://emacs-china.org/t/mac/11848/8
   (if (featurep 'cocoa)
       (progn
         (setq ns-use-native-fullscreen nil)
@@ -841,4 +841,17 @@
                        )))
     (require 'fullscreen)
     (fullscreen))
+
+
+  ;; https://github.com/d12frosted/homebrew-emacs-plus/issues/383#issuecomment-899157143
+  ;; brew install coreutils
+  ;; dired 支持显示 user:group
+  ;; fix  `listing directory failed but access-file worked' 意外发现
+  (let ((gls "/usr/local/bin/gls"))
+    (if (file-exists-p gls)
+        (setq insert-directory-program gls dired-use-ls-dired t dired-listing-switches "-al --group-directories-first")
+      )
+    )
+  ;; 实际解决这个问题需要给 ruby full disk access
+  ;; https://emacs.stackexchange.com/a/53037/30746
   )
