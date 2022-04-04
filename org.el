@@ -40,6 +40,36 @@
   )
 
 
+;; https://xenodium.com/emacs-dwim-do-what-i-mean/
+;; 检测剪切板是否是 url
+;; 剪切板 url + region 自动插入
+;; 自动解析 url 获取 title
+;; fallback 默认 org-insert-link
+(defun ar/org-insert-link-dwim ()
+  "Like `org-insert-link' but with personal dwim preferences."
+  (interactive)
+  (let* ((point-in-link (org-in-regexp org-link-any-re 1))
+         (clipboard-url (when (string-match-p "^http" (current-kill 0))
+                          (current-kill 0)))
+         (region-content (when (region-active-p)
+                           (buffer-substring-no-properties (region-beginning)
+                                                           (region-end)))))
+    (cond ((and region-content clipboard-url (not point-in-link))
+           (delete-region (region-beginning) (region-end))
+           (insert (org-make-link-string clipboard-url region-content)))
+          ((and clipboard-url (not point-in-link))
+           (insert (org-make-link-string
+                    clipboard-url
+                    (read-string "title: "
+                                 (with-current-buffer (url-retrieve-synchronously clipboard-url)
+                                   (dom-text (car
+                                              (dom-by-tag (libxml-parse-html-region
+                                                           (point-min)
+                                                           (point-max))
+                                                          'title))))))))
+          (t
+           (call-interactively 'org-insert-link)))))
+
 ;; config
 (use-package org
   :ensure t
@@ -50,6 +80,8 @@
                         ))
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
+         :map org-mode-map
+         ("C-c C-l" . ar/org-insert-link-dwim)
          )
   :hook
   (org-mode . org-add-electric-pairs)
