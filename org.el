@@ -78,6 +78,7 @@
   (org-refile-targets `(
                         (,(concat douo/gtd-home "/tasks.org") :maxlevel . 2)
                         ))
+  (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.mp3"))
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          :map org-mode-map

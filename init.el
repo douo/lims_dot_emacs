@@ -851,7 +851,25 @@
     (if (file-exists-p gls)
         (setq insert-directory-program gls dired-use-ls-dired t dired-listing-switches "-al --group-directories-first")
       )
+      ;; 实际解决这个问题需要给 ruby full disk access
+      ;; https://emacs.stackexchange.com/a/53037/30746
     )
-  ;; 实际解决这个问题需要给 ruby full disk access
-  ;; https://emacs.stackexchange.com/a/53037/30746
+
+  ;; macos play-sound-file fix
+  ;; https://github.com/leoliu/play-sound-osx
+  (defun play-sound-internal (sound)
+    "Internal function for `play-sound' (which see)."
+    (or (eq (car-safe sound) 'sound)
+        (signal 'wrong-type-argument (list sound)))
+
+    (cl-destructuring-bind (&key file data volume device)
+                        (cdr sound)
+
+                        (and (or data device)
+                             (error "DATA and DEVICE arg not supported"))
+
+                        (apply #'start-process "afplay" nil
+                               "afplay" (append (and volume (list "-v" volume))
+                                                (list (expand-file-name file data-directory))))))
+
   )
