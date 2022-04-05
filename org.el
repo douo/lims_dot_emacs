@@ -74,6 +74,7 @@
 (use-package org
   :ensure t
   :custom
+  (org-directory douo/gtd-home)
   ;; a useful view to see what can be accomplished today
   (org-refile-targets `(
                         (,(concat douo/gtd-home "/tasks.org") :maxlevel . 2)
@@ -104,6 +105,9 @@
   :config
   )
 
+(use-package org-analyzer
+  :ensure t
+  :after org)
 
 ;; this allows you use `(,org-gtd-directory) for your agenda files
 (use-package org-agenda
