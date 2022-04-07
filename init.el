@@ -765,6 +765,19 @@
 
 (load-relative "org.el")
 
+;; 翻译
+(use-package go-translate
+  :ensure t
+  :custom
+  (gts-translate-list '(("en" "zh")))
+  (gts-default-translator
+   (gts-translator
+    :picker (gts-prompt-picker)
+    :engines (list (gts-bing-engine) (gts-google-engine))
+    :render (gts-buffer-render)))
+  )
+
+;; 输入法
 (use-package sis
   :ensure t
   :config
