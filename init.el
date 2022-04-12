@@ -144,6 +144,10 @@
 ;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
 
+;; https://github.com/akermu/emacs-libvterm
+(use-package vterm
+    :ensure t)
+
 ;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
 (use-package pinyinlib
   :ensure t)
