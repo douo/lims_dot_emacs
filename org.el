@@ -3,16 +3,15 @@
          (expand-file-name (format-time-string "%Y/%m/note-%Y-%m-%d.org") path)))
     (if (f-exists? file)
         file
-      (progn
-        (mkdir (f-dirname file) t)
-        (f-write-text
-         (concat "#+TITLE: " (format-time-string "%Y年%m月%d日杂记") "\n"
-                 "#+date: " (format-time-string "[%Y-%m-%d]") "\n\n")
-         'utf-8
-         file
-         )
-        file
-        )
+      (mkdir (f-dirname file) t)
+      (f-write-text
+       (concat "#+TITLE: " (format-time-string "%Y年%m月%d日杂记") "\n"
+               "#+date: " (format-time-string "[%Y-%m-%d]") "\n\n")
+       'utf-8
+       file
+       )
+      (print file)
+      file
       )
     )
   )
@@ -125,9 +124,9 @@
   :after org-gtd
   :custom
   (org-capture-templates
-        `(
-          ("q" "Quick Note"
-           plain (file ,(douo/generate-quick-note (concat douo/writing-home "/_notes/Quick")))
+        '(
+          ("n" "Quick Note"
+           plain (file (lambda () (douo/generate-quick-note (concat douo/writing-home "/_notes/Quick"))))
            "%i\n%U\n%?\n"
            :kill-buffer t)
           )
