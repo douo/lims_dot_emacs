@@ -3,6 +3,8 @@
 ;;
 ;;; 个人用
 
+;; disable first narrow hint
+(put 'narrow-to-region 'disabled nil)
 
 ;; Move customization variables to sparate file
 (setq custom-file (locate-user-emacs-file "custom-vars.el"))
@@ -146,7 +148,9 @@
 
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
-    :ensure t)
+  :ensure t)
+(use-package vterm-toggle
+  :ensure t)
 
 ;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
 (use-package pinyinlib
