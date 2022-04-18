@@ -10,7 +10,6 @@
        'utf-8
        file
        )
-      (print file)
       file
       )
     )
