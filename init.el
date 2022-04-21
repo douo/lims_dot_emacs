@@ -198,10 +198,8 @@
   (electric-pair-mode +1))
 
 ;;主题
-(use-package material-theme
-  :ensure t
-  :config
-  (load-theme 'material t))
+(load-theme 'deeper-blue t)
+
 
 ;;光标移动方案
 ;; https://github.com/abo-abo/avy
