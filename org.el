@@ -87,10 +87,18 @@
   (org-mode . org-add-electric-pairs)
   )
 
+
+
 (use-package org-gtd
   :ensure t
   :after org
   :demand t
+  :config
+  (defun douo/org-gtd-archive ()
+    "Process GTD inbox item as a reference item without jump to inbox."
+    (interactive)
+    (with-org-gtd-context (org-archive-subtree))
+    )
   :custom
   (org-gtd-directory douo/gtd-home)
   :bind
@@ -100,8 +108,10 @@
    ("C-c d n" . org-gtd-show-all-next)
    ("C-c d s" . org-gtd-show-stuck-projects)
    :map org-gtd-process-map
-   ("C-c C" . org-gtd-choose))
-  :config
+   ("C-c C" . org-gtd-choose)
+   :map org-mode-map
+   ("C-c d a" . douo/org-gtd-archieve)
+   )
   )
 
 (use-package org-analyzer
