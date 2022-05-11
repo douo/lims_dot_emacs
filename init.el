@@ -391,7 +391,7 @@
   ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
   (completion-category-overrides '((eglot (styles orderless))))
   :init
-  (corfu-global-mode)
+  (global-corfu-mode)
   )
 
 
