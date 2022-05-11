@@ -659,8 +659,8 @@
   :ensure t
   :hook
   ((prog-mode . (lambda ()
-                 (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode 'makefile-mode))
-                 (eglot-ensure)
+                 (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode 'makefile-mode)
+                 (eglot-ensure))
                  )))
   )
 
