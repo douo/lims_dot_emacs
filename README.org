@@ -8,6 +8,8 @@
 - WRITING_HOME
 - GTD_HOME
 
+使用 [[https://github.com/purcell/exec-path-from-shell][purcell/exec-path-from-shell]] 共享用户 shell 环境变量。或者修改 LaunchAgents.
+
 ** Mac Gui 环境变量
 
 新建 ~/Library/LaunchAgents/environment.plist:

@@ -141,6 +141,18 @@
 
 (setq use-package-verbose t)
 
+;;On OS X (and perhaps elsewhere) the $PATH environment variable and
+;; `exec-path' used by a windowed Emacs instance will usually be the
+;; system-wide default path, rather than that seen in a terminal window.
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (when (or (memq window-system '(mac ns x)) (daemonp))
+    (dolist (var '("RG_EXECUTABLE" "WRITING_HOME" "GTD_HOME"))
+      (add-to-list 'exec-path-from-shell-variables var))
+    (exec-path-from-shell-initialize)))
+
+
 (use-package load-relative
   :ensure t)
 ;; 加载本机特殊配置，环境变量等...
@@ -250,15 +262,6 @@
          ("C-M-%" . anzu-query-replace-regexp))
   :config
   (global-anzu-mode))
-
-;;On OS X (and perhaps elsewhere) the $PATH environment variable and
-;; `exec-path' used by a windowed Emacs instance will usually be the
-;; system-wide default path, rather than that seen in a terminal window.
-(use-package exec-path-from-shell
-  :ensure t
-  :config
-  (when (memq window-system '(mac ns))
-    (exec-path-from-shell-initialize)))
 
 ;; 移动整个选择文本
 (use-package move-text
