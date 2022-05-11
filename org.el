@@ -152,3 +152,13 @@
   (setq org-edna-use-inheritance t)
   (org-edna-mode 1)
   )
+
+(use-package org-download
+  :ensure t
+  :after org
+  :custom
+  (org-download-method 'attach)
+  :bind
+  (:map org-mode-map
+        ("C-c C-x p" . org-download-clipboard))
+  )
