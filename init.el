@@ -711,18 +711,19 @@
 
 (use-package ruby-mode
   :ensure t
+  :init
+  (add-hook 'ruby-mode-hook #'subword-mode)
   :custom
   (ruby-insert-encoding-magic-comment nil)
-  :hook
-  (ruby-mode . #'subword-mode))
-
+  )
 
 ;;provides a REPL buffer connected to a Ruby subprocess.
 (use-package inf-ruby
   :ensure t
-  :after ruby-mode
-  :hook
-  (ruby-mode . #'inf-ruby-minor-mode))
+  :after ruby-mode)
+
+(use-package subword-mode
+  :hook ruby-mode)
 
 
 ;; golang
