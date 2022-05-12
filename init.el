@@ -711,8 +711,6 @@
 
 (use-package ruby-mode
   :ensure t
-  :init
-  (add-hook 'ruby-mode-hook #'subword-mode)
   :custom
   (ruby-insert-encoding-magic-comment nil)
   )
