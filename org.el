@@ -93,7 +93,7 @@
   :ensure t
   :after org
   :demand t
-  :config
+  :init
   (defun douo/org-gtd-archive ()
     "Process GTD inbox item as a reference item without jump to inbox."
     (interactive)
@@ -110,7 +110,7 @@
    :map org-gtd-process-map
    ("C-c C" . org-gtd-choose)
    :map org-mode-map
-   ("C-c d a" . douo/org-gtd-archieve)
+   ("C-c d a" . douo/org-gtd-archive)
    )
   )
 
