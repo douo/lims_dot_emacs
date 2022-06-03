@@ -71,6 +71,14 @@
 ;; config
 (use-package org
   :ensure t
+  :config
+  ;; 让 emphasis 块在紧邻中文字符时也能生效
+  (org-set-emph-re 'org-emphasis-regexp-components
+                   (let ((cjk "[:nonascii:]")) ;; 应该使用 \\cc\\cj\\ch 但 char alternates 不支持 category 所以只能用 char class.
+                     (pcase-let ((`(,f ,s . ,r) org-emphasis-regexp-components))
+                       `(,(concat f cjk) ,(concat s cjk) . ,r)
+                       )
+                     ))
   :custom
   (org-directory douo/gtd-home)
   ;; a useful view to see what can be accomplished today
