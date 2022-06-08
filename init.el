@@ -793,9 +793,10 @@
   ;; 使用系统输入法
   ;; 需要先安装 https://github.com/laishulu/macism
   (with-system darwin
+    (setq sis-english-source "com.apple.keylayout.ABC")
     (sis-ism-lazyman-config
      "com.apple.keylayout.ABC" ;; 英文输入法
-     "com.apple.inputmethod.SCIM.ITABC")) ;; 拼音输入法
+     "com.apple.inputmethod.SCIM.ITABC" 'macism)) ;; 拼音输入法
   ;;https://github.com/daipeihust/im-select
   ;;只能切换不同语言的输入法，拼音输入法的中英文切换无法识别
   (with-system windows-nt
@@ -804,20 +805,22 @@
      "2052" ;; 拼音输入法
      'im-select)
     )
-  (setq sis-prefix-override-keys (list "C-c" "C-x" "C-h"
+  :custom
+  (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
                                        ;; avy & consult
                                        "M-g" "C-。" "M-s"
                                        ;; easy-kill
                                        ))
   ;; enable the /cursor color/ mode
   (sis-global-cursor-color-mode t)
+  (sis-other-cursor-color "orange")
   ;; enable the /respect/ mode
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
   (sis-global-context-mode t)
   ;; enable the /inline english/ mode for all buffers
   (sis-global-inline-mode t)
-  (setq sis-inline-tighten-head-rule 0)
+  (sis-inline-tighten-head-rule 0)
   ;;(setq sis-inline-tighten-tail-rule 0)
   )
 ;; End
