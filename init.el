@@ -14,6 +14,12 @@
 ;; https://emacs-china.org/t/topic/5720/10
 (setq emacs-start-time (float-time))
 (setq gc-cons-threshold 10000000)
+
+;; 正确处理 CJK 字符的自动断行
+;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=29364#11
+;; https://emacs-china.org/t/topic/2616/18
+(setq word-wrap-by-category t)
+
 (add-hook
  'after-init-hook
  (lambda ()
