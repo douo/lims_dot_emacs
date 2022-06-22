@@ -1,0 +1,6 @@
+[submodule "lisp/separate-inline.el"]
+	path = lisp/separate-inline.el
+	url = https://github.com/ingtshan/separate-inline.el.git
+[submodule "lisp/lsp-bridge"]
+	path = lisp/lsp-bridge
+	url = https://github.com/manateelazycat/lsp-bridge.git

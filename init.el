@@ -398,7 +398,7 @@
 
   ;; 配合 eglot
   ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-  (completion-category-overrides '((eglot (styles orderless))))
+  ;; (completion-category-overrides '((eglot (styles orderless))))
   :init
   (global-corfu-mode)
   )
@@ -664,14 +664,40 @@
 (use-package flymake
   :ensure t)
 
-(use-package eglot
+;; (use-package eglot
+;;   :ensure t
+;;   :hook
+;;   ((prog-mode . (lambda ()
+;;                  (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode 'makefile-mode)
+;;                  (eglot-ensure))
+;;                  )))
+;;   )
+
+
+;; lsp-bridge
+
+
+(use-package posframe
   :ensure t
-  :hook
-  ((prog-mode . (lambda ()
-                 (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode 'makefile-mode)
-                 (eglot-ensure))
-                 )))
   )
+
+(use-package yasnippet
+  :ensure t
+  :config
+  (yas-global-mode 1)
+  )
+
+
+(add-to-list 'load-path "lisp/lsp-bridge")
+(print load-path)
+(use-package lsp-bridge
+  :config
+  (global-lsp-bridge-mode)
+)
+
+
+;; (require 'lsp-bridge)
+
 
 
 ;; 主模式
@@ -775,7 +801,6 @@
 
 (load-relative "lisp/uci-mode.el") ;; openwrt uci config file
 (require 'uci-mode)
-
 
 (load-relative "org.el")
 
