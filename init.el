@@ -661,6 +661,30 @@
   :config
   (volatile-highlights-mode +1))
 
+;; 使用叠加层高亮符号
+(use-package symbol-overlay
+  :ensure t
+  :init
+  (define-transient-command symbol-overlay-transient ()
+  "Symbol Overlay transient"
+  ["Symbol Overlay"
+   ["Overlays"
+    ("." "Add/Remove at point" symbol-overlay-put)
+    ("k" "Remove All" symbol-overlay-remove-all)
+    ]
+   ["Move to Symbol"
+    ("n" "Next" symbol-overlay-switch-forward)
+    ("p" "Previous" symbol-overlay-switch-backward)
+    ]
+   ["Other"
+    ("m" "Highlight symbol-at-point" symbol-overlay-mode)
+    ]
+   ]
+  )
+  :bind
+  (("s-." . 'symbol-overlay-transient))
+  )
+
 (use-package flymake
   :ensure t)
 
