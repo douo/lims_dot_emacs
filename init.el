@@ -711,18 +711,13 @@
   (yas-global-mode 1)
   )
 
-
-
-(add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
+;; (add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
 (use-package lsp-bridge
-  :config
-  (global-lsp-bridge-mode)
+  :ensure nil
+  :load-path  "lisp/lsp-bridge"
+  :hook
+  (prog-mode . lsp-bridge-mode)
 )
-
-
-;; (require 'lsp-bridge)
-
-
 
 ;; 主模式
 
@@ -827,9 +822,12 @@
   :ensure t
   )
 
-
-(load-relative "lisp/uci-mode.el") ;; openwrt uci config file
-(require 'uci-mode)
+ ;; openwrt uci config file
+(use-package uci-mode
+  :init
+  (load-relative "lisp/uci-mode.el")
+  :ensure nil
+  )
 
 (load-relative "org.el")
 
