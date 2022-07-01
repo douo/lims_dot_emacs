@@ -762,6 +762,11 @@
 	 ("\\.html\\'" . web-mode))
   :commands web-mode)
 
+(use-package jsonian
+  :ensure t
+  :after so-long
+  :custom
+  (jsonian-no-so-long-mode))
 
 ;; ruby
 
