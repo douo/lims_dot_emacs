@@ -758,7 +758,14 @@
   :load-path  "lisp/lsp-bridge"
   :hook
   (prog-mode . lsp-bridge-mode)
-)
+  :bind (:map lsp-bridge-mode-map
+         ("M-." . lsp-bridge-find-def)
+         ("M-," . lsp-bridge-return-from-def)
+         ("M-?" . lsp-bridge-find-references)
+         )
+  :custom
+  (acm-candidate-match-function 'orderless-flex)
+  )
 
 ;; 主模式
 
