@@ -154,7 +154,9 @@
   :ensure t
   :config
   (when (or (memq window-system '(mac ns x)) (daemonp))
-    (dolist (var '("RG_EXECUTABLE" "WRITING_HOME" "GTD_HOME"))
+    (dolist (var '("RG_EXECUTABLE" "WRITING_HOME" "GTD_HOME" ;; personal
+                   "CONDA_EXE" ;; conda
+                   ))
       (add-to-list 'exec-path-from-shell-variables var))
     (exec-path-from-shell-initialize)))
 
@@ -764,20 +766,19 @@
 ;; python
 
 ;; 只有安装了 conda 才启用
-(when (and
+(use-package conda
+  :if (and
        (getenv "CONDA_EXE")
        (file-exists-p (getenv "CONDA_EXE")))
+  :ensure t
+  :after exec-path-from-shell
+  :config
+  (conda-env-initialize-interactive-shells)
+  (conda-env-initialize-eshell)
   (let ((home
-        (file-name-directory (directory-file-name (file-name-directory (getenv "CONDA_EXE"))))))
-    (use-package conda
-      :ensure t
-      :config
-      (conda-env-initialize-interactive-shells)
-      (conda-env-initialize-eshell)
-      :custom
-      (conda-anaconda-home (expand-file-name home))
-      (conda-env-home-directory (expand-file-name home))
-      )
+         (file-name-directory (directory-file-name (file-name-directory (getenv "CONDA_EXE"))))))
+    (setq conda-anaconda-home (expand-file-name home))
+    (setq conda-env-home-directory (expand-file-name home))
     )
   )
 
