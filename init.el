@@ -436,12 +436,8 @@
   ;;(add-to-list 'completion-at-point-functions #'cape-dict)
   ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
+  :after corfu
   )
-
-
-(use-package
-  :after corfu)
-
 
 (use-package ace-window
   :ensure t
