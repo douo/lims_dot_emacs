@@ -777,7 +777,7 @@
   :if (and
        (getenv "CONDA_EXE")
        (file-exists-p (getenv "CONDA_EXE")))
-  :ensure t
+  :ensure nil
   :after exec-path-from-shell
   :config
   (conda-env-initialize-interactive-shells)
