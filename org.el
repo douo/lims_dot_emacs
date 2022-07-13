@@ -170,3 +170,10 @@
   (:map org-mode-map
         ("C-c C-x p" . org-download-clipboard))
   )
+
+(use-package org-modern
+  :ensure t
+  :hook
+  (org-mode . org-modern-mode)
+  (org-agenda-finalize-hook . org-modern-mode)
+  )
