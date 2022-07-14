@@ -637,11 +637,11 @@
    (plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
   ;; 用于 tui , corfu fallback 到 completion-in-region
   (completion-in-region-function
-      (lambda (&rest args)
-        (apply (if vertico-mode
-                   #'consult-completion-in-region
-                 #'completion--in-region)
-               args)))
+   (lambda (&rest args)
+     (apply (if vertico-mode
+                #'consult-completion-in-region
+              #'completion--in-region)
+            args)))
   )
 
 (use-package embark
@@ -703,21 +703,21 @@
   :ensure t
   :init
   (define-transient-command symbol-overlay-transient ()
-  "Symbol Overlay transient"
-  ["Symbol Overlay"
-   ["Overlays"
-    ("." "Add/Remove at point" symbol-overlay-put)
-    ("k" "Remove All" symbol-overlay-remove-all)
-    ]
-   ["Move to Symbol"
-    ("n" "Next" symbol-overlay-switch-forward)
-    ("p" "Previous" symbol-overlay-switch-backward)
-    ]
-   ["Other"
-    ("m" "Highlight symbol-at-point" symbol-overlay-mode)
-    ]
-   ]
-  )
+    "Symbol Overlay transient"
+    ["Symbol Overlay"
+     ["Overlays"
+      ("." "Add/Remove at point" symbol-overlay-put)
+      ("k" "Remove All" symbol-overlay-remove-all)
+      ]
+     ["Move to Symbol"
+      ("n" "Next" symbol-overlay-switch-forward)
+      ("p" "Previous" symbol-overlay-switch-backward)
+      ]
+     ["Other"
+      ("m" "Highlight symbol-at-point" symbol-overlay-mode)
+      ]
+     ]
+    )
   :bind
   (("s-." . 'symbol-overlay-transient))
   )
@@ -755,10 +755,10 @@
   :hook
   (prog-mode . lsp-bridge-mode)
   :bind (:map lsp-bridge-mode-map
-         ("M-." . lsp-bridge-find-def)
-         ("M-," . lsp-bridge-return-from-def)
-         ("M-?" . lsp-bridge-find-references)
-         )
+              ("M-." . lsp-bridge-find-def)
+              ("M-," . lsp-bridge-return-from-def)
+              ("M-?" . lsp-bridge-find-references)
+              )
   :custom
   (acm-candidate-match-function 'orderless-flex)
   )
@@ -865,7 +865,7 @@
   :ensure t
   )
 
- ;; openwrt uci config file
+;; openwrt uci config file
 (use-package uci-mode
   :init
   (load-relative "lisp/uci-mode.el")
@@ -908,10 +908,10 @@
     )
   :custom
   (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
-                                       ;; avy & consult
-                                       "M-g" "C-。" "M-s"
-                                       ;; easy-kill
-                                       ))
+                                  ;; avy & consult
+                                  "M-g" "C-。" "M-s"
+                                  ;; easy-kill
+                                  ))
   ;; enable the /cursor color/ mode
   (sis-global-cursor-color-mode t)
   (sis-other-cursor-color "orange")
@@ -976,8 +976,8 @@
     (if (file-exists-p gls)
         (setq insert-directory-program gls dired-use-ls-dired t dired-listing-switches "-al --group-directories-first")
       )
-      ;; 实际解决这个问题需要给 ruby full disk access
-      ;; https://emacs.stackexchange.com/a/53037/30746
+    ;; 实际解决这个问题需要给 ruby full disk access
+    ;; https://emacs.stackexchange.com/a/53037/30746
     )
 
   ;; macos play-sound-file fix
@@ -988,13 +988,13 @@
         (signal 'wrong-type-argument (list sound)))
 
     (cl-destructuring-bind (&key file data volume device)
-                        (cdr sound)
+        (cdr sound)
 
-                        (and (or data device)
-                             (error "DATA and DEVICE arg not supported"))
+      (and (or data device)
+           (error "DATA and DEVICE arg not supported"))
 
-                        (apply #'start-process "afplay" nil
-                               "afplay" (append (and volume (list "-v" volume))
-                                                (list (expand-file-name file data-directory))))))
+      (apply #'start-process "afplay" nil
+             "afplay" (append (and volume (list "-v" volume))
+                              (list (expand-file-name file data-directory))))))
 
   )
