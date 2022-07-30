@@ -83,7 +83,7 @@
   (org-directory douo/gtd-home)
   ;; a useful view to see what can be accomplished today
   (org-refile-targets `(
-                        (,(concat douo/gtd-home "/tasks.org") :maxlevel . 2)
+                        (,(concat douo/gtd-home "/tasks.org") :maxlevel . 3)
                         ))
   (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.mp3"))
   :bind (("C-c a" . org-agenda)
@@ -133,6 +133,13 @@
   :custom
   (org-agenda-files `(,org-gtd-directory))
   (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
+  (org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t% s")
+                              (timeline . "  % s")
+                              (todo .
+                                    " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+                              (tags .
+                                    " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+                              (search . " %i %-12:c")))
   )
 
 ;; this allows you to use (org-gtd-inbox-path) for your capture destinations
