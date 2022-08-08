@@ -170,7 +170,10 @@
 (use-package vterm
   :ensure t)
 (use-package vterm-toggle
-  :ensure t)
+  :ensure t
+  ;; avoid macos annoying 'menu-set-font
+  :bind (("s-t" . 'vterm-toggle))
+  )
 
 ;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
 (use-package pinyinlib
