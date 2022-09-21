@@ -941,6 +941,9 @@
      "2052" ;; 拼音输入法
      'im-select)
     )
+  (with-system gnu/linux
+    (sis-ism-lazyman-config "xkb:us::eng" "libpinyin" 'ibus)
+  )
   :custom
   (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
                                   ;; avy & consult
