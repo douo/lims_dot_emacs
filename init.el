@@ -794,6 +794,17 @@
     )
   )
 
+;; reformat
+;; 需要在环境中已经安装 https://github.com/psf/black
+(use-package blacken
+  :ensure t
+  :bind
+  (:map python-mode-map
+        ("C-c M-f" . blacken-buffer)
+  )
+  )
+
+
 (use-package pyvenv
   :ensure t
   :config
