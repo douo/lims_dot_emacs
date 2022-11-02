@@ -770,6 +770,7 @@
               )
   :custom
   (acm-candidate-match-function 'orderless-flex)
+  (lsp-bridge-python-lsp-server "pylsp")
   )
 
 ;; 主模式
