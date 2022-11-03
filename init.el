@@ -705,7 +705,7 @@
 (use-package symbol-overlay
   :ensure t
   :init
-  (define-transient-command symbol-overlay-transient ()
+  (transient-define-prefix symbol-overlay-transient ()
     "Symbol Overlay transient"
     ["Symbol Overlay"
      ["Overlays"
@@ -739,8 +739,6 @@
 
 
 ;; lsp-bridge
-
-
 (use-package posframe
   :ensure t
   )
@@ -749,6 +747,10 @@
   :ensure t
   :config
   (yas-global-mode 1)
+  )
+
+(use-package markdown-mode
+  :ensure t
   )
 
 ;; (add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
