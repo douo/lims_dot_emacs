@@ -813,10 +813,11 @@
   :config
   ;; https://github.com/manateelazycat/lsp-bridge/wiki/Python-virtualenv
   (defun local/lsp-bridge-get-single-lang-server-by-project (project-path filepath)
-    (let* ((json-object-type 'plist)
-           (custom-dir (expand-file-name ".cache/lsp-bridge/pyright" user-emacs-directory))
-           (custom-config (expand-file-name "pyright.json" custom-dir))
-           (default-config (json-read-file (expand-file-name "lisp/lsp-bridge/langserver/pyright.json" user-emacs-directory)))
+    (let* (
+           (json-object-type 'plist)
+           (custom-dir (expand-file-name ".cache/lsp-bridge/pylsp" user-emacs-directory))
+           (custom-config (expand-file-name "pylsp.json" custom-dir))
+           (default-config (json-read-file (expand-file-name "lisp/lsp-bridge/langserver/pylsp.json" user-emacs-directory)))
            (settings (plist-get default-config :settings))
            )
       (plist-put settings :pythonPath (executable-find "python"))
