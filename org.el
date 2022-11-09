@@ -133,13 +133,13 @@
   :custom
   (org-agenda-files `(,org-gtd-directory))
   (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
-  (org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t% s")
+  (org-agenda-prefix-format '((agenda . " %i %-8:c%?-12t% s")
                               (timeline . "  % s")
                               (todo .
-                                    " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+                                    " %i %-8:c%(concat \"[\"(org-format-outline-path (org-get-outline-path)) \"] \")")
                               (tags .
-                                    " %i %-12:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
-                              (search . " %i %-12:c")))
+                                    " %i %-8:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
+                              (search . " %i %-8:c")))
   )
 
 ;; this allows you to use (org-gtd-inbox-path) for your capture destinations
