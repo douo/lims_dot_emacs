@@ -772,8 +772,9 @@
               ("C-c h" . lsp-bridge-lookup-documentation)
               ("<up>" . lsp-bridge-popup-documentation-scroll-up)
               ("<down>" . lsp-bridge-popup-documentation-scroll-down)
-              ("C-c M-." . lsp-bridge-jump-to-next-diagnostic)
-              ("C-c M-," . lsp-bridge-jump-to-prev-diagnostic)
+              ("C-c M-f" . lsp-bridge-code-format)
+              ("C-c M-." . lsp-bridge-diagnostic-jump-next)
+              ("C-c M-," . lsp-bridge-diagnostic-jump-prev)
               ("C-c M-?" . lsp-bridge-list-diagnostics)
               )
   :custom
@@ -802,17 +803,6 @@
     (setq conda-env-home-directory (expand-file-name home))
     )
   )
-
-;; reformat
-;; 需要在环境中已经安装 https://github.com/psf/black
-(use-package blacken
-  :ensure t
-  :bind
-  (:map python-mode-map
-        ("C-c M-f" . blacken-buffer)
-  )
-  )
-
 
 (use-package pyvenv
   :ensure t
