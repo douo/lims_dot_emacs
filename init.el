@@ -753,6 +753,12 @@
   :ensure t
   )
 
+
+
+
+(setq douo/python-lsp-server "pylsp")
+;; (setq douo/python-lsp-server "pyright")
+
 ;; (add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
 (use-package lsp-bridge
   :ensure nil
@@ -772,7 +778,7 @@
               )
   :custom
   (acm-candidate-match-function 'orderless-flex)
-  (lsp-bridge-python-lsp-server "pylsp")
+  (lsp-bridge-python-lsp-server douo/python-lsp-server)
   )
 
 ;; 主模式
@@ -815,13 +821,19 @@
   (defun local/lsp-bridge-get-single-lang-server-by-project (project-path filepath)
     (let* (
            (json-object-type 'plist)
-           (custom-dir (expand-file-name ".cache/lsp-bridge/pylsp" user-emacs-directory))
-           (custom-config (expand-file-name "pylsp.json" custom-dir))
-           (default-config (json-read-file (expand-file-name "lisp/lsp-bridge/langserver/pylsp.json" user-emacs-directory)))
+           (custom-dir
+            (expand-file-name (concat ".cache/lsp-bridge/" douo/python-lsp-server)
+                              user-emacs-directory))
+           (custom-config
+            (expand-file-name (concat douo/python-lsp-server ".json")
+                              custom-dir))
+           (default-config
+            (json-read-file
+             (expand-file-name (concat "lisp/lsp-bridge/langserver/" douo/python-lsp-server ".json")
+                               user-emacs-directory)))
            (settings (plist-get default-config :settings))
            )
       (plist-put settings :pythonPath (executable-find "python"))
-
       (make-directory (file-name-directory custom-config) t)
       (message (json-encode default-config))
       (with-temp-file custom-config
