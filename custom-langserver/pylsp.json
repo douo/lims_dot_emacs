@@ -1,0 +1,22 @@
+{
+  "name": "pylsp",
+  "languageId": "python",
+  "command": ["pylsp"],
+  "incomplete-fuzzy-match": true,
+  "settings": {
+    "pylsp": {
+      "plugins": {
+        "black": {
+          "enabled": true
+        },
+        "rope_completion": {
+          "enabled": true
+        },
+        "rope_autoimport": {
+          "enabled": true,
+          "memory": false
+        }
+      }
+    }
+  }
+}

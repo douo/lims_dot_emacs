@@ -819,7 +819,7 @@
                               custom-dir))
            (default-config
             (json-read-file
-             (expand-file-name (concat "lisp/lsp-bridge/langserver/" douo/python-lsp-server ".json")
+             (expand-file-name (concat "custom-langserver" douo/python-lsp-server ".json")
                                user-emacs-directory)))
            (settings (plist-get default-config :settings))
            )
