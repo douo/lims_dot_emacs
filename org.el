@@ -85,6 +85,7 @@
   (org-refile-targets `(
                         (,(concat douo/gtd-home "/tasks.org") :maxlevel . 3)
                         ))
+  (org-preview-latex-default-process 'dvisvgm)
   (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.mp3"))
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
