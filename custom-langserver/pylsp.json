@@ -10,7 +10,7 @@
           "enabled": true
         },
         "rope_completion": {
-          "enabled": true
+          "enabled": false
         },
         "rope_autoimport": {
           "enabled": true,
