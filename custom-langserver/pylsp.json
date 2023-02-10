@@ -1,20 +1,29 @@
 {
   "name": "pylsp",
   "languageId": "python",
-  "command": ["pylsp"],
+  "command": ["pylsp", "--verbose", "--log-file", "/dev/ttys007"],
   "incomplete-fuzzy-match": true,
   "settings": {
     "pylsp": {
       "plugins": {
+        "autopep8": {
+          "enabled": false
+        },
+        "yapf": {
+          "enabled": false
+        },
         "black": {
           "enabled": true
         },
         "rope_completion": {
-          "enabled": true
+          "enabled": false
         },
         "rope_autoimport": {
           "enabled": true,
           "memory": false
+        },
+        "pylsp_mypy": {
+          "enabled": false
         }
       }
     }
