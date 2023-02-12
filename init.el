@@ -756,8 +756,8 @@
 
 
 
-(setq douo/python-lsp-server "pylsp")
-;; (setq douo/python-lsp-server "pyright")
+;; (setq douo/python-lsp-server "pylsp")
+(setq douo/python-lsp-server "pyright")
 
 ;; (add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
 (use-package lsp-bridge
