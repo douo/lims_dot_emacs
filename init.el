@@ -772,7 +772,7 @@
               ("C-c h" . lsp-bridge-lookup-documentation)
               ("<up>" . lsp-bridge-popup-documentation-scroll-up)
               ("<down>" . lsp-bridge-popup-documentation-scroll-down)
-              ("C-c M-f" . lsp-bridge-code-format)
+              ;; ("C-c M-f" . lsp-bridge-code-format)  ;; replace by blacken
               ("C-c M-." . lsp-bridge-diagnostic-jump-next)
               ("C-c M-," . lsp-bridge-diagnostic-jump-prev)
               ("C-c M-?" . lsp-bridge-list-diagnostics)
@@ -837,6 +837,17 @@
             (lambda ()
               (lsp-bridge-restart-process)))
   )
+
+;; reformat
+;; 需要在环境中已经安装 https://github.com/psf/black
+(use-package blacken
+  :ensure t
+  :bind
+  (:map python-mode-map
+        ("C-c M-f" . blacken-buffer)
+  )
+  )
+
 
 ;; typescript
 ;; web-mode
