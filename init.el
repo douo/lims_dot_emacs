@@ -751,6 +751,11 @@
 (setq douo/python-lsp-server "pyright")
 
 ;; 主模式
+
+;;
+(use-package cmake-mode
+  :ensure t)
+
 ;; python
 
 ;; 只有安装了 conda 才启用
