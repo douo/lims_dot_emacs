@@ -55,6 +55,7 @@
   (setq mac-option-modifier   'meta))
 
 ;; windows
+(defconst IS-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
 (with-system windows-nt
   (setq w32-pass-rwindow-to-system nil)
   (setq w32-rwindow-modifier 'super) ; Right Windows key
@@ -113,9 +114,16 @@
 ;;初始化包管理器
 
 ;; https://emacs.stackexchange.com/questions/37904/how-do-i-work-out-what-the-problem-is-with-the-emacs-package-system/56067#56067
-(custom-set-variables
-
- '(gnutls-algorithm-priority "normal:-vers-tls1.3"))
+;; https://github.com/doomemacs/doomemacs/blob/develop/core/core.el#L228
+;; (custom-set-variables
+;;  `(gnutls-algorithm-priority
+;;    ,(when (boundp 'libgnutls-version)
+;;       (concat "SECURE128:+SECURE192:-VERS-ALL"
+;;               (if (and (not IS-WINDOWS)
+;;                        (>= libgnutls-version 30605))
+;;                   ":+VERS-TLS1.3")
+;;               ":+VERS-TLS1.2"))
+;;    ))
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
