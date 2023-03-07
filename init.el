@@ -55,6 +55,7 @@
   (setq mac-option-modifier   'meta))
 
 ;; windows
+(defconst IS-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
 (with-system windows-nt
   (setq w32-pass-rwindow-to-system nil)
   (setq w32-rwindow-modifier 'super) ; Right Windows key
@@ -113,9 +114,16 @@
 ;;初始化包管理器
 
 ;; https://emacs.stackexchange.com/questions/37904/how-do-i-work-out-what-the-problem-is-with-the-emacs-package-system/56067#56067
-(custom-set-variables
-
- '(gnutls-algorithm-priority "normal:-vers-tls1.3"))
+;; https://github.com/doomemacs/doomemacs/blob/develop/core/core.el#L228
+;; (custom-set-variables
+;;  `(gnutls-algorithm-priority
+;;    ,(when (boundp 'libgnutls-version)
+;;       (concat "SECURE128:+SECURE192:-VERS-ALL"
+;;               (if (and (not IS-WINDOWS)
+;;                        (>= libgnutls-version 30605))
+;;                   ":+VERS-TLS1.3")
+;;               ":+VERS-TLS1.2"))
+;;    ))
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
@@ -165,6 +173,10 @@
   :ensure t)
 ;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
+
+(use-package nerd-fonts
+  :ensure nil
+  :load-path  "lisp/nerd-fonts.el")
 
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
@@ -409,6 +421,7 @@
   )
 
 (use-package cape
+  :ensure t
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
   :bind (("C-c p p" . completion-at-point) ;; capf
@@ -728,16 +741,6 @@
 (use-package flymake
   :ensure t)
 
-;; (use-package eglot
-;;   :ensure t
-;;   :hook
-;;   ((prog-mode . (lambda ()
-;;                  (unless (derived-mode-p 'emacs-lisp-mode 'lisp-mode 'makefile-mode)
-;;                  (eglot-ensure))
-;;                  )))
-;;   )
-
-
 ;; lsp-bridge
 (use-package posframe
   :ensure t
@@ -759,31 +762,11 @@
 ;; (setq douo/python-lsp-server "pylsp")
 (setq douo/python-lsp-server "pyright")
 
-;; (add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
-(use-package lsp-bridge
-  :ensure nil
-  :load-path  "lisp/lsp-bridge"
-  :hook
-  (prog-mode . lsp-bridge-mode)
-  :bind (:map lsp-bridge-mode-map
-              ("M-." . lsp-bridge-find-def)
-              ("M-," . lsp-bridge-return-from-def)
-              ("M-?" . lsp-bridge-find-references)
-              ("C-c h" . lsp-bridge-lookup-documentation)
-              ("<up>" . lsp-bridge-popup-documentation-scroll-up)
-              ("<down>" . lsp-bridge-popup-documentation-scroll-down)
-              ("C-c M-f" . lsp-bridge-code-format)
-              ("C-c M-." . lsp-bridge-diagnostic-jump-next)
-              ("C-c M-," . lsp-bridge-diagnostic-jump-prev)
-              ("C-c M-?" . lsp-bridge-list-diagnostics)
-              )
-  :custom
-  (acm-candidate-match-function 'orderless-flex)
-  (lsp-bridge-python-lsp-server douo/python-lsp-server)
-  )
-
 ;; 主模式
 
+;;
+(use-package cmake-mode
+  :ensure t)
 
 ;; python
 
@@ -804,39 +787,16 @@
     )
   )
 
-(use-package pyvenv
+;; reformat
+;; 需要在环境中已经安装 https://github.com/psf/black
+(use-package blacken
   :ensure t
-  :config
-  ;; https://github.com/manateelazycat/lsp-bridge/wiki/Python-virtualenv
-  (defun local/lsp-bridge-get-single-lang-server-by-project (project-path filepath)
-    (let* (
-           (json-object-type 'plist)
-           (custom-dir
-            (expand-file-name (concat ".cache/lsp-bridge/" douo/python-lsp-server)
-                              user-emacs-directory))
-           (custom-config
-            (expand-file-name (concat douo/python-lsp-server ".json")
-                              custom-dir))
-           (default-config
-            (json-read-file
-             (expand-file-name (concat "custom-langserver/" douo/python-lsp-server ".json")
-                               user-emacs-directory)))
-           (settings (plist-get default-config :settings))
-           )
-      (plist-put settings :pythonPath (executable-find "python"))
-      (make-directory (file-name-directory custom-config) t)
-      (message (json-encode default-config))
-      (with-temp-file custom-config
-        (insert (json-encode default-config)))
-
-      custom-config))
-
-  (add-hook 'python-mode-hook (lambda () (setq-local lsp-bridge-get-single-lang-server-by-project 'local/lsp-bridge-get-single-lang-server-by-project)))
-
-  (add-hook 'pyvenv-post-activate-hooks
-            (lambda ()
-              (lsp-bridge-restart-process)))
+  :bind
+  (:map python-mode-map
+        ("C-c M-f" . blacken-buffer)
   )
+  )
+
 
 ;; typescript
 ;; web-mode
@@ -1003,6 +963,12 @@
 
 ;; 在 mode-line 显示时间
 (display-time-mode)
+
+;; tui/gui 切换不同配置，主要是切换 lsp-bridge 和 eglot
+(if (display-graphic-p)
+    (load-relative "gui.el")
+  (load-relative "tui.el")
+    )
 
 ;; macOS Fix
 (with-system darwin
