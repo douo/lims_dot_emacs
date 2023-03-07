@@ -96,7 +96,9 @@
   (org-mode . org-add-electric-pairs)
   )
 
-
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((python . t)))
 
 (use-package org-gtd
   :ensure t
