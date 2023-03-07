@@ -1,9 +1,11 @@
+;; (use-package all-the-icons) ;; TODO buggy 显示方块
+
 ;; (add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
 (use-package lsp-bridge
   :ensure nil
   :load-path  "lisp/lsp-bridge"
   :hook
-  (prog-mode . lsp-bridge-mode)
+  (python-mode . lsp-bridge-mode)
   :bind (:map lsp-bridge-mode-map
               ("M-." . lsp-bridge-find-def)
               ("M-," . lsp-bridge-return-from-def)

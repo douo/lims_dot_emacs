@@ -97,6 +97,14 @@
   )
 
 
+;; this allows you use `(,org-gtd-directory) for your agenda files
+(use-package org-agenda
+  :ensure nil
+  :after org-gtd
+  :custom
+  (org-agenda-files `(,org-gtd-directory))
+  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
+  )
 
 (use-package org-gtd
   :ensure t
@@ -110,6 +118,21 @@
     )
   :custom
   (org-gtd-directory douo/gtd-home)
+  ;; 自定义归档路径为 .archive/gtd_{2023}.org
+  (org-gtd-archive-location (lambda ()
+    (let ((year (number-to-string (caddr (calendar-current-date)))))
+      (string-join `(".archive/gtd_" ,year  ".org::datetree/")))))
+  ;; 让 todo 显示所有 outline path
+  (org-gtd-agenda-custom-commands
+  '(("g" "Scheduled today and all NEXT items"
+     (
+      (agenda "" ((org-agenda-span 1)
+                  (org-agenda-start-day nil)))
+      (todo "NEXT" ((org-agenda-overriding-header "All NEXT items")
+                    (org-agenda-prefix-format '((todo . " %i %-12:(concat \"[\"(org-format-outline-path (org-get-outline-path)) \"] \")")))))
+      (todo "WAIT" ((org-agenda-todo-ignore-with-date t)
+                    (org-agenda-overriding-header "Delegated/Blocked items")
+                    (org-agenda-prefix-format '((todo . " %i %-12 (org-gtd--agenda-prefix-format)")))))))))
   :bind
   (("C-c c" . org-gtd-capture)
    ("C-c d e" . org-gtd-engage)
@@ -123,25 +146,12 @@
    )
   )
 
+;;
+;;
 (use-package org-analyzer
   :ensure t
   :after org)
 
-;; this allows you use `(,org-gtd-directory) for your agenda files
-(use-package org-agenda
-  :ensure nil
-  :after org-gtd
-  :custom
-  (org-agenda-files `(,org-gtd-directory))
-  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
-  (org-agenda-prefix-format '((agenda . " %i %-8:c%?-12t% s")
-                              (timeline . "  % s")
-                              (todo .
-                                    " %i %-8:c%(concat \"[\"(org-format-outline-path (org-get-outline-path)) \"] \")")
-                              (tags .
-                                    " %i %-8:c %(concat \"[ \"(org-format-outline-path (org-get-outline-path)) \" ]\") ")
-                              (search . " %i %-8:c")))
-  )
 
 ;; this allows you to use (org-gtd-inbox-path) for your capture destinations
 (use-package org-capture
@@ -179,9 +189,11 @@
         ("C-c C-x p" . org-download-clipboard))
   )
 
-(use-package org-modern
-  :ensure t
-  :hook
-  (org-mode . org-modern-mode)
-  (org-agenda-finalize-hook . org-modern-mode)
-  )
+;; https://github.com/minad/org-modern
+;; 美好似乎只是一时的新鲜感
+;; (use-package org-modern
+;;   :ensure t
+;;   :hook
+;;   (org-mode . org-modern-mode)
+;;   (org-agenda-finalize-hook . org-modern-mode)
+;;   )

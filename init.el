@@ -166,6 +166,10 @@
 ;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
 
+(use-package nerd-fonts
+  :ensure nil
+  :load-path  "lisp/nerd-fonts.el")
+
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
   :ensure t)
