@@ -5,7 +5,14 @@
 
 
 (use-package flymake
-  :ensure t)
+  :ensure t
+  :bind (:map flymake-mode-map
+              ("C-c M-." . flymake-goto-next-error)
+              ("C-c M-," . flymake-goto-prev-error)
+              ("C-c M-?" . flymake-show-buffer-diagnostics)
+              )
+
+  )
 
 (defun douo/update_eglot_pyright_configuraton ()
   (setq eglot-workspace-configuration

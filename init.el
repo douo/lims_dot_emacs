@@ -757,6 +757,11 @@
   )
 
 
+(use-package treesit
+  :ensure t
+  :custom
+  (treesit-extra-load-path '("~/.emacs.d/tree-sitter"))
+  )
 
 
 ;; (setq douo/python-lsp-server "pylsp")
@@ -807,10 +812,14 @@
   :ensure t
   :mode (("\\.js\\'" . web-mode)
 	 ("\\.jsx\\'" .  web-mode)
-	 ("\\.ts\\'" . web-mode)
-	 ("\\.tsx\\'" . web-mode)
 	 ("\\.html\\'" . web-mode))
   :commands web-mode)
+
+
+(use-package typescript-mode :defer
+  :mode
+  (("\\.ts\\'" . tsx-ts-mode)
+   ("\\.tsx\\'" . tsx-ts-mode)))
 
 (use-package jsonian
   :ensure t
@@ -965,10 +974,10 @@
 (display-time-mode)
 
 ;; tui/gui 切换不同配置，主要是切换 lsp-bridge 和 eglot
-(if (display-graphic-p)
-    (load-relative "gui.el")
+;; (if (display-graphic-p)
+;;     (load-relative "gui.el")
   (load-relative "tui.el")
-    )
+    ;; )
 
 ;; macOS Fix
 (with-system darwin
