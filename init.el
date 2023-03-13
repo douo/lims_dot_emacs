@@ -756,13 +756,17 @@
   :ensure t
   )
 
-
-(use-package treesit
-  :ensure t
-  :custom
-  (treesit-extra-load-path '("~/.emacs.d/tree-sitter"))
-  )
-
+;; treesit support
+;; read https://blog.markhepburn.com/posts/experimenting-with-the-built-in-treesitter-support-in-emacs/
+;; download os relate module from: https://github.com/emacs-tree-sitter/tree-sitter-langs
+(when (and (not (version< emacs-version "29")) (treesit-available-p))
+  (setq treesit-extra-load-path '(concat (file-name-directory user-init-file) "tree-sitter"))
+  (add-to-list 'major-mode-remap-alist
+               '(c-mode . c-ts-mode)
+               '(c++-mode . c++-ts-mode)
+               '(python-mode . python-ts-mode)
+               )
+    )
 
 ;; (setq douo/python-lsp-server "pylsp")
 (setq douo/python-lsp-server "pyright")
