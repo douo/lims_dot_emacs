@@ -174,6 +174,10 @@
 ;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
 
+(use-package nerd-fonts
+  :ensure nil
+  :load-path  "lisp/nerd-fonts.el")
+
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
   :ensure t)
@@ -595,8 +599,8 @@
   ;; This adds thin lines, sorting and hides the mode line of the window.
   (advice-add #'register-preview :override #'consult-register-window)
 
-  ;; Optionally replace `completing-read-multiple' with an enhanced version.
-  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+  ;; Removed   ;; https://github.com/minad/consult/issues/567
+  ;; (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
 
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
@@ -752,8 +756,17 @@
   :ensure t
   )
 
-
-
+;; treesit support
+;; read https://blog.markhepburn.com/posts/experimenting-with-the-built-in-treesitter-support-in-emacs/
+;; download os relate module from: https://github.com/emacs-tree-sitter/tree-sitter-langs
+(when (and (not (version< emacs-version "29")) (treesit-available-p))
+  (setq treesit-extra-load-path '(concat (file-name-directory user-init-file) "tree-sitter"))
+  (add-to-list 'major-mode-remap-alist
+               '(c-mode . c-ts-mode)
+               '(c++-mode . c++-ts-mode)
+               '(python-mode . python-ts-mode)
+               )
+    )
 
 ;; (setq douo/python-lsp-server "pylsp")
 (setq douo/python-lsp-server "pyright")
@@ -803,10 +816,14 @@
   :ensure t
   :mode (("\\.js\\'" . web-mode)
 	 ("\\.jsx\\'" .  web-mode)
-	 ("\\.ts\\'" . web-mode)
-	 ("\\.tsx\\'" . web-mode)
 	 ("\\.html\\'" . web-mode))
   :commands web-mode)
+
+
+(use-package typescript-mode :defer
+  :mode
+  (("\\.ts\\'" . tsx-ts-mode)
+   ("\\.tsx\\'" . tsx-ts-mode)))
 
 (use-package jsonian
   :ensure t
@@ -961,10 +978,10 @@
 (display-time-mode)
 
 ;; tui/gui 切换不同配置，主要是切换 lsp-bridge 和 eglot
-(if (display-graphic-p)
-    (load-relative "gui.el")
+;; (if (display-graphic-p)
+;;     (load-relative "gui.el")
   (load-relative "tui.el")
-    )
+    ;; )
 
 ;; macOS Fix
 (with-system darwin
