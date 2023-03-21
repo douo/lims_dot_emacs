@@ -18,7 +18,7 @@
   (add-to-list
    'eglot-server-programs
    `(python-mode . (lambda(a)
-                     `(,(executable-find "python") "-m" "pyright.langserver" "--stdio"))))
+                     `(,(executable-find "pyright-langserver") "--stdio"))))
    (add-to-list
     'eglot-server-programs
     '((c-mode c++-mode)
