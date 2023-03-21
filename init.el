@@ -181,11 +181,26 @@
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
   :ensure t)
-(use-package vterm-toggle
+
+(use-package multi-vterm
   :ensure t
-  ;; avoid macos annoying 'menu-set-font
-  :bind (("s-t" . 'vterm-toggle))
+  :init
+  (transient-define-prefix multi-vterm-transient ()
+    "Multi vterm transient"
+    ["Multi vterm"
+     ("c" "Create new terminal" multi-vterm)
+     ("n" "Switch to next terminal" multi-vterm-next)
+     ("p" "Switch to next terminal" multi-vterm-prev)
+     ("t" "Toggle dedicated terminal" multi-vterm-dedicated-toggle)
+     ("g" "Create/toggle terminal based on current project" multi-vterm-project)
+     ]
+    )
+  :bind (
+         ("s-t" . multi-vterm)
+         ("C-M-t" . multi-vterm-transient))
   )
+
+
 
 ;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
 (use-package pinyinlib
@@ -231,9 +246,6 @@
 (use-package elec-pair
   :config
   (electric-pair-mode +1))
-
-;;主题
-(load-theme 'deeper-blue t)
 
 
 ;;光标移动方案
