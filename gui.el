@@ -61,3 +61,7 @@
             (lambda ()
               (lsp-bridge-restart-process)))
   )
+
+
+;;主题
+(load-theme 'deeper-blue t)
