@@ -990,10 +990,10 @@
 (display-time-mode)
 
 ;; tui/gui 切换不同配置，主要是切换 lsp-bridge 和 eglot
-;; (if (display-graphic-p)
-;;     (load-relative "gui.el")
+(if (display-graphic-p)
+    (load-relative "gui.el")
   (load-relative "tui.el")
-    ;; )
+    )
 
 ;; macOS Fix
 (with-system darwin
