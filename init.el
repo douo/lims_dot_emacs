@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;;; init.el --- douo's emacs config
 ;;; Commentary:
 ;;
@@ -197,7 +198,7 @@
     )
   :bind (
          ("s-t" . multi-vterm)
-         ("C-M-t" . multi-vterm-transient))
+         ("C-c M-t" . multi-vterm-transient))
   )
 
 
