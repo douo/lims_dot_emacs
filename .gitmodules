@@ -7,3 +7,6 @@
 [submodule "lisp/nerd-fonts.el"]
 	path = lisp/nerd-fonts.el
 	url = https://github.com/twlz0ne/nerd-fonts.el.git
+[submodule "lisp/mind-wave"]
+	path = lisp/mind-wave
+	url = https://github.com/manateelazycat/mind-wave.git

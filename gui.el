@@ -1,6 +1,15 @@
 ;; (use-package all-the-icons) ;; TODO buggy 显示方块
 
 ;; (add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
+
+(use-package markdown-mode
+  :ensure t
+  )
+(use-package mind-wave
+  :ensure nil
+  :load-path  "lisp/mind-wave"
+  )
+
 (use-package lsp-bridge
   :ensure nil
   :load-path  "lisp/lsp-bridge"
@@ -59,4 +68,4 @@
 
 
 ;;主题
-(load-theme 'deeper-blue t)
+(load-theme 'tango-dark t)
