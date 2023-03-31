@@ -100,6 +100,27 @@
   (org-mode . org-add-electric-pairs)
   )
 
+
+;; 优先度可以继承
+;; https://emacs.stackexchange.com/questions/37800/how-to-inherit-priority-in-org-mode
+(defun douo/org-inherited-priority (s)
+  (cond
+
+   ;; Priority cookie in this heading
+   ((string-match org-priority-regexp s)
+    (* 1000 (- org-priority-lowest
+               (org-priority-to-value (match-string 2 s)))))
+
+   ;; No priority cookie, but already at highest level
+   ((not (org-up-heading-safe))
+    (* 1000 (- org-priority-lowest org-priority-default)))
+
+   ;; Look for the parent's priority
+   (t
+    (douo/org-inherited-priority (org-get-heading)))))
+
+(setq org-priority-get-priority-function #'douo/org-inherited-priority)
+
 ;; this allows you use `(,org-gtd-directory) for your agenda files
 (use-package org-agenda
   :ensure nil
