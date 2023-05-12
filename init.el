@@ -68,11 +68,14 @@
 (global-auto-revert-mode 1)
 ;; 禁止 Emacs 自动生成备份文件，例如 init.el~ 。
 (setq make-backup-files nil)
-;; the toolbar is just a waste of valuable screen estate
-;; in a tty tool-bar-mode does not properly auto-load, and is
-;; already disabled anyway
+;; the toolbar/menubar/scrollbar is just a waste of valuable screen estate
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
+(when (fboundp 'menu-bar-mode)
+  (menu-bar-mode -1))
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+
 ;; disable the annoying bell ring
 (setq ring-bell-function 'ignore)
 
