@@ -141,6 +141,7 @@
     (with-org-gtd-context (org-archive-subtree))
     )
   :custom
+  (org-gtd-update-ack "3.0.0")
   (org-gtd-directory douo/gtd-home)
   ;; 自定义归档路径为 .archive/gtd_{2023}.org
   (org-gtd-archive-location (lambda ()
@@ -163,8 +164,8 @@
    ("C-c d p" . org-gtd-process-inbox)
    ("C-c d n" . org-gtd-show-all-next)
    ("C-c d s" . org-gtd-show-stuck-projects)
-   :map org-gtd-process-map
-   ("C-c C" . org-gtd-choose)
+   :map org-gtd-clarify-map
+   ("C-c C" . org-gtd-organize)
    :map org-mode-map
    ("C-c d a" . douo/org-gtd-archive)
    )
