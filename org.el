@@ -84,7 +84,10 @@
    'org-babel-load-languages
    '((python . t)))
   :custom
-  (org-directory douo/gtd-home)
+
+  (org-directory (if (not (string-suffix-p "/" douo/gtd-home))
+      (concat douo/gtd-home "/")
+    douo/gtd-home))
   ;; a useful view to see what can be accomplished today
   (org-refile-targets `(
                         (,(concat douo/gtd-home "/tasks.org") :maxlevel . 3)
