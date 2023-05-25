@@ -178,9 +178,9 @@
 ;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
 
-(use-package nerd-fonts
-  :ensure nil
-  :load-path  "lisp/nerd-fonts.el")
+;; (use-package nerd-fonts
+;;   :ensure nil
+;;   :load-path  "lisp/nerd-fonts.el")
 
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
@@ -995,7 +995,8 @@
 
 ;; tui/gui 切换不同配置，主要是切换 lsp-bridge 和 eglot
 (if (display-graphic-p)
-    (load-relative "gui.el")
+    ;;(load-relative "gui.el")
+    (load-relative "tui.el")
   (load-relative "tui.el")
     )
 
