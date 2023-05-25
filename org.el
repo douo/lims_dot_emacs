@@ -138,32 +138,45 @@
   :after org
   :demand t
   :init
+  (setq org-gtd-update-ack "3.0.0")
   (defun douo/org-gtd-archive ()
     "Process GTD inbox item as a reference item without jump to inbox."
     (interactive)
     (with-org-gtd-context (org-archive-subtree))
     )
+  :config
+  (defun douo/org-gtd-engage()
+    "Display `org-agenda' customized by org-gtd."
+    (interactive)
+    (org-gtd-core-prepare-agenda-buffers)
+    (with-org-gtd-context
+        (let ((org-agenda-custom-commands
+  `(("g" "Scheduled today and all NEXT items"
+     ((agenda "" ((org-agenda-span 1)
+                  (org-agenda-start-day nil)
+                  (org-agenda-skip-additional-timestamps-same-entry t)))
+      (todo org-gtd-next
+            ((org-agenda-overriding-header "All NEXT items")
+             (org-agenda-prefix-format
+              '((todo . " %i %-12:(concat \"[\"(org-format-outline-path (org-get-outline-path)) \"] \")")))))
+      (todo org-gtd-wait
+            ((org-agenda-todo-ignore-with-date t)
+             (org-agenda-overriding-header "Delegated/Blocked items")
+             (org-agenda-prefix-format
+              '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))))
+          (org-agenda nil "g")
+          (goto-char (point-min)))))
   :custom
-  (org-gtd-update-ack "3.0.0")
-  (org-gtd-directory douo/gtd-home)
+  (org-gtd-directory org-directory)
   ;; 自定义归档路径为 .archive/gtd_{2023}.org
   (org-gtd-archive-location (lambda ()
     (let ((year (number-to-string (caddr (calendar-current-date)))))
       (string-join `(".archive/gtd_" ,year  ".org::datetree/")))))
   ;; 让 todo 显示所有 outline path
-  (org-gtd-agenda-custom-commands
-  '(("g" "Scheduled today and all NEXT items"
-     (
-      (agenda "" ((org-agenda-span 1)
-                  (org-agenda-start-day nil)))
-      (todo "NEXT" ((org-agenda-overriding-header "All NEXT items")
-                    (org-agenda-prefix-format '((todo . " %i %-12:(concat \"[\"(org-format-outline-path (org-get-outline-path)) \"] \")")))))
-      (todo "WAIT" ((org-agenda-todo-ignore-with-date t)
-                    (org-agenda-overriding-header "Delegated/Blocked items")
-                    (org-agenda-prefix-format '((todo . " %i %-12 (org-gtd--agenda-prefix-format)")))))))))
+
   :bind
   (("C-c c" . org-gtd-capture)
-   ("C-c d e" . org-gtd-engage)
+   ("C-c d e" . douo/org-gtd-engage)
    ("C-c d p" . org-gtd-process-inbox)
    ("C-c d n" . org-gtd-show-all-next)
    ("C-c d s" . org-gtd-show-stuck-projects)
