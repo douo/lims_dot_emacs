@@ -166,6 +166,23 @@
               '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))))
           (org-agenda nil "g")
           (goto-char (point-min)))))
+  ;; Temporary fix see #https://github.com/Trevoke/org-gtd.el/pull/151
+  (defun org-gtd-clarify-item ()
+  "Process item at point through org-gtd."
+  (declare (modes org-mode)) ;; for 27.2 compatibility
+  (interactive)
+  (let ((processing-buffer (org-gtd-clarify--get-buffer))
+        (window-config (current-window-configuration))
+        (source-heading-marker (point-marker))
+        (inbox-current-tags-alist org-current-tag-alist)
+        )
+    (org-gtd-clarify--maybe-initialize-buffer-contents processing-buffer)
+    (with-current-buffer processing-buffer
+      (setq-local org-gtd-clarify--window-config window-config
+                  org-gtd-clarify--source-heading-marker source-heading-marker
+                  org-gtd-clarify--clarify-id (org-id-get)
+                  org-current-tag-alist inbox-current-tags-alist))
+    (org-gtd-clarify-setup-windows processing-buffer)))
   :custom
   (org-gtd-directory org-directory)
   ;; 自定义归档路径为 .archive/gtd_{2023}.org
