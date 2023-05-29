@@ -178,9 +178,19 @@
 ;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
 
-;; (use-package nerd-fonts
-;;   :ensure nil
-;;   :load-path  "lisp/nerd-fonts.el")
+(use-package nerd-icons
+  :ensure t
+  :custom
+  ;; The Nerd Font you want to use in GUI
+  ;; "Symbols Nerd Font Mono" is the default and is recommended
+  ;; but you can use any other Nerd Font if you want
+  (nerd-icons-font-family "Symbols Nerd Font Mono")
+  )
+
+(use-package nerd-icons-dired
+  :ensure t
+  :hook
+  (dired-mode . nerd-icons-dired-mode))
 
 ;; https://github.com/akermu/emacs-libvterm
 (use-package vterm
@@ -782,7 +792,7 @@
                '(c++-mode . c++-ts-mode)
                '(python-mode . python-ts-mode)
                )
-    )
+  )
 
 ;; (setq douo/python-lsp-server "pylsp")
 (setq douo/python-lsp-server "pyright")
@@ -819,7 +829,7 @@
   :bind
   (:map python-mode-map
         ("C-c M-f" . blacken-buffer)
-  )
+        )
   )
 
 
@@ -949,7 +959,7 @@
     )
   (with-system gnu/linux
     (sis-ism-lazyman-config "xkb:us::eng" "libpinyin" 'ibus)
-  )
+    )
   :custom
   (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
                                   ;; avy & consult
@@ -998,7 +1008,7 @@
     ;;(load-relative "gui.el")
     (load-relative "tui.el")
   (load-relative "tui.el")
-    )
+  )
 
 ;; macOS Fix
 (with-system darwin
@@ -1017,35 +1027,5 @@
                        )))
     (require 'fullscreen)
     (fullscreen))
-
-
-  ;; https://github.com/d12frosted/homebrew-emacs-plus/issues/383#issuecomment-899157143
-  ;; brew install coreutils
-  ;; dired 支持显示 user:group
-  ;; fix  `listing directory failed but access-file worked' 意外发现
-  (let ((gls "/usr/local/bin/gls"))
-    (if (file-exists-p gls)
-        (setq insert-directory-program gls dired-use-ls-dired t dired-listing-switches "-al --group-directories-first")
-      )
-    ;; 实际解决这个问题需要给 ruby full disk access
-    ;; https://emacs.stackexchange.com/a/53037/30746
-    )
-
-  ;; macos play-sound-file fix
-  ;; https://github.com/leoliu/play-sound-osx
-  (defun play-sound-internal (sound)
-    "Internal function for `play-sound' (which see)."
-    (or (eq (car-safe sound) 'sound)
-        (signal 'wrong-type-argument (list sound)))
-
-    (cl-destructuring-bind (&key file data volume device)
-        (cdr sound)
-
-      (and (or data device)
-           (error "DATA and DEVICE arg not supported"))
-
-      (apply #'start-process "afplay" nil
-             "afplay" (append (and volume (list "-v" volume))
-                              (list (expand-file-name file data-directory))))))
 
   )

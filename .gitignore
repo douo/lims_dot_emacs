@@ -33,3 +33,6 @@ abbrev_defs
 
 # Mac
 .DS_Store
+
+# emacs config
+custom-vars.el
