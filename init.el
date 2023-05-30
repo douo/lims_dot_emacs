@@ -257,6 +257,7 @@
 
 
 ;; 自动补全引号、括号等
+;; 类似 smartparens paredit fingertip
 (use-package elec-pair
   :config
   (electric-pair-mode +1))
@@ -782,7 +783,7 @@
   :ensure t
   )
 
-;; treesit support
+;; treesit start
 ;; read https://blog.markhepburn.com/posts/experimenting-with-the-built-in-treesitter-support-in-emacs/
 ;; download os relate module from: https://github.com/emacs-tree-sitter/tree-sitter-langs
 (when (and (not (version< emacs-version "29")) (treesit-available-p))
@@ -794,8 +795,92 @@
                )
   )
 
-;; (setq douo/python-lsp-server "pylsp")
-(setq douo/python-lsp-server "pyright")
+(use-package treesit-auto
+  :ensure t
+  :config
+  (global-treesit-auto-mode))
+
+;; (use-package fingertip
+;;   :ensure nil
+;;   :load-path  "lisp/fingertip"
+;;   :hook
+;;   (c-mode-common . fingertip-mode)
+;;   (c-mode . fingertip-mode)
+;;   (c++-mode . fingertip-mode)
+;;   (java-mode . fingertip-mode)
+;;   (haskell-mode . fingertip-mode)
+;;   (emacs-lisp-mode . fingertip-mode)
+;;   (lisp-interaction-mode . fingertip-mode)
+;;   (lisp-mode . fingertip-mode)
+;;   (maxima-mode . fingertip-mode)
+;;   (ielm-mode . fingertip-mode)
+;;   (sh-mode . fingertip-mode)
+;;   (makefile-gmake-mode . fingertip-mode)
+;;   (php-mode . fingertip-mode)
+;;   (python-mode . fingertip-mode)
+;;   (js-mode . fingertip-mode)
+;;   (go-mode . fingertip-mode)
+;;   (qml-mode . fingertip-mode)
+;;   (jade-mode . fingertip-mode)
+;;   (css-mode . fingertip-mode)
+;;   (ruby-mode . fingertip-mode)
+;;   (coffee-mode . fingertip-mode)
+;;   (rust-mode . fingertip-mode)
+;;   (rust-ts-mode . fingertip-mode)
+;;   (qmake-mode . fingertip-mode)
+;;   (lua-mode . fingertip-mode)
+;;   (swift-mode . fingertip-mode)
+;;   (web-mode . fingertip-mode)
+;;   (markdown-mode . fingertip-mode)
+;;   (llvm-mode . fingertip-mode)
+;;   (conf-toml-mode . fingertip-mode)
+;;   (nim-mode . fingertip-mode)
+;;   (typescript-mode . fingertip-mode)
+;;   (c-ts-mode . fingertip-mode)
+;;   (c++-ts-mode . fingertip-mode)
+;;   (cmake-ts-mode . fingertip-mode)
+;;   (toml-ts-mode . fingertip-mode)
+;;   (css-ts-mode . fingertip-mode)
+;;   (js-ts-mode . fingertip-mode)
+;;   (json-ts-mode . fingertip-mode)
+;;   (python-ts-mode . fingertip-mode)
+;;   (bash-ts-mode . fingertip-mode)
+;;   (typescript-ts-mode . fingertip-mode)
+;;   :bind  (:map fingertip-mode-map
+;;                ("(" . fingertip-open-round)
+;;                ("[" . fingertip-open-bracket)
+;;                ("{" . fingertip-open-curly)
+;;                (")" . fingertip-close-round)
+;;                ("]" . fingertip-close-bracket)
+;;                ("}" . fingertip-close-curly)
+;;                ("=" . fingertip-equal)
+
+;;                ("%" . fingertip-match-paren)
+;;                ("\"" . fingertip-double-quote)
+;;                ("'" . fingertip-single-quote)
+
+;;                ("SPC" . fingertip-space)
+;;                ("RET" . fingertip-newline)
+
+;;                ("M-o" . fingertip-backward-delete)
+;;                ("C-d" . fingertip-forward-delete)
+;;                ("C-k" . fingertip-kill)
+
+;;                ("M-\"" . fingertip-wrap-double-quote)
+;;                ("M-'" . fingertip-wrap-single-quote)
+;;                ("M-[" . fingertip-wrap-bracket)
+;;                ("M-{" . fingertip-wrap-curly)
+;;                ("M-(" . fingertip-wrap-round)
+;;                ("M-)" . fingertip-unwrap)
+
+;;                ("M-p" . fingertip-jump-right)
+;;                ("M-n" . fingertip-jump-left)
+;;                ("M-:" . fingertip-jump-out-pair-and-newline)
+
+;;                ("C-j" . fingertip-jump-up))
+;;   )
+
+;; treesit end
 
 ;; 主模式
 
@@ -804,6 +889,10 @@
   :ensure t)
 
 ;; python
+
+;; (setq douo/python-lsp-server "pylsp")
+(setq douo/python-lsp-server "pyright")
+
 
 ;; 只有安装了 conda 才启用
 (use-package conda
@@ -831,6 +920,8 @@
         ("C-c M-f" . blacken-buffer)
         )
   )
+(use-package cython-mode
+  :ensure t)
 
 
 ;; typescript

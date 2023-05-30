@@ -44,3 +44,5 @@
   (python-mode . douo/update_eglot_pyright_configuraton)
   (python-mode . eglot-ensure)
   )
+
+(load-theme 'modus-vivendi)

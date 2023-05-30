@@ -10,3 +10,6 @@
 [submodule "lisp/mind-wave"]
 	path = lisp/mind-wave
 	url = https://github.com/manateelazycat/mind-wave.git
+[submodule "lisp/fingertip"]
+	path = lisp/fingertip
+	url = https://github.com/manateelazycat/fingertip.git
