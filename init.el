@@ -1036,10 +1036,10 @@
   ;; 使用系统输入法
   ;; 需要先安装 https://github.com/laishulu/macism
   (with-system darwin
-    (setq sis-english-source "com.apple.keylayout.ABC")
     (sis-ism-lazyman-config
      "com.apple.keylayout.ABC" ;; 英文输入法
-     "com.apple.inputmethod.SCIM.ITABC" 'macism)) ;; 拼音输入法
+     "com.apple.inputmethod.SCIM.ITABC" 'macism)  ;; 拼音输入法
+    )
   ;;https://github.com/daipeihust/im-select
   ;;只能切换不同语言的输入法，拼音输入法的中英文切换无法识别
   (with-system windows-nt
@@ -1049,8 +1049,18 @@
      'im-select)
     )
   (with-system gnu/linux
-    (sis-ism-lazyman-config "xkb:us::eng" "libpinyin" 'ibus)
+    (message "linux")
+    ;; ibus
+    ;; (sis-ism-lazyman-config "xkb:us::eng" "libpinyin" 'ibus)
+    ;; fcitx5
+    (sis-ism-lazyman-config "1" "2" 'fcitx5)
     )
+  ;; hack start
+  ;; emacs 启动的时候 sis-global-respect-mode 调用 sis--ensure-ism 导致 sis--ism-inited 被置 t。默认 macos 没问题，其他系统没法正确初始化。
+  ;; 手动重置一下
+  (setq sis--ism-inited nil)
+  (sis-global-respect-mode)
+  ;; hack end
   :custom
   (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
                                   ;; avy & consult
