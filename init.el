@@ -885,6 +885,10 @@
 ;; 主模式
 
 ;;
+(use-package pkgbuild-mode
+  :ensure t)
+
+;;
 (use-package cmake-mode
   :ensure t)
 
