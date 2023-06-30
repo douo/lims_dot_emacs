@@ -1073,6 +1073,7 @@
                                   ))
   ;; enable the /cursor color/ mode
   (sis-global-cursor-color-mode t)
+  (sis-default-cursor-color "white")
   (sis-other-cursor-color "orange")
   ;; enable the /respect/ mode
   (sis-global-respect-mode t)
