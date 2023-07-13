@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t; -*-
+ ;; -*- lexical-binding: t; -*-
 ;;; init.el --- douo's emacs config
 ;;; Commentary:
 ;;
@@ -193,26 +193,27 @@
   (dired-mode . nerd-icons-dired-mode))
 
 ;; https://github.com/akermu/emacs-libvterm
-(use-package vterm
-  :ensure t)
-
-(use-package multi-vterm
-  :ensure t
-  :init
-  (transient-define-prefix multi-vterm-transient ()
-    "Multi vterm transient"
-    ["Multi vterm"
-     ("c" "Create new terminal" multi-vterm)
-     ("n" "Switch to next terminal" multi-vterm-next)
-     ("p" "Switch to next terminal" multi-vterm-prev)
-     ("t" "Toggle dedicated terminal" multi-vterm-dedicated-toggle)
-     ("g" "Create/toggle terminal based on current project" multi-vterm-project)
-     ]
-    )
-  :bind (
-         ("s-t" . multi-vterm)
-         ("C-c M-t" . multi-vterm-transient))
-  )
+(if (not IS-WINDOWS)
+    (progn
+      (use-package vterm
+        :ensure t)
+      (use-package multi-vterm
+        :ensure t
+        :init
+        (transient-define-prefix multi-vterm-transient ()
+          "Multi vterm transient"
+          ["Multi vterm"
+           ("c" "Create new terminal" multi-vterm)
+           ("n" "Switch to next terminal" multi-vterm-next)
+           ("p" "Switch to next terminal" multi-vterm-prev)
+           ("t" "Toggle dedicated terminal" multi-vterm-dedicated-toggle)
+           ("g" "Create/toggle terminal based on current project" multi-vterm-project)
+           ]
+          )
+        :bind (
+               ("s-t" . multi-vterm)
+               ("C-c M-t" . multi-vterm-transient))
+        )))
 
 
 
