@@ -68,6 +68,17 @@
           (t
            (call-interactively 'org-insert-link)))))
 
+;; https://emacs-china.org/t/org-mode-narrow-to-sublist/24682/5
+(defun org-narrow-to-item ()
+  "Narrow buffer to the current item.
+
+Throw an error when not in a list."
+  (interactive)
+  (save-excursion
+    (narrow-to-region
+	 (progn (org-beginning-of-item) (point))
+	 (progn (org-end-of-item) (1- (point))))))
+
 ;; config
 (use-package org
   :ensure t
