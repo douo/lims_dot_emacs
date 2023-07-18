@@ -183,6 +183,14 @@
                   org-gtd-clarify--clarify-id (org-id-get)
                   org-current-tag-alist inbox-current-tags-alist))
     (org-gtd-clarify-setup-windows processing-buffer)))
+  ;;  modify org capture templates
+  (add-to-list
+   'org-gtd-capture-templates
+   '("n" "Quick Note"
+     plain (file (lambda () (douo/generate-quick-note (concat douo/writing-home "/_notes/Quick"))))
+     "%i\n%U\n%?\n"
+     :kill-buffer t)
+   )
   :custom
   (org-gtd-directory org-directory)
   ;; 自定义归档路径为 .archive/gtd_{2023}.org
@@ -215,15 +223,6 @@
 (use-package org-capture
   :ensure nil
   :after org-gtd
-  :custom
-  (org-capture-templates
-        '(
-          ("n" "Quick Note"
-           plain (file (lambda () (douo/generate-quick-note (concat douo/writing-home "/_notes/Quick"))))
-           "%i\n%U\n%?\n"
-           :kill-buffer t)
-          )
-        )
   )
 
 (use-package org-agenda-property
