@@ -969,11 +969,25 @@
 (use-package subword-mode
   :hook ruby-mode)
 
+(with-system darwin
+  ;; swift
+  ;; https://www.reddit.com/r/emacs/comments/115lbrd/finally_got_eglot_to_work_with_sourcekitlsp_in/
+  (use-package swift-mode
+    :ensure t
+    :config
+    (with-eval-after-load 'eglot
+      (add-to-list 'eglot-server-programs
+                   '(swift-mode . ("xcrun" "sourcekit-lsp"))))
+    )
+  )
+
+
+
 
 ;; golang
 ;; 需安装 goimports gopls
 (use-package go-mode
-  :ensure t)
+  :ensure nil)
 ;; end golang
 
 ;; Markdown
