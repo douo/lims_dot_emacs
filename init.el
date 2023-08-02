@@ -116,44 +116,20 @@
 (set-keyboard-coding-system 'utf-8)
 
 ;;初始化包管理器
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+(straight-use-package 'use-package)
 
-;; https://emacs.stackexchange.com/questions/37904/how-do-i-work-out-what-the-problem-is-with-the-emacs-package-system/56067#56067
-;; https://github.com/doomemacs/doomemacs/blob/develop/core/core.el#L228
-;; (custom-set-variables
-;;  `(gnutls-algorithm-priority
-;;    ,(when (boundp 'libgnutls-version)
-;;       (concat "SECURE128:+SECURE192:-VERS-ALL"
-;;               (if (and (not IS-WINDOWS)
-;;                        (>= libgnutls-version 30605))
-;;                   ":+VERS-TLS1.3")
-;;               ":+VERS-TLS1.2"))
-;;    ))
-(require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-;; and `package-pinned-packages`. Most users will not need or want to do this.
-;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(package-initialize)
-;;(setq package-archives
-;; TNUA ELPA
-;; '(("gnu"   . "https://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-;;   ("melpa" . "https://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")))
-;; Emacs China ELPA
-;; '(("gnu"   . "https://elpa.emacs-china.org/gnu/")
-;; ("melpa" . "https://elpa.emacs-china.org/melpa/")))
-;; 163
-;;'(("gnu"   . "http://mirrors.163.com/elpa/gnu/")
-;;  ("melpa" . "http://mirrors.163.com/elpa/melpa/")))
-;; update the package metadata is the local cache is missing
-(unless package-archive-contents
-  (package-refresh-contents))
-
-;; 安装 use-package
-;;https://phenix3443.github.io/notebook/emacs/modes/use-package-manual.html
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-(eval-when-compile
-  (require 'use-package))
 
 (require 'minibuffer)
 
@@ -163,7 +139,7 @@
 ;; `exec-path' used by a windowed Emacs instance will usually be the
 ;; system-wide default path, rather than that seen in a terminal window.
 (use-package exec-path-from-shell
-  :ensure t
+  :straight t
   :config
   (when (or (memq window-system '(mac ns x)) (daemonp))
     (dolist (var '("RG_EXECUTABLE" "WRITING_HOME" "GTD_HOME" ;; personal
@@ -174,12 +150,12 @@
 
 
 (use-package load-relative
-  :ensure t)
+  :straight t)
 ;; 加载本机特殊配置，环境变量等...
 (load-relative "local.el")
 
 (use-package nerd-icons
-  :ensure t
+  :straight t
   :custom
   ;; The Nerd Font you want to use in GUI
   ;; "Symbols Nerd Font Mono" is the default and is recommended
@@ -188,7 +164,7 @@
   )
 
 (use-package nerd-icons-dired
-  :ensure t
+  :straight t
   :hook
   (dired-mode . nerd-icons-dired-mode))
 
@@ -196,9 +172,9 @@
 (if (not IS-WINDOWS)
     (progn
       (use-package vterm
-        :ensure t)
+        :straight t)
       (use-package multi-vterm
-        :ensure t
+        :straight t
         :init
         (transient-define-prefix multi-vterm-transient ()
           "Multi vterm transient"
@@ -219,7 +195,7 @@
 
 ;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
 (use-package pinyinlib
-  :ensure t)
+  :straight t)
 
 
 (use-package recentf
@@ -267,7 +243,7 @@
 ;;光标移动方案
 ;; https://github.com/abo-abo/avy
 (use-package avy
-  :ensure t
+  :straight t
   :bind
   ("M-g w" . avy-goto-word-or-subword-1)
   ("M-g c" . avy-goto-char)
@@ -275,7 +251,7 @@
   (setq avy-background t))
 ;; avy 支持拼音
 (use-package ace-pinyin
-  :ensure t
+  :straight t
   :config
   ;;(setq ace-pinyin-treat-word-as-char nil)
   (setq ace-pinyin-simplified-chinese-only-p nil)
@@ -283,32 +259,32 @@
   )
 ;; git
 (use-package magit
-  :ensure t
+  :straight t
   :bind (("C-x g" . magit-status)))
 (use-package git-timemachine
-  :ensure t
+  :straight t
   :bind (("M-g t" . git-timemachine)))
 
 ;; rg
 (use-package rg
-  :ensure t
+  :straight t
   :config
   (rg-enable-default-bindings))
 
 ;; https://github.com/magnars/expand-region.el
 (use-package expand-region
-  :ensure t
+  :straight t
   :bind ("C-=" . er/expand-region))
 ;; 更强大的 kill&yank
 ;; 代替 expand-region?
 (use-package easy-kill
-  :ensure t
+  :straight t
   :config
   (global-set-key [remap kill-ring-save] 'easy-kill))
 
 ;; 显示匹配数量
 (use-package anzu
-  :ensure t
+  :straight t
   :bind (("M-%" . anzu-query-replace)
          ("C-M-%" . anzu-query-replace-regexp))
   :config
@@ -316,28 +292,28 @@
 
 ;; 移动整个选择文本
 (use-package move-text
-  :ensure t
+  :straight t
   :bind
   (([(meta shift up)] . move-text-up)
    ([(meta shift down)] . move-text-down)))
 
 ;; 用不同颜色区别嵌套的括号引号等
 (use-package rainbow-delimiters
-  :ensure t
+  :straight t
   :config
   (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
   )
 
 ;; 代码中的颜色值可视化
 (use-package rainbow-mode
-  :ensure t
+  :straight t
   :config
   (add-hook 'prog-mode-hook #'rainbow-mode))
 
 ;; Virtual comments
 ;; 为文件增加注释，与文件保存分离
 (use-package virtual-comment
-  :ensure t
+  :straight t
   :config
   (add-hook 'prog-mode-hook #'virtual-comment-mode)
   )
@@ -354,25 +330,25 @@
 
 ;; temporarily highlight changes from yanking, etc
 (use-package volatile-highlights
-  :ensure t
+  :straight t
   :config
   (volatile-highlights-mode +1))
 
 ;; Save Emacs buffers when they lose focus
 (use-package super-save
-  :ensure t
+  :straight t
   :config
   (super-save-mode +1))
 
 ;; 旋转 frame 布局
 (use-package transpose-frame
-  :ensure t
+  :straight t
   )
 
 
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
 (use-package crux
-  :ensure t
+  :straight t
   :bind (("C-c o" . crux-open-with)
          ("M-o" . crux-smart-open-line)
          ("C-c n" . crux-cleanup-buffer-or-region)
@@ -401,7 +377,7 @@
          ))
 
 (use-package undo-tree
-  :ensure t
+  :straight t
   :config
   ;; autosave the undo-tree history
   (setq undo-tree-history-directory-alist
@@ -427,7 +403,7 @@
   (require 'dired-x))
 
 (use-package corfu
-  :ensure t
+  :straight t
   :custom
   ;; :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
@@ -449,7 +425,7 @@
   )
 
 (use-package cape
-  :ensure t
+  :straight t
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
   :bind (("C-c p p" . completion-at-point) ;; capf
@@ -486,7 +462,7 @@
   )
 
 (use-package ace-window
-  :ensure t
+  :straight t
   :config
   (global-set-key (kbd "s-w") 'ace-window)
   (global-set-key [remap other-window] 'ace-window))
@@ -494,7 +470,7 @@
 
 ;; alternative to the built-in Emacs help that provides much more contextual information.
 (use-package helpful
-  :ensure t
+  :straight t
   :bind
   ("C-h f" . helpful-callable)
   ("C-h v" . helpful-variable)
@@ -503,7 +479,7 @@
 
 ;; Enable vertico
 (use-package vertico
-  :ensure t
+  :straight t
   :init
   (vertico-mode)
   :custom
@@ -513,14 +489,14 @@
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
 ;; 可以实现访问越频繁的项越靠前
 (use-package savehist
-  :ensure t
+  :straight t
   :init
   (savehist-mode))
 
 ;; Enable richer annotations using the Marginalia package
 (use-package marginalia
   :after vertico
-  :ensure t
+  :straight t
   :custom
   (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   :init
@@ -546,7 +522,7 @@
 
 ;; Example configuration for Consult
 (use-package consult
-  :ensure t
+  :straight t
   :preface
   ;; exclude Tramp buffers from preview
   (defun consult-buffer-state-no-tramp ()
@@ -689,7 +665,7 @@
   )
 
 (use-package embark
-  :ensure t
+  :straight t
 
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
@@ -711,7 +687,7 @@
 
 ;; Consult users will also want the embark-consult package.
 (use-package embark-consult
-  :ensure t
+  :straight t
   :after (embark consult)
   :demand t ; only necessary if you have the hook below
   ;; if you want to have consult previews as you move around an
@@ -720,7 +696,7 @@
   (embark-collect-mode . consult-preview-at-point-mode))
 
 (use-package orderless
-  :ensure t
+  :straight t
   :after (pinyinlib)
   :preface
   ;; https://emacs-china.org/t/vertico/17913/3
@@ -732,19 +708,19 @@
 ;; end vertico
 
 (use-package which-key
-  :ensure t
+  :straight t
   :config
   (which-key-mode))
 
 ;; temporarily highlight changes from yanking, etc
 (use-package volatile-highlights
-  :ensure t
+  :straight t
   :config
   (volatile-highlights-mode +1))
 
 ;; 使用叠加层高亮符号
 (use-package symbol-overlay
-  :ensure t
+  :straight t
   :init
   (transient-define-prefix symbol-overlay-transient ()
     "Symbol Overlay transient"
@@ -767,21 +743,21 @@
   )
 
 (use-package flymake
-  :ensure t)
+  :straight t)
 
 ;; lsp-bridge
 (use-package posframe
-  :ensure t
+  :straight t
   )
 
 (use-package yasnippet
-  :ensure t
+  :straight t
   :config
   (yas-global-mode 1)
   )
 
 (use-package markdown-mode
-  :ensure t
+  :straight t
   )
 
 ;; treesit start
@@ -797,12 +773,12 @@
   )
 
 (use-package treesit-auto
-  :ensure t
+  :straight t
   :config
   (global-treesit-auto-mode))
 
 ;; (use-package fingertip
-;;   :ensure nil
+;;   :straight nil
 ;;   :load-path  "lisp/fingertip"
 ;;   :hook
 ;;   (c-mode-common . fingertip-mode)
@@ -887,11 +863,11 @@
 
 ;;
 (use-package pkgbuild-mode
-  :ensure t)
+  :straight t)
 
 ;;
 (use-package cmake-mode
-  :ensure t)
+  :straight t)
 
 ;; python
 
@@ -904,7 +880,7 @@
   :if (and
        (getenv "CONDA_EXE")
        (file-exists-p (getenv "CONDA_EXE")))
-  :ensure nil
+  :straight nil
   :after exec-path-from-shell
   :config
   (conda-env-initialize-interactive-shells)
@@ -919,14 +895,14 @@
 ;; reformat
 ;; 需要在环境中已经安装 https://github.com/psf/black
 (use-package blacken
-  :ensure t
+  :straight t
   :bind
   (:map python-mode-map
         ("C-c M-f" . blacken-buffer)
         )
   )
 (use-package cython-mode
-  :ensure t)
+  :straight t)
 
 
 ;; typescript
@@ -935,7 +911,7 @@
 ;; (setq web-mode-code-indent-offset 2)
 ;; (setq web-mode-css-indent-offset 2)
 (use-package web-mode
-  :ensure t
+  :straight t
   :mode (("\\.js\\'" . web-mode)
 	 ("\\.jsx\\'" .  web-mode)
 	 ("\\.html\\'" . web-mode))
@@ -948,7 +924,7 @@
    ("\\.tsx\\'" . tsx-ts-mode)))
 
 (use-package jsonian
-  :ensure t
+  :straight t
   :after so-long
   :custom
   (jsonian-no-so-long-mode))
@@ -956,14 +932,14 @@
 ;; ruby
 
 (use-package ruby-mode
-  :ensure t
+  :straight t
   :custom
   (ruby-insert-encoding-magic-comment nil)
   )
 
 ;;provides a REPL buffer connected to a Ruby subprocess.
 (use-package inf-ruby
-  :ensure t
+  :straight t
   :after ruby-mode)
 
 (use-package subword-mode
@@ -973,7 +949,7 @@
   ;; swift
   ;; https://www.reddit.com/r/emacs/comments/115lbrd/finally_got_eglot_to_work_with_sourcekitlsp_in/
   (use-package swift-mode
-    :ensure t
+    :straight t
     :config
     (with-eval-after-load 'eglot
       (add-to-list 'eglot-server-programs
@@ -987,12 +963,12 @@
 ;; golang
 ;; 需安装 goimports gopls
 (use-package go-mode
-  :ensure nil)
+  :straight t)
 ;; end golang
 
 ;; Markdown
 (use-package markdown-mode
-  :ensure t
+  :straight t
   :mode (("\\.md\\'" . gfm-mode)
          ("\\.markdown\\'" . gfm-mode))
   :custom
@@ -1012,32 +988,32 @@
 
 
 (use-package lua-mode
-  :ensure t
+  :straight t
   :mode "\\.lua\\'")
 
 
 (use-package yaml-mode
-  :ensure t)
+  :straight t)
 
 (use-package cask-mode
-  :ensure t)
+  :straight t)
 
 (use-package nginx-mode
-  :ensure t
+  :straight t
   )
 
 ;; openwrt uci config file
 (use-package uci-mode
   :init
   (load-relative "lisp/uci-mode.el")
-  :ensure nil
+  :straight `(uci-mode :type git :host github :repo "jkjuopperi/uci-mode")
   )
 
 (load-relative "org.el")
 
 ;; 翻译
 (use-package go-translate
-  :ensure t
+  :straight t
   :custom
   (gts-translate-list '(("en" "zh")))
   (gts-default-translator
@@ -1049,7 +1025,7 @@
 
 ;; 输入法
 (use-package sis
-  :ensure t
+  :straight t
   :config
   ;; macos
   ;; 使用系统输入法

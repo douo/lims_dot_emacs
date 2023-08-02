@@ -1,11 +1,11 @@
 (use-package pyvenv
-  :ensure t
+  :straight t
   :config
   )
 
 
 (use-package flymake
-  :ensure t
+  :straight t
   :bind (:map flymake-mode-map
               ("C-c M-." . flymake-goto-next-error)
               ("C-c M-," . flymake-goto-prev-error)
@@ -20,7 +20,7 @@
   )
 
 (use-package eglot
-  :ensure t
+  :straight t
   :config
   (add-to-list
    'eglot-server-programs

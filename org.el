@@ -81,7 +81,7 @@ Throw an error when not in a list."
 
 ;; config
 (use-package org
-  :ensure t
+  :straight t
   :config
   ;; 让 emphasis 块在紧邻中文字符时也能生效
   (org-set-emph-re 'org-emphasis-regexp-components
@@ -137,7 +137,7 @@ Throw an error when not in a list."
 
 ;; this allows you use `(,org-gtd-directory) for your agenda files
 (use-package org-agenda
-  :ensure nil
+  :straight nil
   :after org-gtd
   :custom
   (org-agenda-files `(,org-gtd-directory))
@@ -145,7 +145,7 @@ Throw an error when not in a list."
   )
 
 (use-package org-gtd
-  :ensure t
+  :straight t
   :after org
   :demand t
   :init
@@ -226,29 +226,29 @@ Throw an error when not in a list."
 ;;
 ;;
 (use-package org-analyzer
-  :ensure t
+  :straight t
   :after org)
 
 
 ;; this allows you to use (org-gtd-inbox-path) for your capture destinations
 (use-package org-capture
-  :ensure nil
+  :straight nil
   :after org-gtd
   )
 
 (use-package org-agenda-property
-  :ensure t
+  :straight t
   )
 
 (use-package org-edna
-  :ensure t
+  :straight t
   :config
   (setq org-edna-use-inheritance t)
   (org-edna-mode 1)
   )
 
 (use-package org-download
-  :ensure t
+  :straight t
   :after org
   :custom
   (org-download-method 'attach)
@@ -260,7 +260,7 @@ Throw an error when not in a list."
 ;; https://github.com/minad/org-modern
 ;; 美好似乎只是一时的新鲜感
 ;; (use-package org-modern
-;;   :ensure t
+;;   :straight t
 ;;   :hook
 ;;   (org-mode . org-modern-mode)
 ;;   (org-agenda-finalize-hook . org-modern-mode)

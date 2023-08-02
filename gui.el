@@ -3,16 +3,11 @@
 ;; (add-to-list 'load-path (concat user-emacs-directory "lisp/lsp-bridge"))
 
 (use-package markdown-mode
-  :ensure t
-  )
-(use-package mind-wave
-  :ensure nil
-  :load-path  "lisp/mind-wave"
+  :straight t
   )
 
 (use-package lsp-bridge
-  :ensure nil
-  :load-path  "lisp/lsp-bridge"
+  :straight `(lsp-bridge :type git :host github :repo "manateelazycat/lsp-bridge")
   :hook
   (python-mode . lsp-bridge-mode)
   :bind (:map lsp-bridge-mode-map
@@ -33,7 +28,7 @@
   )
 
 (use-package pyvenv
-  :ensure t
+  :straight t
   :config
   ;; https://github.com/manateelazycat/lsp-bridge/wiki/Python-virtualenv
   (defun local/lsp-bridge-get-single-lang-server-by-project (project-path filepath)
