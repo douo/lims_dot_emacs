@@ -897,7 +897,7 @@
   :if (and
        (getenv "CONDA_EXE")
        (file-exists-p (getenv "CONDA_EXE")))
-  :straight nil
+  :straight t
   :after exec-path-from-shell
   :config
   (conda-env-initialize-interactive-shells)
@@ -1022,7 +1022,6 @@
 ;; openwrt uci config file
 (use-package uci-mode
   :init
-  (load-relative "lisp/uci-mode.el")
   :straight `(uci-mode :type git :host github :repo "jkjuopperi/uci-mode")
   )
 
