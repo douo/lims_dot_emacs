@@ -402,27 +402,43 @@
   ;; enable some really cool extensions like C-x C-j(dired-jump)
   (require 'dired-x))
 
+;;
+;; 代码补完前端，当前位置代码补完，弹出补全菜单。
 (use-package corfu
-  :straight t
+  ;; straight hack. 加载扩展
+  :straight (:files (:defaults "extensions/*"))
   :custom
   ;; :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
+  ;; (corfu-auto nil)                 ;; Enable auto completion
+  ;; orderless 是一种高级补完 style
+  ;; 通过 spearator 划分过滤关键字
   (corfu-separator ?\s)          ;; Orderless field separator
   ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
   ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
   ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect-first nil)    ;; Disable candidate preselection
+  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
   ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-echo-documentation nil) ;; Disable documentation in the echo area
   ;; (corfu-scroll-margin 5)        ;; Use scroll margin
 
-  ;; 配合 eglot
-  ;; https://github.com/minad/corfu/wiki#configuring-corfu-for-eglot
-  ;; (completion-category-overrides '((eglot (styles orderless))))
-  ;;:init
-  ;;(global-corfu-mode)
+  :init
+  (global-corfu-mode)
+  :config
+  (defun corfu-move-to-minibuffer ()
+    (interactive)
+    (when completion-in-region--data
+      (let ((completion-extra-properties corfu--extra)
+            completion-cycle-threshold completion-cycling)
+        (apply #'consult-completion-in-region completion-in-region--data))))
+  (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
+  (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer)
+  :bind
+  (:map corfu-map
+        ("SPC" . corfu-insert-separator)
+        ("C-M-m" . corfu-move-to-minibuffer)
+        )
   )
+
 
 (use-package cape
   :straight t
@@ -478,6 +494,7 @@
   )
 
 ;; Enable vertico
+;; minibuffer completion UIs
 (use-package vertico
   :straight t
   :init
@@ -1127,24 +1144,99 @@
 
   )
 
-(use-package tabnine
-  :commands (tabnine-start-process)
-  :hook (prog-mode . tabnine-mode)
-  :straight t
-  :diminish "⌬"
-  :custom
-  (tabnine-wait 1)
-  (tabnine-minimum-prefix-length 0)
-  :hook (kill-emacs . tabnine-kill-process)
-  :config
-  (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
-  (tabnine-start-process)
-  :bind
-  (:map  tabnine-completion-map
-	 ("<tab>" . tabnine-accept-completion)
-	 ("TAB" . tabnine-accept-completion)
-	 ("M-f" . tabnine-accept-completion-by-word)
-	 ("M-<return>" . tabnine-accept-completion-by-line)
-	 ("C-g" . tabnine-clear-overlay)
-	 ("M-[" . tabnine-previous-completion)
-	 ("M-]" . tabnine-next-completion)))
+;; * copilot
+(setq douo/copilot-provider `codeium)
+;; switch...case by douo/copilot-provider
+(cl-case douo/copilot-provider
+  ;; ** Tabnine
+  ;; https://github.com/shuxiao9058/tabnine
+  (`tabnine
+   (use-package tabnine
+     :commands (tabnine-start-process)
+     :hook (prog-mode . tabnine-mode)
+     :straight t
+     :diminish "⌬"
+     :custom
+     (tabnine-wait 1)
+     (tabnine-minimum-prefix-length 0)
+     :hook (kill-emacs . tabnine-kill-process)
+     :config
+     (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
+     (tabnine-start-process)
+     :bind
+     (:map  tabnine-completion-map
+	    ("<tab>" . tabnine-accept-completion)
+	    ("TAB" . tabnine-accept-completion)
+	    ("M-f" . tabnine-accept-completion-by-word)
+	    ("M-<return>" . tabnine-accept-completion-by-line)
+	    ("C-g" . tabnine-clear-overlay)
+	    ("M-[" . tabnine-previous-completion)
+	    ("M-]" . tabnine-next-completion))))
+  (`codeium
+   ;; ** Codeium
+   ;; https://github.com/codeium/codeium
+   ;; https://github.com/Exafunction/codeium.el
+   ;; we recommend using use-package to organize your init.el
+   (use-package codeium
+     ;; if you use straight
+     :straight '(:type git :host github :repo "Exafunction/codeium.el")
+     ;; otherwise, make sure that the codeium.el file is on load-path
+
+     :init
+     ;; use globally
+     ;; (add-to-list 'completion-at-point-functions #'codeium-completion-at-point)
+     ;; or on a hook
+     ;; (add-hook 'python-mode-hook
+     ;;     (lambda ()
+     ;;         (setq-local completion-at-point-functions '(codeium-completion-at-point))))
+
+     ;; if you want multiple completion backends, use cape (https://github.com/minad/cape):
+     (add-hook 'python-mode-hook
+         (lambda ()
+             (setq-local completion-at-point-functions
+                 (list (cape-super-capf #'codeium-completion-at-point #'lsp-completion-at-point)))))
+     ;; an async company-backend is coming soon!
+
+     ;; codeium-completion-at-point is autoloaded, but you can
+     ;; optionally set a timer, which might speed up things as the
+     ;; codeium local language server takes ~0.2s to start up
+     ;; (add-hook 'emacs-startup-hook
+     ;;  (lambda () (run-with-timer 0.1 nil #'codeium-init)))
+
+     ;; :defer t ;; lazy loading, if you want
+     :config
+     (setq use-dialog-box nil) ;; do not use popup boxes
+
+     ;; if you don't want to use customize to save the api-key
+     ;; (setq codeium/metadata/api_key "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+
+     ;; get codeium status in the modeline
+     (setq codeium-mode-line-enable
+           (lambda (api) (not (memq api '(CancelRequest Heartbeat AcceptCompletion)))))
+     (add-to-list 'mode-line-format '(:eval (car-safe codeium-mode-line)) t)
+     ;; alternatively for a more extensive mode-line
+     ;; (add-to-list 'mode-line-format '(-50 "" codeium-mode-line) t)
+
+     ;; use M-x codeium-diagnose to see apis/fields that would be sent to the local language server
+     (setq codeium-api-enabled
+           (lambda (api)
+             (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
+     ;; you can also set a config for a single buffer like this:
+     ;; (add-hook 'python-mode-hook
+     ;;     (lambda ()
+     ;;         (setq-local codeium/editor_options/tab_size 4)))
+
+     ;; You can overwrite all the codeium configs!
+     ;; for example, we recommend limiting the string sent to codeium for better performance
+     (defun my-codeium/document/text ()
+       (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (min (+ (point) 1000) (point-max))))
+     ;; if you change the text, you should also change the cursor_offset
+     ;; warning: this is measured by UTF-8 encoded bytes
+     (defun my-codeium/document/cursor_offset ()
+       (codeium-utf8-byte-length
+        (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (point))))
+     (setq codeium/document/text 'my-codeium/document/text)
+     (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
+   )
+  (otherwise (message "copilot not set"))
+  )
