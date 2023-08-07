@@ -439,9 +439,17 @@
         )
   )
 
-
-(use-package cape
+(use-package kind-icon
   :straight t
+  :after corfu
+  :custom
+  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+;; 提供补完后端 capfs(completion-at-point-functions)
+;; 能将 company 后端转换为 capfs
+(use-package cape
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
   :bind (("C-c p p" . completion-at-point) ;; capf
@@ -452,7 +460,6 @@
          ("C-c p k" . cape-keyword)
          ("C-c p s" . cape-symbol)
          ("C-c p a" . cape-abbrev)
-         ("C-c p i" . cape-ispell)
          ("C-c p l" . cape-line)
          ("C-c p w" . cape-dict)
          ("C-c p \\" . cape-tex)
@@ -462,20 +469,24 @@
          ("C-c p r" . cape-rfc1345))
   :init
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
-  (add-to-list 'completion-at-point-functions #'cape-file)
+  ;; NOTE: The order matters!
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-elisp-block)
   ;;(add-to-list 'completion-at-point-functions #'cape-history)
   ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
   ;;(add-to-list 'completion-at-point-functions #'cape-tex)
   ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
   ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
   ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
   ;;(add-to-list 'completion-at-point-functions #'cape-dict)
   ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
-  :after corfu
   )
+
+
+;; Register emoji backend with Company.
+(setq company-backends '(emoji-backend))
 
 (use-package ace-window
   :straight t
@@ -761,6 +772,12 @@
 
 (use-package flymake
   :straight t)
+(use-package flymake-relint
+  :straight `(flymake-relint :type git :host github :repo "liuyinz/flymake-relint")
+  :hook
+  (emacs-lisp-mode . flymake-relint-setup)
+  (lisp-interaction-mode . flymake-relint-setup)
+  )
 
 ;; lsp-bridge
 (use-package posframe
