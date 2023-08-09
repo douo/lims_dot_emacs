@@ -1164,6 +1164,13 @@
 (setq douo/copilot-provider `codeium)
 ;; switch...case by douo/copilot-provider
 (cl-case douo/copilot-provider
+  ;; ** Copilot
+  (`copilot
+   (use-package copilot
+     :straight '(:type git :host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+     :hook (prog-mode . copilot-mode)
+     )
+   )
   ;; ** Tabnine
   ;; https://github.com/shuxiao9058/tabnine
   (`tabnine
@@ -1254,5 +1261,5 @@
      (setq codeium/document/text 'my-codeium/document/text)
      (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
    )
-  (otherwise (message "copilot not set"))
+p  (otherwise (message "copilot not set"))
   )
