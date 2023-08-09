@@ -1,4 +1,4 @@
- ;; -*- lexical-binding: t; -*-
+;; -*- lexical-binding: t; -*-
 ;;; init.el --- douo's emacs config
 ;;; Commentary:
 ;;
@@ -128,8 +128,19 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
-(straight-use-package 'use-package)
 
+(straight-use-package 'use-package)
+;; 提供简单的方法修改 minor-mode 在 modeline 中的 indicator
+(straight-use-package 'diminish)
+;; 与 diminish 不兼容
+(use-package minions
+  :straight t
+  :config
+  (minions-mode 1)
+  ;; (add-to-list 'minions-promoted-modes 'flymake-mode)
+  ;; 不隐藏 flymake-mode 的 indicator
+  (add-to-list 'minions-prominent-modes 'flymake-mode)
+  )
 
 (require 'minibuffer)
 
@@ -252,6 +263,7 @@
 ;; avy 支持拼音
 (use-package ace-pinyin
   :straight t
+  :diminish "拼"
   :config
   ;;(setq ace-pinyin-treat-word-as-char nil)
   (setq ace-pinyin-simplified-chinese-only-p nil)
@@ -307,6 +319,7 @@
 ;; 代码中的颜色值可视化
 (use-package rainbow-mode
   :straight t
+  :diminish  "括";;"  " ;; "🌈"
   :config
   (add-hook 'prog-mode-hook #'rainbow-mode))
 
@@ -316,6 +329,7 @@
   (dolist (hook '(prog-mode-hook))
     (add-hook hook #'whitespace-mode))
   (add-hook 'before-save-hook #'whitespace-cleanup)
+  :diminish "空";;"  "
   :config
   (setq whitespace-style '(face tabs empty trailing )))
 
@@ -328,6 +342,7 @@
 ;; Save Emacs buffers when they lose focus
 (use-package super-save
   :straight t
+  :diminish "存";;"  "
   :config
   (super-save-mode +1))
 
@@ -463,7 +478,7 @@
   ;; NOTE: The order matters!
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
   (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-elisp-block)
+  ;;(add-to-list 'completion-at-point-functions #'cape-elisp-block)
   ;;(add-to-list 'completion-at-point-functions #'cape-history)
   ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
   ;;(add-to-list 'completion-at-point-functions #'cape-tex)
@@ -475,9 +490,6 @@
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
   )
 
-
-;; Register emoji backend with Company.
-(setq company-backends '(emoji-backend))
 
 (use-package ace-window
   :straight t
@@ -728,12 +740,14 @@
 
 (use-package which-key
   :straight t
+  :diminish "键";;"  "
   :config
   (which-key-mode))
 
 ;; temporarily highlight changes from yanking, etc
 (use-package volatile-highlights
   :straight t
+  :diminish "闪"
   :config
   (volatile-highlights-mode +1))
 
@@ -762,7 +776,9 @@
   )
 
 (use-package flymake
-  :straight t)
+  :straight t
+  )
+
 (use-package flymake-relint
   :straight `(flymake-relint :type git :host github :repo "liuyinz/flymake-relint")
   :hook
@@ -779,6 +795,12 @@
   :straight t
   :config
   (yas-global-mode 1)
+  (diminish 'yas-minor-mode "ⓨ")
+  )
+
+(use-package yasnippet-snippets
+  :straight t
+  :after yasnippet
   )
 
 (use-package markdown-mode
@@ -1152,24 +1174,45 @@
   )
 
 ;; * copilot
-(setq douo/copilot-provider `codeium)
+(setq douo/copilot-provider `copilot)
 ;; switch...case by douo/copilot-provider
 (cl-case douo/copilot-provider
   ;; ** Copilot
   (`copilot
    (use-package copilot
      :straight '(:type git :host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+     :init
+     ;; accept completion from copilot and fallback to corfu-complete
+     (defun douo/copilot-complete ()
+       (interactive)
+       (or (copilot-accept-completion)
+           (corfu-complete)))
      :hook (prog-mode . copilot-mode)
+     :diminish "  "
+     :bind
+     (:map copilot-completion-map
+           ("<tab>" . douo/copilot-complete)
+           ("TAB" . douo/copilot-complete)
+           ("M-[" . copilot-previous-completion)
+	   ("M-]" . copilot-next-completion)
+           ("C-g" . copilot-clear-overlay)
+           )
      )
    )
   ;; ** Tabnine
   ;; https://github.com/shuxiao9058/tabnine
   (`tabnine
    (use-package tabnine
+     :init
+     ;; accept completion from copilot and fallback to corfu-complete
+     (defun douo/copilot-complete ()
+       (interactive)
+       (or (copilot-accept-completion)
+           (corfu-complete)))
      :commands (tabnine-start-process)
      :hook (prog-mode . tabnine-mode)
      :straight t
-     :diminish "⌬"
+     :diminish " ⌬ "
      :custom
      (tabnine-wait 1)
      (tabnine-minimum-prefix-length 0)
@@ -1179,10 +1222,7 @@
      (tabnine-start-process)
      :bind
      (:map  tabnine-completion-map
-	    ("<tab>" . tabnine-accept-completion)
-	    ("TAB" . tabnine-accept-completion)
-	    ("M-f" . tabnine-accept-completion-by-word)
-	    ("M-<return>" . tabnine-accept-completion-by-line)
+	    ("M-TAB" . tabnine-accept-completion)
 	    ("C-g" . tabnine-clear-overlay)
 	    ("M-[" . tabnine-previous-completion)
 	    ("M-]" . tabnine-next-completion))))
@@ -1206,9 +1246,9 @@
 
      ;; if you want multiple completion backends, use cape (https://github.com/minad/cape):
      (add-hook 'python-mode-hook
-         (lambda ()
-             (setq-local completion-at-point-functions
-                 (list (cape-super-capf #'codeium-completion-at-point #'lsp-completion-at-point)))))
+               (lambda ()
+                 (setq-local completion-at-point-functions
+                             (list (cape-super-capf #'codeium-completion-at-point #'lsp-completion-at-point)))))
      ;; an async company-backend is coming soon!
 
      ;; codeium-completion-at-point is autoloaded, but you can
@@ -1252,5 +1292,5 @@
      (setq codeium/document/text 'my-codeium/document/text)
      (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
    )
-p  (otherwise (message "copilot not set"))
+  (otherwise (message "copilot not set"))
   )

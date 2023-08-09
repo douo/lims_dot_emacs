@@ -244,7 +244,8 @@ Throw an error when not in a list."
   :straight t
   :config
   (setq org-edna-use-inheritance t)
-  (org-edna-mode 1)
+  :hook
+  (org-mode . org-edna-mode)
   )
 
 (use-package org-download

@@ -39,7 +39,8 @@
          "--pch-storage=memory"
          "--function-arg-placeholders"
          "--header-insertion=iwyu")))
-  (add-hook 'pyvenv-post-activate-hooks 'douo/update_eglot_pyright_configuraton)
+   (add-hook 'pyvenv-post-activate-hooks 'douo/update_eglot_pyright_configuraton)
+   (diminish 'eldoc-mode "显")
   :hook
   (python-mode . douo/update_eglot_pyright_configuraton)
   (python-mode . eglot-ensure)
