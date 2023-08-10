@@ -179,6 +179,14 @@
   :hook
   (dired-mode . nerd-icons-dired-mode))
 
+
+(use-package nerd-icons-completion
+  :straight t
+  :after marginalia
+  :config
+  (nerd-icons-completion-mode)
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+
 ;; https://github.com/akermu/emacs-libvterm
 (if (not IS-WINDOWS)
     (progn
@@ -445,6 +453,13 @@
         )
   )
 
+;; M-g 跳转候选位置
+;; M-h 显示候选文档
+;; 自动显示可用 corfu-popupinfo
+;; 通过 corfu 引入无需再手动 straight
+(use-package corfu-info
+  :after corfu)
+
 (use-package kind-icon
   :straight t
   :after corfu
@@ -456,6 +471,7 @@
 ;; 提供补完后端 capfs(completion-at-point-functions)
 ;; 能将 company 后端转换为 capfs
 (use-package cape
+  :straight t
   ;; Bind dedicated completion commands
   ;; Alternative prefix keys: C-c p, M-p, M-+, ...
   :bind (("C-c p p" . completion-at-point) ;; capf
@@ -524,16 +540,21 @@
   :init
   (savehist-mode))
 
-;; Enable richer annotations using the Marginalia package
+
+;; 为 minibuffer 候选项提供更多信息(旁注)
+;; Marginalia 连接到 Emacs 补全框架并运行变量 `marginalia-classifiers' 中列出的分类器，这些分类器使用命令的提示符或候选项的其他属性来指定补全类别。
+;; 一旦知道候选者的类别，Marginalia 就会在 `marginalia-annotator-registry' 中查找要使用的关联注释器。注释器是一个函数，它将完成候选字符串作为参数，并返回要在迷你缓冲区中的候选后面显示的注释字符串。
 (use-package marginalia
   :after vertico
   :straight t
-  :custom
-  (marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
+  ;; 切换关联注释器(annotator)
+  :bind (:map minibuffer-local-map
+              ("M-A" . marginalia-cycle))
   :init
   ;; Must be in the :init section of use-package such that the mode gets
   ;; enabled right away. Note that this forces loading the package.
   (marginalia-mode))
+
 
 ;; A few more useful configurations...
 (use-package emacs
@@ -1193,10 +1214,14 @@
      (:map copilot-completion-map
            ("<tab>" . douo/copilot-complete)
            ("TAB" . douo/copilot-complete)
+           ("M-f" . copilot-accept-completion-by-word)
+	   ("M-<return>" . copilot-accept-completion-by-line)
            ("M-[" . copilot-previous-completion)
 	   ("M-]" . copilot-next-completion)
            ("C-g" . copilot-clear-overlay)
            )
+     :config
+     (add-to-list 'minions-prominent-modes 'copilot-mode)
      )
    )
   ;; ** Tabnine

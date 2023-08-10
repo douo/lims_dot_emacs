@@ -1,3 +1,11 @@
+(use-package corfu-terminal
+  :straight '(corfu-terminal
+             :type git
+             :repo "https://codeberg.org/akib/emacs-corfu-terminal.git")
+  :after corfu
+  :config
+  (corfu-terminal-mode +1))
+
 (use-package pyvenv
   :straight t
   :config
