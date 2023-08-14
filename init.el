@@ -179,7 +179,7 @@
   :hook
   (dired-mode . nerd-icons-dired-mode))
 
-
+;; 提供 minibuf 补全的图标（文件）
 (use-package nerd-icons-completion
   :straight t
   :after marginalia
@@ -209,8 +209,6 @@
                ("s-t" . multi-vterm)
                ("C-c M-t" . multi-vterm-transient))
         )))
-
-
 
 ;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
 (use-package pinyinlib
@@ -523,15 +521,56 @@
   ("C-h k" . helpful-key)
   )
 
-;; Enable vertico
+;; start vertico
 ;; minibuffer completion UIs
 (use-package vertico
-  :straight t
+  :straight (:files (:defaults "extensions/*"))
   :init
   (vertico-mode)
   :custom
   (vertico-cycle t)
+  (vertico-count 10)
   )
+;; extensions
+;; 在普通 buffer 而不是 minibuffer 中显示候选项
+(use-package vertico-buffer
+  :after vertico
+  )
+
+
+(use-package vertico-multiform
+  :after vertico
+  :init
+  (vertico-multiform-mode +1)
+  :config
+  ;; Configure the display per command.
+  ;;
+  (setq vertico-multiform-commands
+          ;; Use a buffer with indices for imenu and consult-grep
+        `((consult-imenu buffer indexed)
+          ;; Configure `consult-outline' as a scaled down TOC in a separate buffer
+          (consult-outline buffer ,(lambda (_) (text-scale-set -1)))
+          (consult-grep buffer)
+          ))
+  ;; `vertico-multiform-categories' Configure the display per completion category.
+  (setq vertico-multiform-categories
+        ;; 将当前窗口重用于 consult-grep 类别（ consult-grep 、 consult-git-grep 和 consult-ripgrep ）的命令
+        `((consult-grep
+           buffer
+           (vertico-buffer-display-action . (display-buffer-same-window)))))
+  ;; Disable preview for consult-grep commands
+  (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
+
+  ;; bind 可以 vertico buffer 中切换显示方式
+  ;; M-V -> vertico-multiform-vertical
+  ;; M-G -> vertico-multiform-grid
+  ;; M-F -> vertico-multiform-flat
+  ;; M-R -> vertico-multiform-reverse
+  ;; M-U -> vertico-multiform-unobtrusive
+  )
+
+
+
 
 ;; Persist history over Emacs restarts. Vertico sorts by history position.
 ;; 可以实现访问越频繁的项越靠前
@@ -539,7 +578,6 @@
   :straight t
   :init
   (savehist-mode))
-
 
 ;; 为 minibuffer 候选项提供更多信息(旁注)
 ;; Marginalia 连接到 Emacs 补全框架并运行变量 `marginalia-classifiers' 中列出的分类器，这些分类器使用命令的提示符或候选项的其他属性来指定补全类别。
@@ -556,13 +594,28 @@
   (marginalia-mode))
 
 
+
 ;; A few more useful configurations...
+;; 来自 https://github.com/minad/vertico#configuration
 (use-package emacs
   :init
+  ;; 在提示语中显示 crm(多选补完) 的分隔符
+  ;; Add prompt indicator to `completing-read-multiple'.
+  ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+  (defun crm-indicator (args)
+    (cons (format "[CRM%s] %s"
+                  (replace-regexp-in-string
+                   "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                   crm-separator)
+                  (car args))
+          (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
   ;; Do not allow the cursor in the minibuffer prompt
   (setq minibuffer-prompt-properties
-        '(read-only t cursor-intangible t face minibuffer-prompt))
+        '(read-only t cursor-intangible nil face minibuffer-prompt))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
   ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
   ;; Vertico commands are hidden in normal buffers.
   ;; (setq read-extended-command-predicate
@@ -570,6 +623,7 @@
 
   ;; Enable recursive minibuffers
   (setq enable-recursive-minibuffers t))
+;; end vertico
 
 
 ;; Example configuration for Consult
@@ -704,6 +758,7 @@
   ;;;; 4. locate-dominating-file
   ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
   ;; Do not preview EXWM windows or Tramp buffers
+
   :custom
   (consult--source-buffer
    (plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
