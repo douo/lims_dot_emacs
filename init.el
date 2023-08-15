@@ -543,24 +543,6 @@
   :init
   (vertico-multiform-mode +1)
   :config
-  ;; Configure the display per command.
-  ;;
-  (setq vertico-multiform-commands
-          ;; Use a buffer with indices for imenu and consult-grep
-        `((consult-imenu buffer indexed)
-          ;; Configure `consult-outline' as a scaled down TOC in a separate buffer
-          (consult-outline buffer ,(lambda (_) (text-scale-set -1)))
-          (consult-grep buffer)
-          ))
-  ;; `vertico-multiform-categories' Configure the display per completion category.
-  (setq vertico-multiform-categories
-        ;; 将当前窗口重用于 consult-grep 类别（ consult-grep 、 consult-git-grep 和 consult-ripgrep ）的命令
-        `((consult-grep
-           buffer
-           (vertico-buffer-display-action . (display-buffer-same-window)))))
-  ;; Disable preview for consult-grep commands
-  (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
-
   ;; bind 可以 vertico buffer 中切换显示方式
   ;; M-V -> vertico-multiform-vertical
   ;; M-G -> vertico-multiform-grid
@@ -645,22 +627,25 @@
         (funcall orig-state (funcall filter cand restore) restore))))
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
+         ("C-c M-x" . consult-mode-command)
          ("C-c h" . consult-history)
-         ("C-c m" . consult-mode-command)
+         ("C-c m" . consult-man)
          ("C-c k" . consult-kmacro)
+         ("C-c i" . consult-info)
+         ([remap Info-search] . consult-info)
          ;; C-x bindings (ctl-x-map)
          ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
          ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
          ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
          ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
          ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
          ;; Custom M-# bindings for fast register access
          ("M-#" . consult-register-load)
          ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
          ("C-M-#" . consult-register)
          ;; Other custom bindings
          ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ("<help> a" . consult-apropos)            ;; orig. apropos-command
          ;; M-g bindings (goto-map)
          ("M-g e" . consult-compile-error)
          ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
@@ -675,6 +660,19 @@
          ("C-s" . consult-line)
          ("M-s d" . consult-find)
          ("M-s D" . consult-locate)
+         ;; 异步搜索
+         ;; 至少 `consult-async-min-input' 个字符后，才调用搜索。
+         ;; 第一个字符是标点符号，例如 # （默认），Consult 会将输入字符串分成两部分。例如 #regexps#filter-string ，在第二个 # 处拆分
+         ;; regexps 交给 grep ，filter-string 则在 emacs 这边过滤
+         ;; 更多例子
+         ;; `#defun': Search for “defun” using grep.
+         ;; `#consult embark': Search for both “consult” and “embark” using grep in any order.
+         ;; `#first.*second': Search for “first” followed by “second” using grep.
+         ;; `#\(consult\|embark\)': Search for “consult” or “embark” using grep. Note the usage of Emacs-style regular expressions.
+         ;; `#defun#consult': Search for “defun” using grep, filter with the word “consult”.
+         ;; `/defun/consult': It is also possible to use other punctuation characters.
+         ;; `#to#': Force searching for “to” using grep, since the grep pattern must be longer than `consult-async-min-input' characters by default.
+         ;; `#defun -- --invert-match#': Pass argument --invert-match to grep.
          ("M-s g" . consult-grep)
          ("M-s G" . consult-git-grep)
          ("M-s r" . consult-ripgrep)
@@ -702,15 +700,12 @@
   ;; Optionally configure the register formatting. This improves the register
   ;; preview for `consult-register', `consult-register-load',
   ;; `consult-register-store' and the Emacs built-ins.
-  (setq register-preview-delay 0
+  (setq register-preview-delay 0.5
         register-preview-function #'consult-register-format)
 
   ;; Optionally tweak the register preview window.
   ;; This adds thin lines, sorting and hides the mode line of the window.
   (advice-add #'register-preview :override #'consult-register-window)
-
-  ;; Removed   ;; https://github.com/minad/consult/issues/567
-  ;; (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
 
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
@@ -720,6 +715,7 @@
   ;; after lazily loading the package.
   :config
 
+  ;; 预览
   ;; Optionally configure preview. The default value
   ;; is 'any, such that any key triggers the preview.
   ;; (setq consult-preview-key 'any)
@@ -727,48 +723,50 @@
   ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
   ;; For some commands and buffer sources it is useful to configure the
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  ;; 主题延迟自动预览
   (consult-customize
-   consult-theme
-   :preview-key '(:debounce 0.2 any)
+   consult-theme :preview-key '(:debounce 0.2 any)
+   ;; 手动快捷键触发
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
-   consult--source-recent-file consult--source-project-recent-file consult--source-bookmark
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
    :preview-key "M-.")
 
-  ;; Optionally configure the narrowing key.
+
+  ;; narrow 缩小候选范围
+  ;; 逆操作是`consult-widen-key'
   ;; Both < and C-+ work reasonably well.
   (setq consult-narrow-key "<") ;; (kbd "C-+")
 
-  ;; Optionally make narrowing help available in the minibuffer.
-  ;; You may want to use `embark-prefix-help-command' or which-key instead.
-  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+  ;; begin_vertico_multiform
+  ;; Configure the display per command.
+  (setq vertico-multiform-commands
+          ;; Use a buffer with indices for imenu and consult-grep
+        `((consult-imenu buffer indexed)
+          ;; Configure `consult-outline' as a scaled down TOC in a separate buffer
+          (consult-outline buffer ,(lambda (_) (text-scale-set -1)))
+          (consult-grep buffer)
+          ))
+  ;; `vertico-multiform-categories' Configure the display per completion category.
+  (setq vertico-multiform-categories
+        ;; 将当前窗口重用于 consult-grep 类别（ consult-grep 、 consult-git-grep 和 consult-ripgrep ）的命令
+        `((consult-grep
+           buffer
+           (vertico-buffer-display-action . (display-buffer-same-window)))))
+  ;; Disable preview for consult-grep commands
+  (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
+  ;; end_vertico_multiform
 
-  ;; Optionally configure a function which returns the project root directory.
-  ;; There are multiple reasonable alternatives to chose from.
-  ;;;; 1. project.el (project-roots)
-  (setq consult-project-root-function
-        (lambda ()
-          (when-let (project (project-current))
-            (car (project-roots project)))))
-  ;;;; 2. projectile.el (projectile-project-root)
-  ;; (autoload 'projectile-project-root "projectile")
-  ;; (setq consult-project-root-function #'projectile-project-root)
-  ;;;; 3. vc.el (vc-root-dir)
-  ;; (setq consult-project-root-function #'vc-root-dir)
-  ;;;; 4. locate-dominating-file
-  ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
-  ;; Do not preview EXWM windows or Tramp buffers
-
-  :custom
-  (consult--source-buffer
-   (plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
+  ;; :custom
   ;; 用于 tui , corfu fallback 到 completion-in-region
-  (completion-in-region-function
-   (lambda (&rest args)
-     (apply (if vertico-mode
-                #'consult-completion-in-region
-              #'completion--in-region)
-            args)))
+  ;; 过时 obsolete，用 `corfu-terminal' 代替
+  ;; (completion-in-region-function
+  ;;  (lambda (&rest args)
+  ;;    (apply (if vertico-mode
+  ;;               #'consult-completion-in-region
+  ;;             #'completion--in-region)
+  ;;           args)))
   )
 
 (use-package embark
@@ -802,6 +800,9 @@
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 
+;; 将模式划分为空格分隔的组件，并匹配以任何顺序匹配所有组件的候选者。
+;; 组件默认启用正则表达式和文字匹配。
+;; 作用于 Completion 后端，与任意前端（corfu vertico）搭配使用
 (use-package orderless
   :straight t
   :after (pinyinlib)
@@ -811,7 +812,13 @@
     (orderless-regexp (pinyinlib-build-regexp-string str)))
   :config
   (add-to-list 'orderless-matching-styles 'completion--regex-pinyin)
-  :custom (completion-styles '(orderless)))
+  :custom
+  ;; 见 https://github.com/minad/vertico#tramp-hostname-and-username-completion
+  ;; 修复 < emacs 30 `/sshx:` 无法补完主机名和用户名
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles basic partial-completion))))
+  )
 ;; end vertico
 
 (use-package which-key
