@@ -90,12 +90,25 @@ Throw an error when not in a list."
                        `(,(concat f cjk) ,(concat s cjk) . ,r)
                        )
                      ))
-
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((python . t)))
+  ;; begin_vertico
+  ;; 见 https://github.com/minad/vertico#org-agenda-filter-and-org-tags-view
+  (defun org-enforce-basic-completion (&rest args)
+    (minibuffer-with-setup-hook
+        (:append
+         (lambda ()
+           (let ((map (make-sparse-keymap (current-local-map))))
+             (define-key map [tab] #'minibuffer-complete)
+             (use-local-map map))
+           (setq-local completion-styles (cons 'basic completion-styles)
+                       vertico-preselect 'prompt)))
+      (apply args)))
+  (advice-add #'org-make-tags-matcher :around #'org-enforce-basic-completion)
+  (advice-add #'org-agenda-filter :around #'org-enforce-basic-completion)
+  ;; end_vertico
   :custom
-
   (org-directory (if (not (string-suffix-p "/" douo/gtd-home))
       (concat douo/gtd-home "/")
     douo/gtd-home))
@@ -105,6 +118,14 @@ Throw an error when not in a list."
                         ))
   (org-preview-latex-default-process 'dvisvgm)
   (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.mp3"))
+  ;; begin_refile
+  ;; 显示 refile 的 outline 层级
+  ;; 设置为 `file' 会显示文件名，对于我的 gtd 系统来说不是很有用
+  (org-refile-use-outline-path 't)
+  ;; refile 直接显示目标，而不是通过 outline 层级一层层进入(默认，与 vertico 不兼容)
+  (org-outline-path-complete-in-steps nil)
+  ;; verico 要使用 outline-path-complete-in-steps 见 https://github.com/minad/vertico#org-refile
+  ;; end_refile
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          :map org-mode-map
