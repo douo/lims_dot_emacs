@@ -545,6 +545,9 @@
   :after vertico
   )
 
+(use-package vertico-reverse
+  :after vertico
+  )
 
 (use-package vertico-multiform
   :after vertico
@@ -665,7 +668,6 @@
          ("M-g i" . consult-imenu)
          ("M-g I" . consult-imenu-multi)
          ;; M-s bindings (search-map)
-         ("C-s" . consult-line)
          ("M-s d" . consult-find)
          ("M-s D" . consult-locate)
          ;; 异步搜索
@@ -719,6 +721,69 @@
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
 
+
+  ;; begin_isearch_like
+  ;; 实现类似 isearch 的 C-s C-r 行为
+  ;; modified from https://github.com/minad/consult/wiki#isearch-like-backwardforward-consult-line
+    (defun consult-line-wrapper (func)
+    "Search for a matching line forward."
+
+    (let* (
+           ;; 翻转 vertico-reverse
+           (next (if (eq func 'consult-line)
+                     #'vertico-next
+                   #'vertico-previous
+                   ))
+           (prev (if (eq func 'consult-line)
+                     #'vertico-previous
+                   #'vertico-next
+                   ))
+           (bind-hook (lambda ()
+                        (keymap-local-set "C-s" next)
+                        (keymap-local-set "C-r" prev)
+                        ))
+           (unbind-hook (lambda ()
+                          ;; HACK 手动指定 keymap
+                          ;; `minibuffer-setup-hook' 是作用于 `vertico-map'
+                          ;; `minibuffer-exit-hook' 的时候已经恢复为 `minibuffer-local-map' 所以直接 unset 不能生效
+                          (use-local-map vertico-map)
+                          (keymap-local-unset "C-s")
+                          (keymap-local-unset "C-r")
+                          ))
+           )
+      (add-hook 'minibuffer-setup-hook bind-hook)
+      (add-hook 'minibuffer-exit-hook unbind-hook)
+      (unwind-protect (funcall func)
+        (remove-hook 'minibuffer-setup-hook bind-hook)
+        (remove-hook 'minibuffer-exit-hook unbind-hook)
+        ))
+    )
+  (defun my/consult-line-forward ()
+    "Search for a matching line forward."
+    (interactive)
+    (consult-line-wrapper 'consult-line)
+    )
+
+  (defun my/consult-line-backward ()
+    "Search for a matching line backward."
+    (interactive)
+    (consult-line-wrapper (lambda ()
+                            (advice-add 'consult--line-candidates :filter-return 'reverse)
+                            (vertico-reverse-mode +1)
+                            (unwind-protect (consult-line)
+                              (vertico-reverse-mode -1)
+                              (advice-remove 'consult--line-candidates 'reverse))))
+    )
+  (with-eval-after-load 'consult
+    (consult-customize my/consult-line-backward
+                       :prompt "Go to line backward: ")
+    (consult-customize my/consult-line-forward
+                       :prompt "Go to line forward: "))
+
+  (global-set-key (kbd "C-s") 'my/consult-line-forward)
+  (global-set-key (kbd "C-r") 'my/consult-line-backward)
+  ;; end_isearch_like
+
   ;; Configure other variables and modes in the :config section,
   ;; after lazily loading the package.
   :config
@@ -750,7 +815,7 @@
   ;; begin_vertico_multiform
   ;; Configure the display per command.
   (setq vertico-multiform-commands
-          ;; Use a buffer with indices for imenu and consult-grep
+        ;; Use a buffer with indices for imenu and consult-grep
         `((consult-imenu buffer indexed)
           ;; Configure `consult-outline' as a scaled down TOC in a separate buffer
           (consult-outline buffer ,(lambda (_) (text-scale-set -1)))
@@ -814,13 +879,13 @@
   ;; begin_ace_window
   ;; 配合 ace-window 指定 window 打开目标
   (eval-when-compile
-  (defmacro my/embark-ace-action (fn)
-    `(defun ,(intern (concat "my/embark-ace-" (symbol-name fn))) ()
-       (interactive)
-       (with-demoted-errors "%s"
-         (let ((aw-dispatch-always t))
-           (aw-switch-to-window (aw-select nil))
-           (call-interactively (symbol-function ',fn)))))))
+    (defmacro my/embark-ace-action (fn)
+      `(defun ,(intern (concat "my/embark-ace-" (symbol-name fn))) ()
+         (interactive)
+         (with-demoted-errors "%s"
+           (let ((aw-dispatch-always t))
+             (aw-switch-to-window (aw-select nil))
+             (call-interactively (symbol-function ',fn)))))))
   (define-key embark-file-map     (kbd "o") (my/embark-ace-action find-file))
   (define-key embark-buffer-map   (kbd "o") (my/embark-ace-action switch-to-buffer))
   (define-key embark-bookmark-map (kbd "o") (my/embark-ace-action bookmark-jump))
@@ -839,15 +904,15 @@
     (when (file-writable-p file)
       (user-error "File is user writeable, aborting sudo"))
     (if (file-remote-p file)
-                   (let ((begin (replace-regexp-in-string  "scp" "ssh" (car (split-string file ":/"))))
-                         (end (car (cdr (split-string file "@")))))
-                     (set-buffer
-                      (find-file (format "%s" (concat begin "|sudo:root@" end))))
-                     )
-                 ;; local file
-                 (set-buffer
-                  (find-file (concat "/sudo::" (expand-file-name file)))
-                 )))
+        (let ((begin (replace-regexp-in-string  "scp" "ssh" (car (split-string file ":/"))))
+              (end (car (cdr (split-string file "@")))))
+          (set-buffer
+           (find-file (format "%s" (concat begin "|sudo:root@" end))))
+          )
+      ;; local file
+      (set-buffer
+       (find-file (concat "/sudo::" (expand-file-name file)))
+       )))
   (define-key embark-file-map (kbd "S") (my/embark-ace-action sudo-find-file))
   ;; end_sudo_find_file
 
@@ -885,7 +950,7 @@
   (defun completion--regex-pinyin (str)
     (orderless-regexp (pinyinlib-build-regexp-string str)))
   :config
-  (add-to-list 'orderless-matching-styles 'compyletion--regex-pinyin)
+  (add-to-list 'orderless-matching-styles 'completion--regex-pinyin)
   :custom
   ;; 见 https://github.com/minad/vertico#tramp-hostname-and-username-completion
   ;; 修复 < emacs 30 `/sshx:` 无法补完主机名和用户名
