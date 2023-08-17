@@ -357,6 +357,14 @@
   :straight t
   )
 
+;; 用于上传文本、文件到 https://0x0.st/ 或其它短链接分享服务
+;; 可自建 https://git.0x0.st/mia/0x0
+(use-package 0x0
+  :straight t
+  :custom
+  ;; 0x0 屏蔽了整个谷歌云 IP 段
+  (0x0-default-server 'ttm)
+  )
 
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
 (use-package crux
@@ -769,26 +777,92 @@
   ;;           args)))
   )
 
+;; 为当前目标提供 context action, 每个 category 都有一份 action
+;; 保存在变量里，比如文件对应的是 `embark-file-map'
+;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
+;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
+;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
+;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
 (use-package embark
   :straight t
+  :after (ace-window)
+  :init
+  ;; Optionally replace the key help with a completing-read interface
+  (setq prefix-help-command #'embark-prefix-help-command)
+  ;; 通过 Eldoc 显示 Embark 目标。
+  ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+  ;; 调整 Eldoc 策略，如果您想从多个提供者那里看到文档。
+  ;;(setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
   :bind
   (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-
-  :init
-
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
-
+   ;; 默认行为是 `xref-find-definitions'(M-.)
+   ;; 用 `embark-dwim' 提供更多功能性
+   ("M-." . embark-dwim)        ;; good alternative: C-;
+   ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
+   ("C-;" . embark-act-noquit))
+  (:map embark-collect-mode-map
+        ("m" . embark-select)
+        )
   :config
-
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
-                 (window-parameters (mode-line-format . none)))))
+                 (window-parameters (mode-line-format . none))))
+
+  ;; begin_ace_window
+  ;; 配合 ace-window 指定 window 打开目标
+  (eval-when-compile
+  (defmacro my/embark-ace-action (fn)
+    `(defun ,(intern (concat "my/embark-ace-" (symbol-name fn))) ()
+       (interactive)
+       (with-demoted-errors "%s"
+         (let ((aw-dispatch-always t))
+           (aw-switch-to-window (aw-select nil))
+           (call-interactively (symbol-function ',fn)))))))
+  (define-key embark-file-map     (kbd "o") (my/embark-ace-action find-file))
+  (define-key embark-buffer-map   (kbd "o") (my/embark-ace-action switch-to-buffer))
+  (define-key embark-bookmark-map (kbd "o") (my/embark-ace-action bookmark-jump))
+  ;; end_ace_window
+
+  ;; begin_0x0
+  (define-key embark-region-map   (kbd "U") '0x0-dwim)
+  (define-key embark-file-map   (kbd "U") '0x0-dwim)
+  ;; end_0x0
+
+  ;; begin_sudo_find_file
+  ;; root 权限打开文件
+  (defun sudo-find-file (file)
+    "Open FILE as root."
+    (interactive "FOpen file as root: ")
+    (when (file-writable-p file)
+      (user-error "File is user writeable, aborting sudo"))
+    (if (file-remote-p file)
+                   (let ((begin (replace-regexp-in-string  "scp" "ssh" (car (split-string file ":/"))))
+                         (end (car (cdr (split-string file "@")))))
+                     (set-buffer
+                      (find-file (format "%s" (concat begin "|sudo:root@" end))))
+                     )
+                 ;; local file
+                 (set-buffer
+                  (find-file (concat "/sudo::" (expand-file-name file)))
+                 )))
+  (define-key embark-file-map (kbd "S") (my/embark-ace-action sudo-find-file))
+  ;; end_sudo_find_file
+
+  ;; :custom
+  ;; 因为 `C-u C-.' 能实现 noquit  所以这里不需要了
+  ;; (embark-quit-after-action nil) ;; 执行操作后不退出 minibuffer，默认是 t
+  )
+
+;;
+(use-package consult-dir
+  :straight t
+  :bind (("C-x C-d" . consult-dir)
+         :map vertico-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file)))
 
 ;; Consult users will also want the embark-consult package.
 (use-package embark-consult
@@ -811,7 +885,7 @@
   (defun completion--regex-pinyin (str)
     (orderless-regexp (pinyinlib-build-regexp-string str)))
   :config
-  (add-to-list 'orderless-matching-styles 'completion--regex-pinyin)
+  (add-to-list 'orderless-matching-styles 'compyletion--regex-pinyin)
   :custom
   ;; 见 https://github.com/minad/vertico#tramp-hostname-and-username-completion
   ;; 修复 < emacs 30 `/sshx:` 无法补完主机名和用户名
@@ -1205,25 +1279,6 @@
   ;;(setq sis-inline-tighten-tail-rule 0)
   )
 ;; End
-
-;; root 权限打开文件
-;; 在 dired 配合 embark 使用最佳
-;; https://emacs.stackexchange.com/a/17726/30746
-(use-package tramp
-  :config
-  (defun sudo-find-file (file)
-    "Opens FILE with root privileges."
-    (interactive "FFind file: ")
-    (set-buffer
-     (find-file (concat "/sudo::" (expand-file-name file)))))
-  (defun sudo-remote-find-file (file)
-    "Opens repote FILE with root privileges."
-    (interactive "FFind file: ")
-    (setq begin (replace-regexp-in-string  "scp" "ssh" (car (split-string file ":/"))))
-    (setq end (car (cdr (split-string file "@"))))
-    (set-buffer
-     (find-file (format "%s" (concat begin "|sudo:root@" end)))))
-  )
 
 
 ;; 在 mode-line 显示时间
