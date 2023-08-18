@@ -422,6 +422,10 @@
   ;; enable some really cool extensions like C-x C-j(dired-jump)
   (require 'dired-x))
 
+(use-package eldoc
+  :diminish "显"
+  )
+
 ;;
 ;; 代码补完前端，当前位置代码补完，弹出补全菜单。
 (use-package corfu
