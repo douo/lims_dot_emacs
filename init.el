@@ -115,6 +115,23 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 
+(when (not (version< emacs-version "29"))
+  ;; https://www.masteringemacs.org/article/whats-new-in-emacs-29-1?utm_source=newsletter&utm_medium=rss#:~:text=C%2Dc%20j%20might%20be%20good.
+  (keymap-global-set "C-c j" #'duplicate-dwim)
+  ;; sqlite-mode 不能通过 find-file 直接打开，需要通过 sqlite-mode-open-file
+  (keymap-global-set "C-x t s" #'sqlite-mode-open-file)
+
+  (custom-set-variables
+   ;; 如果光标在一个闭合分隔符内且开放分隔符不在屏幕上显示，则在回显区域显示开放分隔符周围的一些上下文。默认值为nil。
+   '(show-paren-context-when-offscreen 'child-frame)
+   ;; flymake mode-line prefix
+   '(flymake-mode-line-lighter " ")
+   ;; 进程列表(proced)显示颜色
+   '(proced-enable-color-flag 't)
+   )
+  )
+
+
 ;;初始化包管理器
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -298,7 +315,7 @@
 (use-package easy-kill
   :straight t
   :config
-  (global-set-key [remap kill-ring-save] 'easy-kill))
+  (keymap-global-set "<remap> <kill-ring-save>" 'easy-kill))
 
 ;; 显示匹配数量
 (use-package anzu
@@ -520,8 +537,8 @@
 (use-package ace-window
   :straight t
   :config
-  (global-set-key (kbd "s-w") 'ace-window)
-  (global-set-key [remap other-window] 'ace-window))
+  (keymap-global-set "s-w" 'ace-window)
+  (keymap-global-set "<remap> <other-window>" 'ace-window))
 
 
 ;; alternative to the built-in Emacs help that provides much more contextual information.
@@ -784,8 +801,8 @@
     (consult-customize my/consult-line-forward
                        :prompt "Go to line forward: "))
 
-  (global-set-key (kbd "C-s") 'my/consult-line-forward)
-  (global-set-key (kbd "C-r") 'my/consult-line-backward)
+  (keymap-global-set "C-s" 'my/consult-line-forward)
+  (keymap-global-set "C-r" 'my/consult-line-backward)
   ;; end_isearch_like
 
   ;; Configure other variables and modes in the :config section,
