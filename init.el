@@ -184,11 +184,21 @@
 
 (use-package nerd-icons
   :straight t
-  :custom
   ;; The Nerd Font you want to use in GUI
   ;; "Symbols Nerd Font Mono" is the default and is recommended
-  ;; but you can use any other Nerd Font if you want
-  (nerd-icons-font-family "Symbols Nerd Font Mono")
+  ;; set font-family to `Hack Nerd Font Mono' if it exist in (font-family-list)
+  :config
+
+  ;; NL 表示 no-ligatures 即没有使用连字，保留了字符的原始样式。这样的变体通常在代码编辑器和终端中更具有可读性，因为它们保留了字符的独特形状。
+  ;; Mono 变体: "Mono" 变体意味着该字体是等宽字体，适用于代码编辑器和终端。每个字符的宽度相同，从而确保代码的对齐和格式化保持一致，提高了代码的可读性。
+  ;; Propo 变体: "Propo" 变体意味着该字体是比例字体，适用于文本编辑器和图形应用程序。每个字符的宽度不同，从而确保文本的对齐和格式化保持一致，提高了文本的可读性。
+  ;; https://github.com/ryanoasis/nerd-fonts/discussions/1103
+  (if (member "JetBrainsMonoNL Nerd Font Propo" (font-family-list))
+      (setq nerd-icons-font-family "JetBrainsMonoNL Nerd Font Propo")
+    (if (member "Hack Nerd Font Mono" (font-family-list))
+        (setq nerd-icons-font-family "Hack Nerd Font Mono")
+      )
+    )
   )
 
 (use-package nerd-icons-dired
@@ -746,7 +756,7 @@
   ;; begin_isearch_like
   ;; 实现类似 isearch 的 C-s C-r 行为
   ;; modified from https://github.com/minad/consult/wiki#isearch-like-backwardforward-consult-line
-    (defun consult-line-wrapper (func)
+  (defun consult-line-wrapper (func)
     "Search for a matching line forward."
 
     (let* (
