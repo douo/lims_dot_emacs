@@ -115,6 +115,23 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 
+(when (not (version< emacs-version "29"))
+  ;; https://www.masteringemacs.org/article/whats-new-in-emacs-29-1?utm_source=newsletter&utm_medium=rss#:~:text=C%2Dc%20j%20might%20be%20good.
+  (keymap-global-set "C-c j" #'duplicate-dwim)
+  ;; sqlite-mode 不能通过 find-file 直接打开，需要通过 sqlite-mode-open-file
+  (keymap-global-set "C-x t s" #'sqlite-mode-open-file)
+
+  (custom-set-variables
+   ;; 如果光标在一个闭合分隔符内且开放分隔符不在屏幕上显示，则在回显区域显示开放分隔符周围的一些上下文。默认值为nil。
+   '(show-paren-context-when-offscreen 'child-frame)
+   ;; flymake mode-line prefix
+   '(flymake-mode-line-lighter " ")
+   ;; 进程列表(proced)显示颜色
+   '(proced-enable-color-flag 't)
+   )
+  )
+
+
 ;;初始化包管理器
 (defvar bootstrap-version)
 (let ((bootstrap-file
@@ -167,11 +184,21 @@
 
 (use-package nerd-icons
   :straight t
-  :custom
   ;; The Nerd Font you want to use in GUI
   ;; "Symbols Nerd Font Mono" is the default and is recommended
-  ;; but you can use any other Nerd Font if you want
-  (nerd-icons-font-family "Symbols Nerd Font Mono")
+  ;; set font-family to `Hack Nerd Font Mono' if it exist in (font-family-list)
+  :config
+
+  ;; NL 表示 no-ligatures 即没有使用连字，保留了字符的原始样式。这样的变体通常在代码编辑器和终端中更具有可读性，因为它们保留了字符的独特形状。
+  ;; Mono 变体: "Mono" 变体意味着该字体是等宽字体，适用于代码编辑器和终端。每个字符的宽度相同，从而确保代码的对齐和格式化保持一致，提高了代码的可读性。
+  ;; Propo 变体: "Propo" 变体意味着该字体是比例字体，适用于文本编辑器和图形应用程序。每个字符的宽度不同，从而确保文本的对齐和格式化保持一致，提高了文本的可读性。
+  ;; https://github.com/ryanoasis/nerd-fonts/discussions/1103
+  (if (member "JetBrainsMonoNL Nerd Font Propo" (font-family-list))
+      (setq nerd-icons-font-family "JetBrainsMonoNL Nerd Font Propo")
+    (if (member "Hack Nerd Font Mono" (font-family-list))
+        (setq nerd-icons-font-family "Hack Nerd Font Mono")
+      )
+    )
   )
 
 (use-package nerd-icons-dired
@@ -298,7 +325,7 @@
 (use-package easy-kill
   :straight t
   :config
-  (global-set-key [remap kill-ring-save] 'easy-kill))
+  (keymap-global-set "<remap> <kill-ring-save>" 'easy-kill))
 
 ;; 显示匹配数量
 (use-package anzu
@@ -520,8 +547,8 @@
 (use-package ace-window
   :straight t
   :config
-  (global-set-key (kbd "s-w") 'ace-window)
-  (global-set-key [remap other-window] 'ace-window))
+  (keymap-global-set "s-w" 'ace-window)
+  (keymap-global-set "<remap> <other-window>" 'ace-window))
 
 
 ;; alternative to the built-in Emacs help that provides much more contextual information.
@@ -729,7 +756,7 @@
   ;; begin_isearch_like
   ;; 实现类似 isearch 的 C-s C-r 行为
   ;; modified from https://github.com/minad/consult/wiki#isearch-like-backwardforward-consult-line
-    (defun consult-line-wrapper (func)
+  (defun consult-line-wrapper (func)
     "Search for a matching line forward."
 
     (let* (
@@ -784,8 +811,8 @@
     (consult-customize my/consult-line-forward
                        :prompt "Go to line forward: "))
 
-  (global-set-key (kbd "C-s") 'my/consult-line-forward)
-  (global-set-key (kbd "C-r") 'my/consult-line-backward)
+  (keymap-global-set "C-s" 'my/consult-line-forward)
+  (keymap-global-set "C-r" 'my/consult-line-backward)
   ;; end_isearch_like
 
   ;; Configure other variables and modes in the :config section,
