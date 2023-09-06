@@ -394,6 +394,30 @@
   (0x0-default-server 'ttm)
   )
 
+(use-package nov
+  :straight t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+  )
+
+;; TODO
+;; - [ ] search
+;; - [ ] selection
+(use-package nov-xwidget
+  :straight `(nov-xwidget :type git :host github :repo "chenyanming/nov-xwidget")
+  :demand t
+  :after nov
+  :config
+  (define-key nov-mode-map (kbd "o") 'nov-xwidget-view)
+  (add-hook 'nov-mode-hook 'nov-xwidget-inject-all-files)
+  :bind
+  (:map nov-xwidget-webkit-mode-map
+        ("n" . nov-xwidget-next-document)
+        ("p" . nov-xwidget-previous-document)
+        ("t" . nov-xwidget-goto-toc)
+        )
+  )
+
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
 (use-package crux
   :straight t
