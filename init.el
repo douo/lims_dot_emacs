@@ -146,6 +146,7 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(straight-use-package 'org)
 (straight-use-package 'use-package)
 ;; 提供简单的方法修改 minor-mode 在 modeline 中的 indicator
 (straight-use-package 'diminish)
