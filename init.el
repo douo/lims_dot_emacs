@@ -394,6 +394,7 @@
   (0x0-default-server 'ttm)
   )
 
+;; begin_epub
 (use-package nov
   :straight t
   :config
@@ -417,6 +418,18 @@
         ("t" . nov-xwidget-goto-toc)
         )
   )
+;; end_epub
+
+;; begin_pdf
+(use-package pdf-tools
+      :straight t
+      :config
+      (custom-set-variables
+        '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
+;; 如果没有 epdfinfo，执行以下命令重新编译
+;;     (pdf-tools-install)
+;; end_pdf
 
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
 (use-package crux
