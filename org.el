@@ -287,3 +287,11 @@ Throw an error when not in a list."
 ;;   (org-mode . org-modern-mode)
 ;;   (org-agenda-finalize-hook . org-modern-mode)
 ;;   )
+
+
+;; https://orgmode.org/worg/org-contrib/org-checklist.html
+;; 添加属性 RESET_CHECK_BOXES
+;; 切换 TODO 状态时，重置所有 checkbox 的状态
+(use-package org-checklist
+  :straight  '(org-contrib :includes org-checklist)
+  )
