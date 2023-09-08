@@ -394,6 +394,23 @@
   (0x0-default-server 'ttm)
   )
 
+
+;; 翻译
+(use-package go-translate
+  :straight t
+  :custom
+  (gts-translate-list '(("en" "zh")))
+  (gts-default-translator
+   (gts-translator
+    :picker (gts-prompt-picker)
+    :engines (list (gts-google-rpc-engine))
+    :render (gts-buffer-render)
+    ;; :splitter (gts-paragraph-splitter)
+    )
+   )
+  )
+
+
 ;; begin_epub
 (use-package nov
   :straight t
@@ -426,7 +443,44 @@
       :config
       (custom-set-variables
         '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
-      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
+      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+
+      ;; 自定义 pdf 翻译文本提取器
+      ;; 如果有高亮返回高亮文本，无则返回整页文本
+      (defclass douo/gts-pdf-view-selection-texter (gts-texter) ())
+      (cl-defmethod gts-text ((_ douo/gts-pdf-view-selection-texter))
+        (unless (pdf-view-active-region-p)
+            (pdf-view-mark-whole-page)
+            )
+        ;; remove-newline-characters-if-not-at-the-end-of-sentence
+        ;; ::HACK:: 解决 pdf 提取文本不能正确断行的问题
+        ;; 移除不是处于句尾[.!?]的换行符
+        (replace-regexp-in-string "\\([^.!?]\\)\n\\([^ ]\\)" "\\1 \\2"
+                                   (car (pdf-view-active-region-text)))
+        )
+      (defvar douo/pdf-translater
+        (gts-translator
+         :picker (gts-noprompt-picker :texter (douo/gts-pdf-view-selection-texter))
+         :engines (list (gts-google-rpc-engine))
+         :render (gts-buffer-render)
+         ;; :splitter (gts-paragraph-splitter)
+         )
+        )
+      (defun douo/pdf-view-translate ()
+        (interactive)
+        (gts-translate douo/pdf-translater)
+        ;;  cancel selection in emacs
+        (deactivate-mark)
+        )
+      :bind
+      (:map pdf-view-mode-map
+            ;; consult 不支持与 pdf-tools 的交互
+            ("C-s" . isearch-forward)
+            ("C-r" . isearch-backward)
+            ("T" . douo/pdf-view-translate)
+            )
+      )
+
 ;; 如果没有 epdfinfo，执行以下命令重新编译
 ;;     (pdf-tools-install)
 ;; end_pdf
@@ -1347,18 +1401,6 @@
   )
 
 (load-relative "org.el")
-
-;; 翻译
-(use-package go-translate
-  :straight t
-  :custom
-  (gts-translate-list '(("en" "zh")))
-  (gts-default-translator
-   (gts-translator
-    :picker (gts-prompt-picker)
-    :engines (list (gts-bing-engine) (gts-google-engine))
-    :render (gts-buffer-render)))
-  )
 
 ;; 输入法
 (use-package sis
