@@ -472,6 +472,8 @@
         ;;  cancel selection in emacs
         (deactivate-mark)
         )
+      ;; 如果没有 epdfinfo，以下命令重新编译
+      (pdf-tools-install)
       :bind
       (:map pdf-view-mode-map
             ;; consult 不支持与 pdf-tools 的交互
@@ -480,9 +482,6 @@
             ("T" . douo/pdf-view-translate)
             )
       )
-
-;; 如果没有 epdfinfo，执行以下命令重新编译
-;;     (pdf-tools-install)
 ;; end_pdf
 
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
@@ -490,7 +489,7 @@
   :straight t
   :bind (("C-c o" . crux-open-with)
          ("M-o" . crux-smart-open-line)
-         ("C-c n" . crux-cleanup-buffer-or-region)
+         ("C-c N" . crux-cleanup-buffer-or-region)
          ("C-c f" . crux-recentf-find-file)
          ("C-M-z" . crux-indent-defun)
          ("C-c u" . crux-view-url)
