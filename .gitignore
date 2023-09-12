@@ -32,6 +32,10 @@ abbrev_defs
 .org-id-locations
 *_archive
 
+# Org-roam
+## org-roam 能自己重建数据库
+org-roam.db
+
 # Mac
 .DS_Store
 
