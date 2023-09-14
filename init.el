@@ -160,6 +160,14 @@
   (add-to-list 'minions-prominent-modes 'flymake-mode)
   )
 
+
+;;
+(use-package benchmark-init
+  :straight t
+  :config
+  ;; To disable collection of benchmark data after init is done.
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
 (require 'minibuffer)
 
 (setq use-package-verbose t)
@@ -189,7 +197,6 @@
   ;; "Symbols Nerd Font Mono" is the default and is recommended
   ;; set font-family to `Hack Nerd Font Mono' if it exist in (font-family-list)
   :config
-
   ;; NL 表示 no-ligatures 即没有使用连字，保留了字符的原始样式。这样的变体通常在代码编辑器和终端中更具有可读性，因为它们保留了字符的独特形状。
   ;; Mono 变体: "Mono" 变体意味着该字体是等宽字体，适用于代码编辑器和终端。每个字符的宽度相同，从而确保代码的对齐和格式化保持一致，提高了代码的可读性。
   ;; Propo 变体: "Propo" 变体意味着该字体是比例字体，适用于文本编辑器和图形应用程序。每个字符的宽度不同，从而确保文本的对齐和格式化保持一致，提高了文本的可读性。
@@ -200,6 +207,8 @@
         (setq nerd-icons-font-family "Hack Nerd Font Mono")
       )
     )
+  ;; temporary fix for https://github.com/rainstormstudio/nerd-icons.el/issues/29
+  (setf (alist-get 'benchmark-init/tree-mode nerd-icons-mode-icon-alist) '(nerd-icons-faicon "nf-fa-dashboard"))
   )
 
 (use-package nerd-icons-dired
@@ -439,49 +448,49 @@
 
 ;; begin_pdf
 (use-package pdf-tools
-      :straight t
-      :config
-      (custom-set-variables
-        '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
-      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+  :straight t
+  :config
+  (custom-set-variables
+   '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+  (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
 
-      ;; 自定义 pdf 翻译文本提取器
-      ;; 如果有高亮返回高亮文本，无则返回整页文本
-      (defclass douo/gts-pdf-view-selection-texter (gts-texter) ())
-      (cl-defmethod gts-text ((_ douo/gts-pdf-view-selection-texter))
-        (unless (pdf-view-active-region-p)
-            (pdf-view-mark-whole-page)
-            )
-        ;; remove-newline-characters-if-not-at-the-end-of-sentence
-        ;; ::HACK:: 解决 pdf 提取文本不能正确断行的问题
-        ;; 移除不是处于句尾[.!?]的换行符
-        (replace-regexp-in-string "\\([^.!?]\\)\n\\([^ ]\\)" "\\1 \\2"
-                                   (car (pdf-view-active-region-text)))
-        )
-      (defvar douo/pdf-translater
-        (gts-translator
-         :picker (gts-noprompt-picker :texter (douo/gts-pdf-view-selection-texter))
-         :engines (list (gts-google-rpc-engine))
-         :render (gts-buffer-render)
-         ;; :splitter (gts-paragraph-splitter)
-         )
-        )
-      (defun douo/pdf-view-translate ()
-        (interactive)
-        (gts-translate douo/pdf-translater)
-        ;;  cancel selection in emacs
-        (deactivate-mark)
-        )
-      ;; 如果没有 epdfinfo，以下命令重新编译
-      (pdf-tools-install)
-      :bind
-      (:map pdf-view-mode-map
-            ;; consult 不支持与 pdf-tools 的交互
-            ("C-s" . isearch-forward)
-            ("C-r" . isearch-backward)
-            ("T" . douo/pdf-view-translate)
-            )
+  ;; 自定义 pdf 翻译文本提取器
+  ;; 如果有高亮返回高亮文本，无则返回整页文本
+  (defclass douo/gts-pdf-view-selection-texter (gts-texter) ())
+  (cl-defmethod gts-text ((_ douo/gts-pdf-view-selection-texter))
+    (unless (pdf-view-active-region-p)
+      (pdf-view-mark-whole-page)
       )
+    ;; remove-newline-characters-if-not-at-the-end-of-sentence
+    ;; ::HACK:: 解决 pdf 提取文本不能正确断行的问题
+    ;; 移除不是处于句尾[.!?]的换行符
+    (replace-regexp-in-string "\\([^.!?]\\)\n\\([^ ]\\)" "\\1 \\2"
+                              (car (pdf-view-active-region-text)))
+    )
+  (defvar douo/pdf-translater
+    (gts-translator
+     :picker (gts-noprompt-picker :texter (douo/gts-pdf-view-selection-texter))
+     :engines (list (gts-google-rpc-engine))
+     :render (gts-buffer-render)
+     ;; :splitter (gts-paragraph-splitter)
+     )
+    )
+  (defun douo/pdf-view-translate ()
+    (interactive)
+    (gts-translate douo/pdf-translater)
+    ;;  cancel selection in emacs
+    (deactivate-mark)
+    )
+  ;; 如果没有 epdfinfo，以下命令重新编译
+  (pdf-tools-install)
+  :bind
+  (:map pdf-view-mode-map
+        ;; consult 不支持与 pdf-tools 的交互
+        ("C-s" . isearch-forward)
+        ("C-r" . isearch-backward)
+        ("T" . douo/pdf-view-translate)
+        )
+  )
 ;; end_pdf
 
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
@@ -646,12 +655,23 @@
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   :bind  (
           ("M-o" . ace-window)
-          ;;
-          ("M-S-<right>" . windmove-right)
-          ("M-S-<left>" . windmove-left)
-          ("M-S-<up>" . windmove-up)
-          ("M-S-<down>" . windmove-down)
           )
+  )
+
+;; 内置的 winner-mode 可以记忆窗口布局
+(use-package winner-mode
+  :config
+  (winner-mode 1)
+  :bind (
+         ;; 回退窗口布局
+         ("M-S-<left>" . winner-undo)
+         ("M-S-<right>" . winner-redo)
+         ;; 与 ace-window 重复
+         ("M-<right>" . windmove-right)
+         ("M-<left>" . windmove-left)
+         ("M-<up>" . windmove-up)
+         ("M-<down>" . windmove-down)
+         )
   )
 
 
