@@ -274,9 +274,14 @@ Throw an error when not in a list."
   :after org
   :custom
   (org-download-method 'attach)
+  (org-download-screenshot-method (cond
+                                   ((eq system-type 'darwin) "screencapture -i %s")
+                                   ((eq system-type 'gnu/linux) "maim -s %s")
+                                   ))
   :bind
   (:map org-mode-map
-        ("C-c C-x p" . org-download-clipboard))
+        ("C-c C-x p" . org-download-clipboard)
+        ("C-c C-x 4" . org-download-screenshot))
   )
 
 ;; https://github.com/minad/org-modern
@@ -353,7 +358,7 @@ Throw an error when not in a list."
    ;; Define some convenient keybindings as an addition
    ("C-c n f" . consult-org-roam-file-find)
    ("C-c n b" . consult-org-roam-backlinks)
-   ("C-c n l" . consult-org-roam-forward-links)
+   ("C-c n k" . consult-org-roam-forward-links)
    ("C-c n r" . consult-org-roam-search) ;; TODO 可以整合 `deft' 的功能
    )
 
