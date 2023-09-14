@@ -20,9 +20,9 @@
   (let ((date (encode-time (org-parse-time-string (substring (buffer-name) 5 -4)))))
     (save-excursion
       (goto-char (point-min))
-    (insert (concat "#+TITLE: " (org-format-time-string "%Y年%m月%d日杂记" date nil)  "\n"
-                 "#+date: " (format-time-string "[%Y-%m-%d]" date) "\n\n")
-      )))
+      (insert (concat "#+TITLE: " (org-format-time-string "%Y年%m月%d日杂记" date nil)  "\n"
+                      "#+date: " (format-time-string "[%Y-%m-%d]" date) "\n\n")
+              )))
   )
 
 ;; https://emacs.stackexchange.com/a/2559/30746
@@ -76,8 +76,8 @@ Throw an error when not in a list."
   (interactive)
   (save-excursion
     (narrow-to-region
-	 (progn (org-beginning-of-item) (point))
-	 (progn (org-end-of-item) (1- (point))))))
+     (progn (org-beginning-of-item) (point))
+     (progn (org-end-of-item) (1- (point))))))
 
 ;; config
 (use-package org
@@ -110,8 +110,8 @@ Throw an error when not in a list."
   ;; end_vertico
   :custom
   (org-directory (if (not (string-suffix-p "/" douo/gtd-home))
-      (concat douo/gtd-home "/")
-    douo/gtd-home))
+                     (concat douo/gtd-home "/")
+                   douo/gtd-home))
   ;; a useful view to see what can be accomplished today
   (org-refile-targets `(
                         (,(concat douo/gtd-home "/tasks.org") :maxlevel . 3)
@@ -183,38 +183,38 @@ Throw an error when not in a list."
     (org-gtd-core-prepare-agenda-buffers)
     (with-org-gtd-context
         (let ((org-agenda-custom-commands
-  `(("g" "Scheduled today and all NEXT items"
-     ((agenda "" ((org-agenda-span 1)
-                  (org-agenda-start-day nil)
-                  (org-agenda-skip-additional-timestamps-same-entry t)))
-      (todo org-gtd-next
-            ((org-agenda-overriding-header "All NEXT items")
-             (org-agenda-prefix-format
-              '((todo . " %i %-12:(concat \"[\"(org-format-outline-path (org-get-outline-path)) \"] \")")))))
-      (todo org-gtd-wait
-            ((org-agenda-todo-ignore-with-date t)
-             (org-agenda-overriding-header "Delegated/Blocked items")
-             (org-agenda-prefix-format
-              '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))))
+               `(("g" "Scheduled today and all NEXT items"
+                  ((agenda "" ((org-agenda-span 1)
+                               (org-agenda-start-day nil)
+                               (org-agenda-skip-additional-timestamps-same-entry t)))
+                   (todo org-gtd-next
+                         ((org-agenda-overriding-header "All NEXT items")
+                          (org-agenda-prefix-format
+                           '((todo . " %i %-12:(concat \"[\"(org-format-outline-path (org-get-outline-path)) \"] \")")))))
+                   (todo org-gtd-wait
+                         ((org-agenda-todo-ignore-with-date t)
+                          (org-agenda-overriding-header "Delegated/Blocked items")
+                          (org-agenda-prefix-format
+                           '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))))
           (org-agenda nil "g")
           (goto-char (point-min)))))
   ;; Temporary fix see #https://github.com/Trevoke/org-gtd.el/pull/151
   (defun org-gtd-clarify-item ()
-  "Process item at point through org-gtd."
-  (declare (modes org-mode)) ;; for 27.2 compatibility
-  (interactive)
-  (let ((processing-buffer (org-gtd-clarify--get-buffer))
-        (window-config (current-window-configuration))
-        (source-heading-marker (point-marker))
-        (inbox-current-tags-alist org-current-tag-alist)
-        )
-    (org-gtd-clarify--maybe-initialize-buffer-contents processing-buffer)
-    (with-current-buffer processing-buffer
-      (setq-local org-gtd-clarify--window-config window-config
-                  org-gtd-clarify--source-heading-marker source-heading-marker
-                  org-gtd-clarify--clarify-id (org-id-get)
-                  org-current-tag-alist inbox-current-tags-alist))
-    (org-gtd-clarify-setup-windows processing-buffer)))
+    "Process item at point through org-gtd."
+    (declare (modes org-mode)) ;; for 27.2 compatibility
+    (interactive)
+    (let ((processing-buffer (org-gtd-clarify--get-buffer))
+          (window-config (current-window-configuration))
+          (source-heading-marker (point-marker))
+          (inbox-current-tags-alist org-current-tag-alist)
+          )
+      (org-gtd-clarify--maybe-initialize-buffer-contents processing-buffer)
+      (with-current-buffer processing-buffer
+        (setq-local org-gtd-clarify--window-config window-config
+                    org-gtd-clarify--source-heading-marker source-heading-marker
+                    org-gtd-clarify--clarify-id (org-id-get)
+                    org-current-tag-alist inbox-current-tags-alist))
+      (org-gtd-clarify-setup-windows processing-buffer)))
   ;;  modify org capture templates
   (add-to-list
    'org-gtd-capture-templates
@@ -227,8 +227,8 @@ Throw an error when not in a list."
   (org-gtd-directory org-directory)
   ;; 自定义归档路径为 .archive/gtd_{2023}.org
   (org-gtd-archive-location (lambda ()
-    (let ((year (number-to-string (caddr (calendar-current-date)))))
-      (string-join `(".archive/gtd_" ,year  ".org::datetree/")))))
+                              (let ((year (number-to-string (caddr (calendar-current-date)))))
+                                (string-join `(".archive/gtd_" ,year  ".org::datetree/")))))
   ;; 让 todo 显示所有 outline path
 
   :bind
@@ -301,6 +301,16 @@ Throw an error when not in a list."
   :straight t
   :custom
   (org-roam-directory (file-truename (concat douo/writing-home "/_roam/")))
+  ;; format org-roam-node to file-title/title if level larger than 0
+  ;; 对于 header 类的 node 显示其所在文件 node 的标题
+  ;; 该变量用于 org-roam-node-insert 所插入链接的 description 部分
+  ;; 被 `org-roam-node-formatted' 所调用
+  ;; TODO `org-roam-complete-link-at-point' 是写死使用的 `org-roam--get-titles'，需要修改
+  (org-roam-node-formatter (lambda (node)
+                             (let ((level (org-roam-node-level node)))
+                               (if (> level 0)
+                                   (format "%s->%s" (org-roam-node-file-title node) (org-roam-node-title node))
+                                 (org-roam-node-title node)))))
   :bind
   ("C-c n l" . org-roam-buffer-toggle)
   ("C-c n f" . org-roam-node-find)
@@ -310,11 +320,13 @@ Throw an error when not in a list."
   ;; Dailies
   ("C-c n j" . org-roam-dailies-capture-today)
   :config
+
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
-  (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+  (setq org-roam-node-display-template (concat "${formatted:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode)
   ;; If using org-roam-protocol
-  (require 'org-roam-protocol))
+  (require 'org-roam-protocol)
+  )
 
 (use-package org-noter
   :straight t)
