@@ -116,7 +116,7 @@ Throw an error when not in a list."
   (org-refile-targets `(
                         (,(concat douo/gtd-home "/tasks.org") :maxlevel . 3)
                         ))
-  (org-preview-latex-default-process 'dvisvgm)
+  ;; (org-preview-latex-default-process 'dvisvgm)
   (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.mp3"))
   ;; begin_refile
   ;; 显示 refile 的 outline 层级
@@ -301,6 +301,7 @@ Throw an error when not in a list."
   :straight t
   :custom
   (org-roam-directory (file-truename (concat douo/writing-home "/_roam/")))
+  (org-roam-dailies-directory "quick/")
   :bind
   ("C-c n l" . org-roam-buffer-toggle)
   ("C-c n f" . org-roam-node-find)

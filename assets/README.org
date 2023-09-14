@@ -1,0 +1,9 @@
+* roam
+
+存放 ~org-roam-procotol~ 在对应操作系统上的 scheme-handler
+
+** macOS
+
+复制 ~OrgProtocolClient.app~ 到目录 ~/Applications~ 。需要手动运行一遍，让 scheme-handler 注册生效。
+
+其他细节见，[[https://www.orgroam.com/manual.html#Mac-OS][Org-roam User Manual#MacOS]]
