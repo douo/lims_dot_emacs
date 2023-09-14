@@ -116,7 +116,7 @@ Throw an error when not in a list."
   (org-refile-targets `(
                         (,(concat douo/gtd-home "/tasks.org") :maxlevel . 3)
                         ))
-  (org-preview-latex-default-process 'dvisvgm)
+  ;; (org-preview-latex-default-process 'dvisvgm)
   (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.mp3"))
   ;; begin_refile
   ;; 显示 refile 的 outline 层级
@@ -311,6 +311,7 @@ Throw an error when not in a list."
                                (if (> level 0)
                                    (format "%s->%s" (org-roam-node-file-title node) (org-roam-node-title node))
                                  (org-roam-node-title node)))))
+  (org-roam-dailies-directory "quick/")
   :bind
   ("C-c n l" . org-roam-buffer-toggle)
   ("C-c n f" . org-roam-node-find)
@@ -324,9 +325,8 @@ Throw an error when not in a list."
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${formatted:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode)
-  ;; If using org-roam-protocol
-  (require 'org-roam-protocol)
   )
+(require 'org-roam-protocol)
 
 (use-package org-noter
   :straight t)

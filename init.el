@@ -488,7 +488,6 @@
 (use-package crux
   :straight t
   :bind (("C-c o" . crux-open-with)
-         ("M-o" . crux-smart-open-line)
          ("C-c N" . crux-cleanup-buffer-or-region)
          ("C-c f" . crux-recentf-find-file)
          ("C-M-z" . crux-indent-defun)
@@ -507,9 +506,10 @@
          ("C-^" . crux-top-join-line)
          ("s-k" . crux-kill-whole-line)
          ("C-<backspace>" . crux-kill-line-backwards)
-         ("s-o" . crux-smart-open-line-above)
          ([remap move-beginning-of-line] . crux-move-beginning-of-line)
+         ;; ("M-o" . crux-smart-open-line)
          ([(shift return)] . crux-smart-open-line)
+         ;; ("s-o" . crux-smart-open-line-above)
          ([(control shift return)] . crux-smart-open-line-above)
          ([remap kill-whole-line] . crux-kill-whole-line)
          ))
@@ -637,9 +637,23 @@
 
 (use-package ace-window
   :straight t
-  :config
-  (keymap-global-set "s-w" 'ace-window)
-  (keymap-global-set "<remap> <other-window>" 'ace-window))
+  :custom
+  (aw-dispatch-always t)
+  ;; 搭配使用，通过 minibuf 提示当前处于 ace-window 模式
+  (aw-background nil)
+  (aw-minibuffer-flag t)
+
+  (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  :bind  (
+          ("M-o" . ace-window)
+          ;;
+          ("M-S-<right>" . windmove-right)
+          ("M-S-<left>" . windmove-left)
+          ("M-S-<up>" . windmove-up)
+          ("M-S-<down>" . windmove-down)
+          )
+  )
+
 
 
 ;; alternative to the built-in Emacs help that provides much more contextual information.
@@ -1438,7 +1452,8 @@
   (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
                                   ;; avy & consult
                                   "M-g" "C-。" "M-s"
-                                  ;; easy-kill
+                                  ;; ace-window
+                                  "M-o"
                                   ))
   ;; enable the /cursor color/ mode
   (sis-global-cursor-color-mode t)
