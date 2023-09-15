@@ -1,3 +1,7 @@
+(setq douo/roam-home (concat (file-name-as-directory douo/writing-home) "_roam"))
+(setq douo/gtd-home (concat (file-name-as-directory douo/roam-home) "_gtd"))
+
+
 (defun douo/generate-quick-note (path)
   (let ((file
          (expand-file-name (format-time-string "%Y/%m/note-%Y-%m-%d.org") path)))
@@ -364,4 +368,6 @@ Throw an error when not in a list."
 
 
 (use-package org-noter
-  :straight t)
+  :straight t
+  :defer t
+  )

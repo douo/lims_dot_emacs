@@ -449,6 +449,7 @@
 ;; begin_pdf
 (use-package pdf-tools
   :straight t
+  :defer t
   :config
   (custom-set-variables
    '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
