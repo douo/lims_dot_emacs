@@ -2,6 +2,7 @@
 (setq douo/gtd-home (concat (file-name-as-directory douo/roam-home) "_gtd"))
 
 
+
 (defun douo/generate-quick-note (path)
   (let ((file
          (expand-file-name (format-time-string "%Y/%m/note-%Y-%m-%d.org") path)))
@@ -118,7 +119,7 @@ Throw an error when not in a list."
                    douo/gtd-home))
   ;; a useful view to see what can be accomplished today
   (org-refile-targets `(
-                        (,(concat douo/gtd-home "/tasks.org") :maxlevel . 3)
+                        (,(concat (file-name-as-directory douo/gtd-home) "tasks.org") :maxlevel . 3)
                         ))
   ;; (org-preview-latex-default-process 'dvisvgm)
   (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.mp3"))
@@ -259,6 +260,16 @@ Throw an error when not in a list."
 (use-package org-capture
   :straight nil
   :after org-gtd
+  :config
+  (add-to-list 'org-capture-templates
+               ;; 浏览器捕获当前链接到 tasks.org（Ctrl-Cmd+o）
+               `("w"
+                 "To Read"
+                 entry
+                 (file+headline ,(concat (file-name-as-directory douo/gtd-home) "tasks.org") "Read")
+                 "* TODO [[%:link][%:description]]\n%i\n%?\n%U"
+                 :empty-lines 1)
+                )
   )
 
 (use-package org-agenda-property
@@ -323,7 +334,7 @@ Throw an error when not in a list."
   (org-roam-dailies-directory "quick/")
   :bind
   ("C-c n l" . org-roam-buffer-toggle)
-    ;; ("C-c n f" . org-roam-node-find) ;; 由 `consult-org-roam-file-find'  代替
+  ;; ("C-c n f" . org-roam-node-find) ;; 由 `consult-org-roam-file-find'  代替
   ("C-c n g" . org-roam-graph)
   ("C-c n i" . org-roam-node-insert)
   ("C-c n c" . org-roam-capture)
@@ -339,32 +350,32 @@ Throw an error when not in a list."
 
 
 (use-package consult-org-roam
-   :straight t
-   :after org-roam
-   :init
-   (require 'consult-org-roam)
-   ;; Activate the minor mode
-   (consult-org-roam-mode 1)
-   :custom
-   ;; Use `ripgrep' for searching with `consult-org-roam-search'
-   (consult-org-roam-grep-func #'consult-ripgrep)
-   ;; Configure a custom narrow key for `consult-buffer'
-   (consult-org-roam-buffer-narrow-key ?r)
-   ;; Display org-roam buffers right after non-org-roam buffers
-   ;; in consult-buffer (and not down at the bottom)
-   (consult-org-roam-buffer-after-buffers t)
-   :config
-   ;; Eventually suppress previewing for certain functions
-   (consult-customize
-    consult-org-roam-forward-links
-    :preview-key (kbd "M-."))
-   :bind
-   ;; Define some convenient keybindings as an addition
-   ("C-c n f" . consult-org-roam-file-find)
-   ("C-c n b" . consult-org-roam-backlinks)
-   ("C-c n k" . consult-org-roam-forward-links)
-   ("C-c n r" . consult-org-roam-search) ;; TODO 可以整合 `deft' 的功能
-   )
+  :straight t
+  :after org-roam
+  :init
+  (require 'consult-org-roam)
+  ;; Activate the minor mode
+  (consult-org-roam-mode 1)
+  :custom
+  ;; Use `ripgrep' for searching with `consult-org-roam-search'
+  (consult-org-roam-grep-func #'consult-ripgrep)
+  ;; Configure a custom narrow key for `consult-buffer'
+  (consult-org-roam-buffer-narrow-key ?r)
+  ;; Display org-roam buffers right after non-org-roam buffers
+  ;; in consult-buffer (and not down at the bottom)
+  (consult-org-roam-buffer-after-buffers t)
+  :config
+  ;; Eventually suppress previewing for certain functions
+  (consult-customize
+   consult-org-roam-forward-links
+   :preview-key (kbd "M-."))
+  :bind
+  ;; Define some convenient keybindings as an addition
+  ("C-c n f" . consult-org-roam-file-find)
+  ("C-c n b" . consult-org-roam-backlinks)
+  ("C-c n k" . consult-org-roam-forward-links)
+  ("C-c n r" . consult-org-roam-search) ;; TODO 可以整合 `deft' 的功能
+  )
 
 
 (use-package org-noter
