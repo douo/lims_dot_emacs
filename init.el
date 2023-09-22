@@ -403,6 +403,11 @@
   (0x0-default-server 'ttm)
   )
 
+;; 保留颜色用方块代替字符
+;; 类似内置的 `toggle-rot13-mode'
+(use-package redacted
+  :straight t
+  )
 
 ;; 翻译
 (use-package go-translate

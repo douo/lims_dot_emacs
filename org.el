@@ -285,6 +285,7 @@ Throw an error when not in a list."
   )
 
 (use-package org-download
+
   :straight t
   :after org
   :custom
@@ -296,7 +297,9 @@ Throw an error when not in a list."
   :bind
   (:map org-mode-map
         ("C-c C-x p" . org-download-clipboard)
+        ("C-c C-x y" . org-download-yank) ;; 本地或远程图片链接可以直接下载插入 org 文件
         ("C-c C-x 4" . org-download-screenshot))
+  ;; 另外本地或远程图片可以直接拖拽插入 org 文件
   )
 
 ;; https://github.com/minad/org-modern
