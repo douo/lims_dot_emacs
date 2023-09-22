@@ -285,7 +285,6 @@ Throw an error when not in a list."
   )
 
 (use-package org-download
-
   :straight t
   :after org
   :custom
@@ -296,10 +295,12 @@ Throw an error when not in a list."
                                    ))
   :bind
   (:map org-mode-map
-        ("C-c C-x p" . org-download-clipboard)
-        ("C-c C-x y" . org-download-yank) ;; 本地或远程图片链接可以直接下载插入 org 文件
+        ;; FIXME `org-download-clipboard' 无法通过返回值判断是否成功
+        ;; FIXME 要实现配合 `org-download-yank' 的 DWIM 功能，需要修改 `org-download-clipboard' 的实现
+        ("C-c C-x 2" . org-download-clipboard) ;; linux 需要 `xclip' ; macOS 需要 `pngpaste'
+        ("C-c C-x 3" . org-download-yank) ;; 本地或远程图片链接可以直接下载插入 org 文件
         ("C-c C-x 4" . org-download-screenshot))
-  ;; 另外本地或远程图片可以直接拖拽插入 org 文件
+  ;; 另外还支持本地或远程图片可以直接拖拽插入 org 文件
   )
 
 ;; https://github.com/minad/org-modern
