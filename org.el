@@ -113,6 +113,18 @@ Throw an error when not in a list."
   (advice-add #'org-make-tags-matcher :around #'org-enforce-basic-completion)
   (advice-add #'org-agenda-filter :around #'org-enforce-basic-completion)
   ;; end_vertico
+
+  ;; 如果 emacs 不支持 sound， org-timer 使用外部程序播放提示音
+  (unless (fboundp 'play-sound-internal)
+    (add-hook 'org-timer-done-hook
+              (lambda ()
+                (start-process-shell-command "org-timer" nil
+                                             (concat (cond
+                                                      ((eq system-type 'darwin) "afplay ")
+                                                      ((eq system-type 'gnu/linux) "paplay ")
+                                                      )
+                                                     org-clock-sound)))))
+
   :custom
   (org-directory (if (not (string-suffix-p "/" douo/gtd-home))
                      (concat douo/gtd-home "/")
@@ -122,7 +134,8 @@ Throw an error when not in a list."
                         (,(concat (file-name-as-directory douo/gtd-home) "tasks.org") :maxlevel . 3)
                         ))
   ;; (org-preview-latex-default-process 'dvisvgm)
-  (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.mp3"))
+  ;; 设置 timer 的提示音
+  (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.wav"))
   ;; begin_refile
   ;; 显示 refile 的 outline 层级
   ;; 设置为 `file' 会显示文件名，对于我的 gtd 系统来说不是很有用
@@ -323,6 +336,14 @@ Throw an error when not in a list."
 
 (use-package org-roam
   :straight t
+  :init
+  (defun org-roam-note-find (arg)
+    "只打开普通的 roam 笔记节点（过滤掉 _gtd 目录内的节点）"
+    (interactive "P")
+    (let ((other-window (if arg t nil)))
+      (org-roam-node-find other-window nil (lambda (node)
+                                         (not (string-match-p "/_gtd/" (org-roam-node-file node)))
+                                         ))))
   :custom
   (org-roam-directory (file-truename (concat douo/writing-home "/_roam/")))
   ;; format org-roam-node to file-title/title if level larger than 0
@@ -338,7 +359,7 @@ Throw an error when not in a list."
   (org-roam-dailies-directory "quick/")
   :bind
   ("C-c n l" . org-roam-buffer-toggle)
-  ;; ("C-c n f" . org-roam-node-find) ;; 由 `consult-org-roam-file-find'  代替
+  ("C-c n f" . org-roam-note-find)
   ("C-c n g" . org-roam-graph)
   ("C-c n i" . org-roam-node-insert)
   ("C-c n c" . org-roam-capture)
@@ -354,20 +375,17 @@ Throw an error when not in a list."
 
 
 (use-package consult-org-roam
+  ;; 通过 `consult-org-roam-node-read' 为选择 node 提供 consult 包装（主要支持 preview ）
   :straight t
   :after org-roam
-  :init
-  (require 'consult-org-roam)
-  ;; Activate the minor mode
-  (consult-org-roam-mode 1)
   :custom
   ;; Use `ripgrep' for searching with `consult-org-roam-search'
   (consult-org-roam-grep-func #'consult-ripgrep)
-  ;; Configure a custom narrow key for `consult-buffer'
+  ;; 用于在 consult-buffer 中过滤出 roam node
   (consult-org-roam-buffer-narrow-key ?r)
   ;; Display org-roam buffers right after non-org-roam buffers
   ;; in consult-buffer (and not down at the bottom)
-  (consult-org-roam-buffer-after-buffers t)
+  (consult-org-roam-buffer-after-buffers nil)
   :config
   ;; Eventually suppress previewing for certain functions
   (consult-customize
@@ -375,7 +393,7 @@ Throw an error when not in a list."
    :preview-key (kbd "M-."))
   :bind
   ;; Define some convenient keybindings as an addition
-  ("C-c n f" . consult-org-roam-file-find)
+  ("C-c n F" . consult-org-roam-file-find) ;; 只列出文件
   ("C-c n b" . consult-org-roam-backlinks)
   ("C-c n k" . consult-org-roam-forward-links)
   ("C-c n r" . consult-org-roam-search) ;; TODO 可以整合 `deft' 的功能
