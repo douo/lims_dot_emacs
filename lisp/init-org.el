@@ -135,17 +135,16 @@ Throw an error when not in a list."
                                                      org-clock-sound)))))
 
   :custom
-  (org-directory (if (not (string-suffix-p "/" douo/gtd-home))
-                     (concat douo/gtd-home "/")
-                   douo/gtd-home))
-  ;; a useful view to see what can be accomplished today
-  (org-refile-targets `(
-                        (,(concat (file-name-as-directory douo/gtd-home) "tasks.org") :maxlevel . 3)
-                        ))
+  (org-directory douo/writing-home)
+
   ;; (org-preview-latex-default-process 'dvisvgm)
   ;; 设置 timer 的提示音
   (org-clock-sound  (concat (file-name-directory user-init-file) "assets/org-timer.wav"))
+
   ;; begin_refile
+  (org-refile-targets `(
+                        (,(concat (file-name-as-directory douo/gtd-home) "tasks.org") :maxlevel . 3)
+                        ))
   ;; 显示 refile 的 outline 层级
   ;; 设置为 `file' 会显示文件名，对于我的 gtd 系统来说不是很有用
   (org-refile-use-outline-path 't)
@@ -225,9 +224,9 @@ Throw an error when not in a list."
                            '((todo . " %i %-12 (org-gtd-agenda--prefix-format)"))))))))))
           (org-agenda nil "g")
           (goto-char (point-min)))))
-  ;; Temporary fix see #https://github.com/Trevoke/org-gtd.el/pull/151
+
   (defun org-gtd-clarify-item ()
-    "Process item at point through org-gtd."
+    "Temporary fix see #https://github.com/Trevoke/org-gtd.el/pull/151"
     (declare (modes org-mode)) ;; for 27.2 compatibility
     (interactive)
     (let ((processing-buffer (org-gtd-clarify--get-buffer))
@@ -242,16 +241,28 @@ Throw an error when not in a list."
                     org-gtd-clarify--clarify-id (org-id-get)
                     org-current-tag-alist inbox-current-tags-alist))
       (org-gtd-clarify-setup-windows processing-buffer)))
-  ;;  modify org capture templates
-  (add-to-list
-   'org-gtd-capture-templates
-   '("n" "Quick Note"
-     plain (file (lambda () (douo/generate-quick-note (concat douo/writing-home "/_notes/Quick"))))
-     "%i\n%U\n%?\n"
-     :kill-buffer t)
+
+  ;; modify org capture templates
+  (nconc
+   org-gtd-capture-templates
+   `(
+     ;; Quick Note
+     ("n" "Quick Note"
+      plain (file (lambda () (douo/generate-quick-note (concat douo/writing-home "/_notes/Quick"))))
+      "%i\n%U\n%?\n"
+      :kill-buffer t)
+     ;; 用于 Chrome 通过 org-protocol 捕获当前链接到 inbox
+     ("r"
+      "Store a link to read later"
+      entry (file ,#'org-gtd-inbox-path)
+      "* TODO %a %(org-set-tags \"read\")\n%i\n%U\n%?"
+      :empty-lines 1
+      :kill-buffer t
+      )
+     )
    )
   :custom
-  (org-gtd-directory org-directory)
+  (org-gtd-directory douo/gtd-home)
   ;; 自定义归档路径为 .archive/gtd_{2023}.org
   (org-gtd-archive-location (lambda ()
                               (let ((year (number-to-string (caddr (calendar-current-date)))))
@@ -271,28 +282,26 @@ Throw an error when not in a list."
    )
   )
 
+(use-package org-protocol
+  :straight  '(org-contrib :includes org-protocol)
+  :after org
+  :after org-gtd
+  :config
+  (defun org-gtd-protocol-capture (info)
+    "Capture a task from anywhere in Emacs."
+    (with-org-gtd-capture-
+        (org-protocol-capture info))
+    )
+  ;; 自定义 org-protocol 的 gtd-capture 模板
+  (push '("org-gtd-catpure"  :protocol "gtd-capture"   :function org-gtd-protocol-capture)
+      org-protocol-protocol-alist)
+  )
 ;;
 ;;
 (use-package org-analyzer
   :straight t
   :after org)
 
-
-;; this allows you to use (org-gtd-inbox-path) for your capture destinations
-(use-package org-capture
-  :straight nil
-  :after org-gtd
-  :config
-  (add-to-list 'org-capture-templates
-               ;; 浏览器捕获当前链接到 tasks.org（Ctrl-Cmd+o）
-               `("w"
-                 "To Read"
-                 entry
-                 (file+headline ,(concat (file-name-as-directory douo/gtd-home) "tasks.org") "Read")
-                 "* TODO [[%:link][%:description]]\n%i\n%?\n%U"
-                 :empty-lines 1)
-                )
-  )
 
 (use-package org-agenda-property
   :straight t
@@ -380,13 +389,13 @@ Throw an error when not in a list."
   (setq org-roam-node-display-template (concat "${formatted:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode)
   )
-(require 'org-roam-protocol)
-
 
 (use-package consult-org-roam
   ;; 通过 `consult-org-roam-node-read' 为选择 node 提供 consult 包装（主要支持 preview ）
   :straight t
   :after org-roam
+  :init
+  (consult-org-roam-mode 1)
   :custom
   ;; Use `ripgrep' for searching with `consult-org-roam-search'
   (consult-org-roam-grep-func #'consult-ripgrep)
