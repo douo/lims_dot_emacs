@@ -1,7 +1,6 @@
-;; -*- lexical-binding: t; -*-
-;;; init.el --- douo's emacs config
+;;; init.el --- douo's emacs config -*- lexical-binding: t; -*-
 ;;; Commentary:
-;;
+;;; Code:
 ;;; 个人用
 
 ;; disable first narrow hint
@@ -41,26 +40,6 @@
                          (message "Garbage Collector has run for %.06fsec"
                                   (k-time (garbage-collect))))))
 ;; gc end
-
-;;
-;;; Code:
-;; 根据操作系统执行代码
-(defmacro with-system (type &rest body)
-  "Evaluate BODY if `system-type' equals TYPE."
-  ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Indenting-Macros.html
-  (declare (indent defun))
-  `(when (eq system-type ',type)
-     ,@body))
-;; 设置 emacsformacosx option 作为 meta 键
-(with-system darwin
-  (setq mac-option-modifier   'meta))
-
-;; windows
-(defconst IS-WINDOWS (memq system-type '(cygwin windows-nt ms-dos)))
-(with-system windows-nt
-  (setq w32-pass-rwindow-to-system nil)
-  (setq w32-rwindow-modifier 'super) ; Right Windows key
-  (w32-register-hot-key [s-]))
 
 
 ;; 自动加载外部修改过的文件，如果当前 buffer 未修改
@@ -188,8 +167,17 @@
 
 (use-package load-relative
   :straight t)
-;; 加载本机特殊配置，环境变量等...
-(load-relative "local.el")
+
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+(require 'init-vars)
+(require 'init-utils)
+(with-system darwin
+  (require 'init-osx)
+  )
+(with-system windows-nt
+  (require 'init-windows)
+  )
+
 
 (use-package nerd-icons
   :straight t
@@ -1161,6 +1149,11 @@
 
 (use-package flymake
   :straight t
+  :bind (:map flymake-mode-map
+              ("C-c M-." . flymake-goto-next-error)
+              ("C-c M-," . flymake-goto-prev-error)
+              ("C-c M-?" . flymake-show-buffer-diagnostics)
+              )
   )
 
 (use-package flymake-relint
@@ -1207,87 +1200,6 @@
   :straight t
   :config
   (global-treesit-auto-mode))
-
-;; (use-package fingertip
-;;   :straight nil
-;;   :load-path  "lisp/fingertip"
-;;   :hook
-;;   (c-mode-common . fingertip-mode)
-;;   (c-mode . fingertip-mode)
-;;   (c++-mode . fingertip-mode)
-;;   (java-mode . fingertip-mode)
-;;   (haskell-mode . fingertip-mode)
-;;   (emacs-lisp-mode . fingertip-mode)
-;;   (lisp-interaction-mode . fingertip-mode)
-;;   (lisp-mode . fingertip-mode)
-;;   (maxima-mode . fingertip-mode)
-;;   (ielm-mode . fingertip-mode)
-;;   (sh-mode . fingertip-mode)
-;;   (makefile-gmake-mode . fingertip-mode)
-;;   (php-mode . fingertip-mode)
-;;   (python-mode . fingertip-mode)
-;;   (js-mode . fingertip-mode)
-;;   (go-mode . fingertip-mode)
-;;   (qml-mode . fingertip-mode)
-;;   (jade-mode . fingertip-mode)
-;;   (css-mode . fingertip-mode)
-;;   (ruby-mode . fingertip-mode)
-;;   (coffee-mode . fingertip-mode)
-;;   (rust-mode . fingertip-mode)
-;;   (rust-ts-mode . fingertip-mode)
-;;   (qmake-mode . fingertip-mode)
-;;   (lua-mode . fingertip-mode)
-;;   (swift-mode . fingertip-mode)
-;;   (web-mode . fingertip-mode)
-;;   (markdown-mode . fingertip-mode)
-;;   (llvm-mode . fingertip-mode)
-;;   (conf-toml-mode . fingertip-mode)
-;;   (nim-mode . fingertip-mode)
-;;   (typescript-mode . fingertip-mode)
-;;   (c-ts-mode . fingertip-mode)
-;;   (c++-ts-mode . fingertip-mode)
-;;   (cmake-ts-mode . fingertip-mode)
-;;   (toml-ts-mode . fingertip-mode)
-;;   (css-ts-mode . fingertip-mode)
-;;   (js-ts-mode . fingertip-mode)
-;;   (json-ts-mode . fingertip-mode)
-;;   (python-ts-mode . fingertip-mode)
-;;   (bash-ts-mode . fingertip-mode)
-;;   (typescript-ts-mode . fingertip-mode)
-;;   :bind  (:map fingertip-mode-map
-;;                ("(" . fingertip-open-round)
-;;                ("[" . fingertip-open-bracket)
-;;                ("{" . fingertip-open-curly)
-;;                (")" . fingertip-close-round)
-;;                ("]" . fingertip-close-bracket)
-;;                ("}" . fingertip-close-curly)
-;;                ("=" . fingertip-equal)
-
-;;                ("%" . fingertip-match-paren)
-;;                ("\"" . fingertip-double-quote)
-;;                ("'" . fingertip-single-quote)
-
-;;                ("SPC" . fingertip-space)
-;;                ("RET" . fingertip-newline)
-
-;;                ("M-o" . fingertip-backward-delete)
-;;                ("C-d" . fingertip-forward-delete)
-;;                ("C-k" . fingertip-kill)
-
-;;                ("M-\"" . fingertip-wrap-double-quote)
-;;                ("M-'" . fingertip-wrap-single-quote)
-;;                ("M-[" . fingertip-wrap-bracket)
-;;                ("M-{" . fingertip-wrap-curly)
-;;                ("M-(" . fingertip-wrap-round)
-;;                ("M-)" . fingertip-unwrap)
-
-;;                ("M-p" . fingertip-jump-right)
-;;                ("M-n" . fingertip-jump-left)
-;;                ("M-:" . fingertip-jump-out-pair-and-newline)
-
-;;                ("C-j" . fingertip-jump-up))
-;;   )
-
 ;; treesit end
 
 ;; 主模式
@@ -1300,7 +1212,7 @@
 (use-package cmake-mode
   :straight t)
 
-;; python
+;; beigin_python
 
 ;; (setq douo/python-lsp-server "pylsp")
 (setq douo/python-lsp-server "pyright")
@@ -1332,11 +1244,19 @@
         ("C-c M-f" . blacken-buffer)
         )
   )
+
 (use-package cython-mode
   :straight t)
 
 
-;; typescript
+(use-package pyvenv
+  :straight t
+  :config
+  )
+
+;; end_python
+
+;; begin_web
 ;; web-mode
 ;; (setq web-mode-markup-indent-offset 2)
 ;; (setq web-mode-code-indent-offset 2)
@@ -1360,8 +1280,9 @@
   :custom
   (jsonian-no-so-long-mode))
 
-;; ruby
+;; end_web
 
+;; begin_ruby
 (use-package ruby-mode
   :straight t
   :custom
@@ -1375,6 +1296,8 @@
 
 (use-package subword-mode
   :hook ruby-mode)
+
+;; end_ruby
 
 (with-system darwin
   ;; swift
@@ -1391,13 +1314,13 @@
 
 
 
-;; golang
+;; begin_golang
 ;; 需安装 goimports gopls
 (use-package go-mode
   :straight t)
-;; end golang
+;; end_golang
 
-;; Markdown
+;; begin_md
 (use-package markdown-mode
   :straight t
   :mode (("\\.md\\'" . gfm-mode)
@@ -1417,11 +1340,11 @@
            (selected-file (completing-read "Select article: " files nil t)))
       (insert (format "{%% post_url %s %%}" selected-file)))))
 
+;; end_md
 
 (use-package lua-mode
   :straight t
   :mode "\\.lua\\'")
-
 
 (use-package yaml-mode
   :straight t)
@@ -1438,8 +1361,6 @@
   :init
   :straight `(uci-mode :type git :host github :repo "jkjuopperi/uci-mode")
   )
-
-(load-relative "org.el")
 
 ;; 输入法
 (use-package sis
@@ -1507,37 +1428,60 @@
   (display-time-mode 1)
   )
 
-
-;; tui/gui 切换不同配置，主要是切换 lsp-bridge 和 eglot
-(if (display-graphic-p)
-    ;;(load-relative "gui.el")
-    (load-relative "tui.el")
-  (load-relative "tui.el")
+;; begin_eglot
+(defun douo/update_eglot_pyright_configuraton ()
+  (setq eglot-workspace-configuration
+        (list (cons ':python (list ':venvPath pyvenv-virtual-env ':pythonPath (executable-find "python")))))
   )
 
-;; macOS Fix
-;; FIXME to_be_deleted
-;; 交给 wm(yabai) 处理
-;; (with-system darwin
-;;   ;; 规避 macOS child-frame 全屏黑屏
-;;   ;; https://emacs-china.org/t/mac/11848/8
-;;   (if (featurep 'cocoa)
-;;       (progn
-;;         (setq ns-use-native-fullscreen nil)
-;;         (setq ns-use-fullscreen-animation nil)
+(use-package eglot
+  :preface
+  ;; https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc#fixing-flymake-and-eglot
+  (defun mp-eglot-eldoc ()
+    (setq eldoc-documentation-strategy
+          'eldoc-documentation-compose-eagerly))
+  :straight t
+  :config
+  (add-to-list
+   'eglot-server-programs
+   `(python-mode . (lambda(a)
+                     `(,(executable-find "pyright-langserver") "--stdio"))))
+  (add-to-list
+   'eglot-server-programs
+   '((c-mode c++-mode)
+     . ("clangd"
+        "-j=12"
+        "--malloc-trim"
+        "--background-index"
+        "--clang-tidy"
+        "--cross-file-rename"
+        "--completion-style=detailed"
+        "--pch-storage=memory"
+        "--function-arg-placeholders"
+        "--header-insertion=iwyu")))
+  (add-hook 'pyvenv-post-activate-hooks 'douo/update_eglot_pyright_configuraton)
+  :hook
+  (python-mode . douo/update_eglot_pyright_configuraton)
+  (python-mode . eglot-ensure)
+  (eglot-managed-mode . mp-eglot-eldoc)
+  )
 
-;;         (set-frame-parameter (selected-frame) 'fullscreen 'maximized)
-;;         (menu-bar-mode t)
-;;         (run-at-time "2sec" nil
-;;                      (lambda ()
-;;                        (toggle-frame-fullscreen)
-;;                        )))
-;;     (require 'fullscreen)
-;;     (fullscreen))
+(use-package consult-eglot
+  :straight (consult-eglot
+             :type git
+             :host github
+             :repo "mohkale/consult-eglot")
+  :after (consult eglot)
+  :config
+  ;; 在 eglot 模式激活时将 xref-find-apropos 映射到 consult-eglot-symbols
+  ;; 默认快捷键 C-M-.
+  (define-key eglot-mode-map [remap xref-find-apropos] 'consult-eglot-symbols)
+  )
 
-;;   )
+;; end_eglot
 
-;; * copilot
+
+;; begin_copilot
 (setq douo/copilot-provider `copilot)
 ;; switch...case by douo/copilot-provider
 (cl-case douo/copilot-provider
@@ -1662,3 +1606,13 @@
    )
   (otherwise (message "copilot not set"))
   )
+;; end_copilot
+
+;; begin_other_init
+(require 'init-org)
+;; tui/gui 切换不同配置，+主要是切换 lsp-bridge 和 eglot+
+(if (display-graphic-p)
+    (require 'init-gui)
+  (require 'init-tui)
+  )
+;; end_other_init

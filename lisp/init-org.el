@@ -1,7 +1,16 @@
-(setq douo/roam-home (concat (file-name-as-directory douo/writing-home) "_roam"))
-(setq douo/gtd-home (concat (file-name-as-directory douo/roam-home) "_gtd"))
+;;; init-org.el -- Initialize Org configurations.	-*- lexical-binding: t -*-
+
+;;; Commentary:
+;;
+;; Org configurations.
+;;
+
+;;; Code:
 
 
+(require 'init-vars)
+(defvar douo/roam-home (concat (file-name-as-directory douo/writing-home) "_roam"))
+(defvar  douo/gtd-home (concat (file-name-as-directory douo/roam-home) "_gtd"))
 
 (defun douo/generate-quick-note (path)
   (let ((file
@@ -135,7 +144,7 @@ Throw an error when not in a list."
                         ))
   ;; (org-preview-latex-default-process 'dvisvgm)
   ;; 设置 timer 的提示音
-  (org-clock-sound  (concat (file-name-directory user-init-file) "org-timer.wav"))
+  (org-clock-sound  (concat (file-name-directory user-init-file) "assets/org-timer.wav"))
   ;; begin_refile
   ;; 显示 refile 的 outline 层级
   ;; 设置为 `file' 会显示文件名，对于我的 gtd 系统来说不是很有用
@@ -404,3 +413,8 @@ Throw an error when not in a list."
   :straight t
   :defer t
   )
+
+
+(provide 'init-org)
+
+;;; init-org.el ends here
