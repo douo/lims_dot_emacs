@@ -266,7 +266,7 @@ Throw an error when not in a list."
   ;; 自定义归档路径为 .archive/gtd_{2023}.org
   (org-gtd-archive-location (lambda ()
                               (let ((year (number-to-string (caddr (calendar-current-date)))))
-                                (string-join `(".archive/gtd_" ,year  ".org::datetree/")))))
+                                (string-join `(,douo/gtd-home "/.archive/gtd_" ,year  ".org::datetree/")))))
   ;; 让 todo 显示所有 outline path
 
   :bind
@@ -289,12 +289,12 @@ Throw an error when not in a list."
   :config
   (defun org-gtd-protocol-capture (info)
     "Capture a task from anywhere in Emacs."
-    (with-org-gtd-capture-
+    (with-org-gtd-capture
         (org-protocol-capture info))
     )
   ;; 自定义 org-protocol 的 gtd-capture 模板
   (push '("org-gtd-catpure"  :protocol "gtd-capture"   :function org-gtd-protocol-capture)
-      org-protocol-protocol-alist)
+        org-protocol-protocol-alist)
   )
 ;;
 ;;
@@ -360,8 +360,8 @@ Throw an error when not in a list."
     (interactive "P")
     (let ((other-window (if arg t nil)))
       (org-roam-node-find other-window nil (lambda (node)
-                                         (not (string-match-p "/_gtd/" (org-roam-node-file node)))
-                                         ))))
+                                             (not (string-match-p "/_gtd/" (org-roam-node-file node)))
+                                             ))))
   :custom
   (org-roam-directory (file-truename (concat douo/writing-home "/_roam/")))
   ;; format org-roam-node to file-title/title if level larger than 0
@@ -401,6 +401,8 @@ Throw an error when not in a list."
   (consult-org-roam-grep-func #'consult-ripgrep)
   ;; 用于在 consult-buffer 中过滤出 roam node
   (consult-org-roam-buffer-narrow-key ?r)
+  ;; 禁用 consult-org-roam-buffer , 困扰多过实用
+  (consult-org-roam-buffer-enabled nil)
   ;; Display org-roam buffers right after non-org-roam buffers
   ;; in consult-buffer (and not down at the bottom)
   (consult-org-roam-buffer-after-buffers nil)
