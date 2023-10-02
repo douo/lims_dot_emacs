@@ -641,7 +641,7 @@
 (use-package ace-window
   :straight t
   :custom
-  (aw-dispatch-always t)
+  ;; (aw-dispatch-always t)
   ;; 搭配使用，通过 minibuf 提示当前处于 ace-window 模式
   (aw-background nil)
   (aw-minibuffer-flag t)
