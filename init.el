@@ -1362,6 +1362,9 @@
   :straight `(uci-mode :type git :host github :repo "jkjuopperi/uci-mode")
   )
 
+(use-package dockerfile-mode
+  :straight t)
+
 ;; 输入法
 (use-package sis
   :straight t
