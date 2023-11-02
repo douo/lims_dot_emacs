@@ -133,7 +133,9 @@ Throw an error when not in a list."
                                                       ((eq system-type 'gnu/linux) "paplay ")
                                                       )
                                                      org-clock-sound)))))
-
+  ;; 增加 latex preview 尺寸
+  ;; arch 需安装 texlive 组
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
   :custom
   (org-directory douo/writing-home)
 
