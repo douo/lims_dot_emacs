@@ -93,6 +93,31 @@ Throw an error when not in a list."
      (progn (org-beginning-of-item) (point))
      (progn (org-end-of-item) (1- (point))))))
 
+
+;; Define a function to check if the current file is inside the writing directory
+(defun douo/inside-writing ()
+  (let ((file-path (buffer-file-name)))
+    (and file-path
+         (string-prefix-p douo/writing-home file-path))))
+
+;; 为 writing 目录下的 ripgrep 添加 --hidden 参数
+;; 确保 .archive 目录下的文件也能被搜索到
+(defun douo/consult-ripgrep-advice (orig-fun &rest args)
+  (let ((original consult-ripgrep-args))
+    (if (douo/inside-writing)
+        (setq consult-ripgrep-args
+              (concat consult-ripgrep-args " --hidden")))
+    (print consult-ripgrep-args)
+    (unwind-protect
+        (apply orig-fun args) ; Execute the original function
+      (setq consult-ripgrep-args original))  ; Restore the original value
+    )
+  )
+(advice-add 'consult-ripgrep :around #'douo/consult-ripgrep-advice)
+
+
+
+
 ;; config
 (use-package org
   :straight t
