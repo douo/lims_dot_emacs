@@ -107,7 +107,6 @@ Throw an error when not in a list."
     (if (douo/inside-writing)
         (setq consult-ripgrep-args
               (concat consult-ripgrep-args " --hidden")))
-    (print consult-ripgrep-args)
     (unwind-protect
         (apply orig-fun args) ; Execute the original function
       (setq consult-ripgrep-args original))  ; Restore the original value
