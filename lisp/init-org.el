@@ -451,6 +451,10 @@ Throw an error when not in a list."
   :defer t
   )
 
+;; 导出
+(use-package htmlize
+  :straight t)
+
 
 (provide 'init-org)
 
