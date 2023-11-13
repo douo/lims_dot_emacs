@@ -178,6 +178,13 @@ Throw an error when not in a list."
   (org-outline-path-complete-in-steps nil)
   ;; verico 要使用 outline-path-complete-in-steps 见 https://github.com/minad/vertico#org-refile
   ;; end_refile
+  ;; begin_export
+  ;; xelatex 较新，支持 unicode 编码，配合宏包，测试过的宏包
+  ;; - #+LATEX_HEADER: \usepackage{xeCJK}
+  ;; - #+LATEX_HEADER: \usepackage{ctex}
+  ;; pdflatex 较旧，要支持中文需使用宏包 CJK
+  (org-latex-compiler "xelatex")  ;; 为单文件设置 #+LaTeX_COMPILER: xelatex
+  ;; end_export
   :bind (("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          :map org-mode-map
@@ -453,7 +460,9 @@ Throw an error when not in a list."
 
 ;; 导出
 (use-package htmlize
-  :straight t)
+  :straight t
+  :after org)
+
 
 
 (provide 'init-org)
