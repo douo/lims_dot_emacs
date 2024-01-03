@@ -1,16 +1,22 @@
 * Intro
-  参考自 [[https://github.com/bbatsov/emacs.d/blob/965d39c245bdbe79e88dd228756a9cf621670ac0/init.el][emacs.d/init.el at master · bbatsov/emacs.d]]
+
+参考自 [[https://github.com/bbatsov/emacs.d/blob/965d39c245bdbe79e88dd228756a9cf621670ac0/init.el][emacs.d/init.el at master · bbatsov/emacs.d]]
+
+* 依赖
+
+- [[https://github.com/BurntSushi/ripgrep][BurntSushi/ripgrep]] (consult-ripgrep)
+- [[https://github.com/laishulu/macism][laishulu/macism]] (sis/mac)
+- [[https://github.com/ryanoasis/nerd-fonts][ryanoasis/nerd-fonts]] (nerd-icons)
 
 * 环境变量
-  不同主机通过配置环境变量自定义，目前所用环境变量
 
-- RG_EXECUTABLE
+不同主机通过配置环境变量自定义，目前所用环境变量:
 - WRITING_HOME
 - GTD_HOME
 
 使用 [[https://github.com/purcell/exec-path-from-shell][purcell/exec-path-from-shell]] 共享用户 shell 环境变量。或者修改 LaunchAgents.
 
-** Mac Gui 环境变量
+** Mac Gui 环境变量                                              :Deprecated:
 
 新建 ~/Library/LaunchAgents/environment.plist:
 
@@ -47,7 +53,14 @@ launchctl start ~/Library/LaunchAgents/environment.plist
 
 * 开发
 
-** python
+手动执行一次：
+#+begin_src elisp
+  (treesit-auto-install-all)
+#+end_src
+
+** lsp
+
+*** python
 
 需要安装 [[https://github.com/microsoft/pyright][pyright]]
 
@@ -55,3 +68,26 @@ launchctl start ~/Library/LaunchAgents/environment.plist
 
 - CONDA_EXE
 - 满足 ~CONDA_EXE=$CONDA_HOME/bin/conda~
+
+* roam
+
+存放 ~org-roam-procotol~ 在对应操作系统上的 scheme-handler，其他细节见，[[https://www.orgroam.com/manual.html#Mac-OS][Org-roam User Manual#MacOS]]
+
+确保 emacs 有作为 server 启动，通过判断变量 ~server-process~ 是否存在可以确定。
+
+~server-start~ 启动服务。
+
+** macOS
+
+复制 ~assets/macOS/OrgProtocolClient.app~ 到目录 ~/Applications~ 。需要手动运行一遍，让 scheme-handler 注册生效。
+
+
+** org-protocol.desktop
+
+
+复制 ~assets/linux/org-protocol.desktop~  到目录 ~$HOME/.local/share/applications/~
+
+执行一下代码设置 scheme-handler
+#+begin_src shell
+xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
+#+end_src
