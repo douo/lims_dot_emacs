@@ -7,6 +7,7 @@
 - [[https://github.com/BurntSushi/ripgrep][BurntSushi/ripgrep]] (consult-ripgrep)
 - [[https://github.com/laishulu/macism][laishulu/macism]] (sis/mac)
 - [[https://github.com/ryanoasis/nerd-fonts][ryanoasis/nerd-fonts]] (nerd-icons)
+- [[https://wiki.archlinux.org/title/locate][locate - ArchWiki]] (consult-locate)
 
 * 环境变量
 

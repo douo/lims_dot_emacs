@@ -955,16 +955,24 @@
   ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
   ;; For some commands and buffer sources it is useful to configure the
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  ;; 主题延迟自动预览
+  ;; 延迟自动预览
   (consult-customize
-   consult-theme :preview-key '(:debounce 0.2 any)
-   ;; 手动快捷键触发
+   consult-buffer
+   :preview-key '(:debounce 0.2 any)
+   )
+  ;; 手动快捷键触发
+  (consult-customize
+   consult-theme
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
    consult--source-bookmark consult--source-file-register
    consult--source-recent-file consult--source-project-recent-file
-   :preview-key "M-.")
+   :preview-key "C-;")
 
+  ;; 通过 `consult-buffer' 选择 buffer 时，不预览 tramp buffer
+  ;; 未启用，使用延迟预览代替
+  ;; (setq consult--source-buffer
+  ;;     (plist-put consult--source-buffer :state #'consult-buffer-state-no-tramp))
 
   ;; narrow 缩小候选范围
   ;; 逆操作是`consult-widen-key'
@@ -987,8 +995,19 @@
            buffer
            (vertico-buffer-display-action . (display-buffer-same-window)))))
   ;; Disable preview for consult-grep commands
-  (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
+  ;; (consult-customize consult-ripgrep consult-git-grep consult-grep :preview-key nil)
   ;; end_vertico_multiform
+
+  (with-system darwin
+    ;; PROS: 能搜索隐藏目录
+    ;; CONS: 需要手动建立 locate 数据库
+    (setopt consult-locate-args "locate -i")
+    ;; 使用内在的 mdfind 代替
+    ;; PROS: 与 SPOTLIGHT 一致，不需要手动建立数据库
+    ;; CONS: 不能搜索隐藏目录
+    ;; (setopt consult-locate-args "mdfind --name")
+  )
+
 
   ;; :custom
   ;; 用于 tui , corfu fallback 到 completion-in-region
@@ -1024,7 +1043,8 @@
    ;; 用 `embark-dwim' 提供更多功能性
    ("M-." . embark-dwim)        ;; good alternative: C-;
    ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
-   ("C-;" . embark-act-noquit))
+   ;; ("C-;" . embark-act-noquit)
+   )
   (:map embark-collect-mode-map
         ("m" . embark-select)
         )
