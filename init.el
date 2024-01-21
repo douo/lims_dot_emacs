@@ -311,9 +311,19 @@
 (use-package magit
   :straight t
   :bind (("C-x g" . magit-status)))
+(use-package magit-todos
+  :straight t
+  :after magit
+  :config (magit-todos-mode 1)
+  )
 (use-package git-timemachine
   :straight t
   :bind (("M-g t" . git-timemachine)))
+
+;; openai
+(use-package gptel
+  :straight t
+  )
 
 ;; rg
 (use-package rg
