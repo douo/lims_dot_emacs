@@ -227,7 +227,6 @@ Throw an error when not in a list."
 (use-package org-gtd
   :straight t
   :after org
-  :demand t
   :init
   (setq org-gtd-update-ack "3.0.0")
   (defun douo/org-gtd-archive ()

@@ -408,10 +408,12 @@
   (0x0-default-server 'ttm)
   )
 
+;; 隐藏文本内容
 ;; 保留颜色用方块代替字符
 ;; 类似内置的 `toggle-rot13-mode'
 (use-package redacted
   :straight t
+  :defer t
   )
 
 ;; 翻译
@@ -1334,7 +1336,10 @@
 ;; begin_golang
 ;; 需安装 goimports gopls
 (use-package go-mode
-  :straight t)
+  :straight t
+  ;; 依赖 ffap 初始化太费时间
+  :defer t
+  )
 ;; end_golang
 
 ;; begin_md
