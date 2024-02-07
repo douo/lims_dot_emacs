@@ -311,9 +311,34 @@
 (use-package magit
   :straight t
   :bind (("C-x g" . magit-status)))
+(use-package magit-todos
+  :straight t
+  :config (magit-todos-mode 1)
+  )
 (use-package git-timemachine
   :straight t
   :bind (("M-g t" . git-timemachine)))
+
+;; gpt
+(use-package gptel
+  :straight t
+  :config
+  (gptel-global-mode 1))
+
+
+(use-package magit-gptcommit
+  :straight `(magit-gptcommit :type git :host github :repo "douo/magit-gptcommit")
+  :demand t
+  :after gptel magit
+  :config
+  ;; Enable magit-gptcommit-mode to watch staged changes and generate commit message automatically in magit status buffer
+  ;; This mode is optional, you can also use `magit-gptcommit-generate' to generate commit message manually
+  (magit-gptcommit-mode 1)
+  ;; Add gptcommit transient commands to `magit-commit'
+  ;; Eval (transient-remove-suffix 'magit-commit '(1 -1)) to remove gptcommit transient commands
+  (magit-gptcommit-status-buffer-setup)
+  ;; `magit-gptcommit-generate' should only execute on magit status buffer currently
+  )
 
 ;; rg
 (use-package rg
