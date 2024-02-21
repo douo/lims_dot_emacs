@@ -323,9 +323,7 @@
 
 ;; gpt
 (use-package gptel
-  :straight t
-  :config
-  (gptel-global-mode 1))
+  :straight t)
 
 
 (use-package magit-gptcommit
