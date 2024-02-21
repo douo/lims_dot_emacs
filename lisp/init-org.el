@@ -119,7 +119,7 @@ Throw an error when not in a list."
 
 ;; config
 (use-package org
-  :straight t
+  :straight (:type built-in)
   :config
   ;; 让 emphasis 块在紧邻中文字符时也能生效
   (org-set-emph-re 'org-emphasis-regexp-components
@@ -314,20 +314,36 @@ Throw an error when not in a list."
    )
   )
 
-(use-package org-protocol
+(use-package org-contrib ; Includes more than the standard org-mode
   :straight  '(org-contrib :includes org-protocol)
-  :after org
-  :after org-gtd
   :config
+  ;; Your other org-mode configurations here
+  (require 'org-protocol)
   (defun org-gtd-protocol-capture (info)
     "Capture a task from anywhere in Emacs."
     (with-org-gtd-capture
-        (org-protocol-capture info))
+     (org-protocol-capture info))
     )
   ;; 自定义 org-protocol 的 gtd-capture 模板
   (push '("org-gtd-catpure"  :protocol "gtd-capture"   :function org-gtd-protocol-capture)
         org-protocol-protocol-alist)
   )
+
+;; (use-package org-protocol
+;;   :straight  '(org-contrib :includes org-protocol)
+;;   :after org
+;;   :after org-gtd
+;;   :config
+;;   (defun org-gtd-protocol-capture (info)
+;;     "Capture a task from anywhere in Emacs."
+;;     (message info)
+;;     (with-org-gtd-capture
+;;         (org-protocol-capture info))
+;;     )
+;;   ;; 自定义 org-protocol 的 gtd-capture 模板
+;;   (push '("org-gtd-catpure"  :protocol "gtd-capture"   :function org-gtd-protocol-capture)
+;;         org-protocol-protocol-alist)
+;;   )
 ;;
 ;;
 (use-package org-analyzer
