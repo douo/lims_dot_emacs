@@ -134,6 +134,9 @@
 
 (straight-use-package 'org)
 (straight-use-package 'use-package)
+
+(use-package transient
+  :straight `(transient :type git :host github :repo "magit/transient" :branch "builtin"))
 ;; 提供简单的方法修改 minor-mode 在 modeline 中的 indicator
 (straight-use-package 'diminish)
 ;; 与 diminish 不兼容
@@ -310,6 +313,7 @@
 ;; git
 (use-package magit
   :straight t
+  :after transient
   :bind (("C-x g" . magit-status)))
 
 (use-package magit-todos
