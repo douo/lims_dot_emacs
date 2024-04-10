@@ -1330,6 +1330,44 @@
   :config
   )
 
+;;; start_juptyer
+
+(use-package jupyter
+  :straight t
+  :config
+  )
+
+(use-package code-cells
+  :straight t
+  :after jupyter
+  :config
+  ;; create transient command
+  (transient-define-prefix code-cells-transient-command ()
+    "code-cells Command"
+    ["Cursor"
+     ;; up
+     ("k" "Backward" code-cells-backward-cell :transient t)
+      ;; down
+      ("j" "forward" code-cells-forward-cell :transient t)]
+    ["Movement"
+     ;; up
+     ("K" "Move Up" code-cells-move-cell-up :transient t)
+      ;; down
+      ("J" "Move Down" code-cells-move-cell-down :transient t)]
+    ["Other"
+     ("e" "Cell Eval" code-cells-eval)
+     ("q" "Quit" transient-quit-all)])
+  :bind
+  (:map code-cells-mode-map
+        ("s-c" . code-cells-transient-command)
+        ("C-c C-p" . jupyter-repl-associate-buffer)
+        ("C-c C-c" . code-cells-eval))
+
+  (:map jupyter-repl-interaction-mode-map
+        ;; Overriding other minor mode bindings requires some insistence...
+        ([remap jupyter-eval-line-or-region] . code-cells-eval)))
+
+;;; end_jupyter
 ;; end_python
 
 ;; begin_web
