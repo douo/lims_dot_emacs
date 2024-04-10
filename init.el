@@ -527,7 +527,27 @@
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
 (use-package crux
   :straight t
-  :bind (("C-c o" . crux-open-with)
+  :bind (
+         ;; 同步常用 macOS 快捷键到其他系统
+         ("s-," . customize)
+         ("s-u" . revert-buffer)
+         ("s-?" . info)
+         ("s-?" . info)
+         ("s-a" . mark-whole-buffer)
+         ("s-w" . delete-frame)
+         ("s-n" . make-frame)
+         ("s-`" . other-frame)
+         ("s-'" . next-window-any-frame)
+         ("s-q" . save-buffers-kill-emacs)
+         ("s-f" . isearch-forward)
+         ("s-F" . isearch-backward)
+         ("s-d" . isearch-repeat-backward)
+         ("s-g" . isearch-repeat-forward)
+         ("s-d" . isearch-repeat-forward)
+         ("s-e" . isearch-yank-kill)
+         ;; crux
+         ("C-s-k" . kill-current-buffer)
+         ("C-c o" . crux-open-with)
          ("C-c N" . crux-cleanup-buffer-or-region)
          ("C-c f" . crux-recentf-find-file)
          ("C-M-z" . crux-indent-defun)
@@ -551,8 +571,7 @@
          ([(shift return)] . crux-smart-open-line)
          ;; ("s-o" . crux-smart-open-line-above)
          ([(control shift return)] . crux-smart-open-line-above)
-         ([remap kill-whole-line] . crux-kill-whole-line)
-         ))
+         ([remap kill-whole-line] . crux-kill-whole-line)))
 
 (use-package undo-tree
   :straight t
