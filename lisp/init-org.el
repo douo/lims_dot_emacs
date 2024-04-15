@@ -479,6 +479,14 @@ Throw an error when not in a list."
   :after org)
 
 
+;; org 当前元素相关的 transient 菜单
+;; TODO 相当于一个简短的提醒菜单，现在功能还不是很好，以后可以自己整理
+(use-package org-menu
+  :straight t
+  :after org
+  :bind
+  (:map org-mode-map
+        ("s-c" . org-menu)))
 
 (provide 'init-org)
 
