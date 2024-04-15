@@ -1280,6 +1280,11 @@
 
 ;; 主模式
 
+(use-package kbd-mode
+  :straight (:host github :repo "kmonad/kbd-mode")
+  :defer t
+  )
+
 ;;
 (use-package pkgbuild-mode
   :straight t)
