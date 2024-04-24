@@ -326,6 +326,45 @@
 (use-package gptel
   :straight t)
 
+;; llm
+(use-package ellama  ;; 依赖 https://github.com/ahyatt/llm
+  :straight t
+  :init
+  ;; setup key bindings
+  (setopt ellama-keymap-prefix "s-o")
+  ;; language you want ellama to translate to
+  (setopt ellama-language "Chinese")
+  ;; could be llm-openai for example
+  (require 'llm-ollama)
+  (setopt ellama-provider
+	  (make-llm-ollama
+	   ;; this model should be pulled to use it
+	   ;; value should be the same as you print in terminal during pull
+           :host "p44.zero"
+	   :chat-model "llama3"
+	   :embedding-model "llama3"))
+  ;; Predefined llm providers for interactive switching.
+  ;; You shouldn't add ollama providers here - it can be selected interactively
+  ;; without it. It is just example.
+  (setopt ellama-providers
+	  '(("llama3" . (make-llm-ollama
+                            :host "p44.zero"
+		            :chat-model "llama3"
+			    :embedding-model "llama3"))
+	    ("dolphin-llama3" . (make-llm-ollama
+                                 :host "p44.zero"
+			         :chat-model "dolphin-llama3:8b-v2.9-fp16"
+			         :embedding-model "dolphin-llama3:8b-v2.9-fp16"))
+	    ("qwen" . (make-llm-ollama
+                       :host "p44.zero"
+		       :chat-model "qwen:32b"
+		       :embedding-model "qwen:32b"))))
+  ;; Naming new sessions with llm
+  (setopt ellama-naming-provider ellama-provider)
+  (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
+  ;; Translation llm provider
+  (setopt ellama-translation-provider ellama-provider))
+
 (use-package magit-gptcommit
   :straight t
   :demand t
@@ -1279,6 +1318,7 @@
 ;; treesit end
 
 ;; 主模式
+
 
 ;;
 (use-package pkgbuild-mode
