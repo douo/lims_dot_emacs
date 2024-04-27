@@ -132,6 +132,7 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
+(straight-use-package 'package-lint)
 (straight-use-package 'org)
 (straight-use-package 'use-package)
 
@@ -325,26 +326,7 @@
   :straight t
   :bind (("M-g t" . git-timemachine)))
 
-;; gpt
-(use-package gptel
-  :straight t)
 
-
-(use-package magit-gptcommit
-  :straight `(magit-gptcommit :type git :host github :repo "douo/magit-gptcommit")
-  :demand t
-  :after gptel magit
-  :config
-  ;; Enable magit-gptcommit-mode to watch staged changes and generate commit message automatically in magit status buffer
-  ;; This mode is optional, you can also use `magit-gptcommit-generate' to generate commit message manually
-  ;; `magit-gptcommit-generate' should only execute on magit status buffer currently
-  (magit-gptcommit-mode 1)
-  ;; Add gptcommit transient commands to `magit-commit'
-  ;; Eval (transient-remove-suffix 'magit-commit '(1 -1)) to remove gptcommit transient commands
-  (magit-gptcommit-status-buffer-setup)
-  :bind (:map git-commit-mode-map
-              ("C-c C-g" . magit-gptcommit-commit-accept))
-  )
 
 ;; rg
 (use-package rg
@@ -530,7 +512,27 @@
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
 (use-package crux
   :straight t
-  :bind (("C-c o" . crux-open-with)
+  :bind (
+         ;; 同步常用 macOS 快捷键到其他系统
+         ("s-," . customize)
+         ("s-u" . revert-buffer)
+         ("s-?" . info)
+         ("s-?" . info)
+         ("s-a" . mark-whole-buffer)
+         ("s-w" . delete-frame)
+         ("s-n" . make-frame)
+         ("s-`" . other-frame)
+         ("s-'" . next-window-any-frame)
+         ("s-q" . save-buffers-kill-emacs)
+         ("s-f" . isearch-forward)
+         ("s-F" . isearch-backward)
+         ("s-d" . isearch-repeat-backward)
+         ("s-g" . isearch-repeat-forward)
+         ("s-d" . isearch-repeat-forward)
+         ("s-e" . isearch-yank-kill)
+         ;; crux
+         ("C-s-k" . kill-current-buffer)
+         ("C-c o" . crux-open-with)
          ("C-c N" . crux-cleanup-buffer-or-region)
          ("C-c f" . crux-recentf-find-file)
          ("C-M-z" . crux-indent-defun)
@@ -554,8 +556,7 @@
          ([(shift return)] . crux-smart-open-line)
          ;; ("s-o" . crux-smart-open-line-above)
          ([(control shift return)] . crux-smart-open-line-above)
-         ([remap kill-whole-line] . crux-kill-whole-line)
-         ))
+         ([remap kill-whole-line] . crux-kill-whole-line)))
 
 (use-package undo-tree
   :straight t
@@ -1264,6 +1265,11 @@
 
 ;; 主模式
 
+(use-package kbd-mode
+  :straight (:host github :repo "kmonad/kbd-mode")
+  :defer t
+  )
+
 ;;
 (use-package pkgbuild-mode
   :straight t)
@@ -1314,6 +1320,44 @@
   :config
   )
 
+;;; start_juptyer
+
+(use-package jupyter
+  :straight t
+  :config
+  )
+
+(use-package code-cells
+  :straight t
+  :after jupyter
+  :config
+  ;; create transient command
+  (transient-define-prefix code-cells-transient-command ()
+    "code-cells Command"
+    ["Cursor"
+     ;; up
+     ("k" "Backward" code-cells-backward-cell :transient t)
+      ;; down
+      ("j" "forward" code-cells-forward-cell :transient t)]
+    ["Movement"
+     ;; up
+     ("K" "Move Up" code-cells-move-cell-up :transient t)
+      ;; down
+      ("J" "Move Down" code-cells-move-cell-down :transient t)]
+    ["Other"
+     ("e" "Cell Eval" code-cells-eval)
+     ("q" "Quit" transient-quit-all)])
+  :bind
+  (:map code-cells-mode-map
+        ("s-c" . code-cells-transient-command)
+        ("C-c C-p" . jupyter-repl-associate-buffer)
+        ("C-c C-c" . code-cells-eval))
+
+  (:map jupyter-repl-interaction-mode-map
+        ;; Overriding other minor mode bindings requires some insistence...
+        ([remap jupyter-eval-line-or-region] . code-cells-eval)))
+
+;;; end_jupyter
 ;; end_python
 
 ;; begin_web
@@ -1676,6 +1720,7 @@
 
 ;; begin_other_init
 (require 'init-org)
+(require 'init-llm)
 ;; tui/gui 切换不同配置，+主要是切换 lsp-bridge 和 eglot+
 (if (display-graphic-p)
     (require 'init-gui)
