@@ -486,7 +486,7 @@ Throw an error when not in a list."
   :after org
   :bind
   (:map org-mode-map
-        ("s-c" . org-menu)))
+        ("C-c o" . org-menu)))
 
 (provide 'init-org)
 

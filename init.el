@@ -35,10 +35,12 @@
      (float-time (time-since time))))
 
 (defvar k-gc-timer
-  (run-with-idle-timer 15 t
+  (run-with-idle-timer 60 t
                        (lambda ()
-                         (message "Garbage Collector has run for %.06fsec"
-                                  (k-time (garbage-collect))))))
+                         (garbage-collect)
+                         ;; (message "Garbage Collector has run for %.06fsec"
+                         ;;          (k-time (garbage-collect)))
+                         )))
 ;; gc end
 
 
@@ -528,7 +530,7 @@
          ("s-e" . isearch-yank-kill)
          ;; crux
          ("C-s-k" . kill-current-buffer)
-         ("C-c o" . crux-open-with)
+         ;; ("C-c o" . crux-open-with)
          ("C-c N" . crux-cleanup-buffer-or-region)
          ("C-c f" . crux-recentf-find-file)
          ("C-M-z" . crux-indent-defun)
@@ -1246,18 +1248,49 @@
 ;; download os relate module from: https://github.com/emacs-tree-sitter/tree-sitter-langs
 (when (and (not (version< emacs-version "29")) (treesit-available-p))
   (setq treesit-extra-load-path '(concat (file-name-directory user-init-file) "tree-sitter"))
-  (add-to-list 'major-mode-remap-alist
-               '(c-mode . c-ts-mode)
-               '(c++-mode . c++-ts-mode)
-               '(python-mode . python-ts-mode)
-               )
-  )
+  (dolist (mapping
+           '((c-mode . c-ts-mode)
+             (c++-mode . c++-ts-mode)
+             (python-mode . python-ts-mode)
+             (bash-mode . bash-ts-mode)
+             (typescript-mode . typescript-ts-mode)
+             (js2-mode . js-ts-mode)
+             (css-mode . css-ts-mode)
+             (json-mode . json-ts-mode)
+             (js-json-mode . json-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping)))
+
 
 (use-package treesit-auto
   :straight t
   :config
   (global-treesit-auto-mode))
 ;; treesit end
+
+(use-package combobulate
+  :straight (combobulate
+             :type git
+             :host nil
+             :nonrecursive t
+             :repo "https://github.com/mickeynp/combobulate")
+  :preface
+  ;; You can customize Combobulate's key prefix here.
+  ;; Note that you may have to restart Emacs for this to take effect!
+  (setq combobulate-key-prefix "C-c o")
+
+  ;; Optional, but recommended.
+  ;;
+  ;; You can manually enable Combobulate with `M-x
+  ;; combobulate-mode'.
+  :hook
+  ((python-ts-mode . combobulate-mode)
+   (js-ts-mode . combobulate-mode)
+   (html-ts-mode . combobulate-mode)
+   (css-ts-mode . combobulate-mode)
+   (yaml-ts-mode . combobulate-mode)
+   (typescript-ts-mode . combobulate-mode)
+   (json-ts-mode . combobulate-mode)
+   (tsx-ts-mode . combobulate-mode)))
 
 ;; 主模式
 
@@ -1363,10 +1396,14 @@
 ;; (setq web-mode-css-indent-offset 2)
 (use-package web-mode
   :straight t
-  :mode (("\\.js\\'" . web-mode)
-	 ("\\.jsx\\'" .  web-mode)
-	 ("\\.html\\'" . web-mode))
+  :mode (("\\.html\\'" . web-mode))
   :commands web-mode)
+
+(use-package js2-mode
+  :straight t
+  :mode (("\\.js\\'" . js2-mode)
+	 ("\\.jsx\\'" .  js2-mode))
+  :commands js2-mode)
 
 
 (use-package typescript-mode :defer
