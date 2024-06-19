@@ -2,10 +2,31 @@
 (use-package gptel
   :straight t)
 
-(use-package magit-gptcommit
+(use-package llm
   :straight t
+  :init
+  (require 'llm-openai)
+  (require 'llm-gemini)
+  :config
+  (setopt llm-gemini-provider
+        (make-llm-gemini :key (getenv "GEMINI_KEY")  ;; define in systemd unit
+                         :chat-model "gemini-1.5-flash-latest"
+                         ))
+  (setopt llm-copilot-provider (make-llm-openai-compatible
+    :key (getenv "COPILOT_KEY")
+    :chat-model "gpt-3.5-turbo"
+    :url "http://p44.zero:8080/v1/"))
+  )
+
+(use-package magit-gptcommit
+  ;; :straight t
+  :straight (magit-gptcommit :type git :host github :repo "avishefi/magit-gptcommit" :branch "llm")
+  :after llm
+  :init
+  (require 'llm-openai)
   :demand t
-  :after gptel magit
+  :custom
+  (magit-gptcommit-llm-provider llm-gemini-provider)
   :config
   ;; Enable magit-gptcommit-mode to watch staged changes and generate commit message automatically in magit status buffer
   ;; This mode is optional, you can also use `magit-gptcommit-generate' to generate commit message manually
@@ -23,6 +44,7 @@
 ;; llm
 (use-package ellama  ;; 依赖 https://github.com/ahyatt/llm
   :straight t
+  :after llm
   :init
   ;; setup key bindings
   (setopt ellama-keymap-prefix "s-o")
@@ -42,9 +64,9 @@
   ;; without it. It is just example.
   (setopt ellama-providers
 	  '(("llama3" . (make-llm-ollama
-                            :host "p44.zero"
-		            :chat-model "llama3"
-			    :embedding-model "llama3"))
+                         :host "p44.zero"
+		         :chat-model "llama3"
+			 :embedding-model "llama3"))
 	    ("dolphin-llama3" . (make-llm-ollama
                                  :host "p44.zero"
 			         :chat-model "dolphin-llama3:8b-v2.9-fp16"
