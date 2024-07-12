@@ -22,8 +22,6 @@
   ;; :straight t
   :straight t
   :after llm
-  :init
-  (require 'llm-openai)
   :demand t
   :custom
   (magit-gptcommit-llm-provider llm-gemini-provider)
