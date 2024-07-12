@@ -1619,6 +1619,7 @@
   ;; 在 eglot 模式激活时将 xref-find-apropos 映射到 consult-eglot-symbols
   ;; 默认快捷键 C-M-.
   (define-key eglot-mode-map [remap xref-find-apropos] 'consult-eglot-symbols)
+  (define-key eglot-mode-map (kbd "M-.") 'eglot-find-declaration)
   )
 
 ;; end_eglot

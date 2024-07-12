@@ -20,7 +20,7 @@
 
 (use-package magit-gptcommit
   ;; :straight t
-  :straight (magit-gptcommit :type git :host github :repo "avishefi/magit-gptcommit" :branch "llm")
+  :straight t
   :after llm
   :init
   (require 'llm-openai)
