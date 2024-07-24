@@ -1550,9 +1550,16 @@
   (sis-default-cursor-color "white")
   (sis-other-cursor-color "orange")
   ;; enable the /respect/ mode
+  ;; 使用指定语言启动 Emacs
+  ;; 离开 evil insert 模式时切换到英语
+  ;; 切换到英文的 C-c / C-x / C-h 等
+  ;; 重新聚焦时恢复缓冲区输入源
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
-  (sis-global-context-mode t)
+  ;; 根据当前光标位置的前后字符判断合适输入法
+  ;; 通过 (sis--context-guess) 获取
+  ;; 不知道有什么实际应用场景
+  (sis-global-context-mode nil)
   ;; enable the /inline english/ mode for all buffers
   (sis-global-inline-mode t)
   (sis-inline-tighten-head-rule 0)
