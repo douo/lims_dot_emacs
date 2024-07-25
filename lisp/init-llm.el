@@ -9,14 +9,20 @@
   (require 'llm-gemini)
   :config
   (setopt llm-gemini-provider
-        (make-llm-gemini :key (getenv "GEMINI_KEY")  ;; define in systemd unit
+        (make-llm-gemini :key (auth-info-password
+                               (car (auth-source-search
+                                     :host "generativelanguage.googleapis.com"
+                                     :user "apikey")))
                          :chat-model "gemini-1.5-flash-latest"
                          ))
   (setopt llm-copilot-provider (make-llm-openai-compatible
     :key (getenv "COPILOT_KEY")
     :chat-model "gpt-3.5-turbo"
     :url "http://p44.zero:8080/v1/"))
+  :custom
+  (llm-warn-on-nonfree nil)
   )
+
 
 (use-package magit-gptcommit
   ;; :straight t
@@ -102,7 +108,8 @@
                  ellama-language
                  content)))))
   :bind
-  ("s-o c d" . douo/ellama-code-explain)
+  (:map ellama-command-map
+        ("c d" . douo/ellama-code-explain))
   )
 
 
