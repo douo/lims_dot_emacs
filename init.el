@@ -1537,6 +1537,21 @@
   ;; 手动重置一下
   (setq sis--ism-inited nil)
   (sis-global-respect-mode)
+  ;; 切换 emacs 焦点时，保存当前输入法状态
+  ;; 防止在 emacs 外修改输入法状态，导致 emacs 内输入法状态不一致
+  ;; 主要 sis-global-respect-mode 恢复 buffer 输入法失效
+  ;; FIXME 未处理多个 emacs frame 的情况
+  (setq douo/sis--current sis--current)
+  (defun douo/restore-sis-after-focus-change ()
+    "Restore sis-current after emacs frame focus back."
+    (when (display-graphic-p)
+      (if (frame-focus-state)
+          ;; focused
+          (when (not (eq douo/sis--current sis--current))
+            (sis--set douo/sis--current))
+        ;; lost focus
+        (setq douo/sis--current sis--current))))
+  (add-function :after after-focus-change-function #'douo/restore-sis-after-focus-change)
   ;; hack end
   :custom
   (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
@@ -1553,13 +1568,13 @@
   ;; 使用指定语言启动 Emacs
   ;; 离开 evil insert 模式时切换到英语
   ;; 切换到英文的 C-c / C-x / C-h 等
-  ;; 重新聚焦时恢复缓冲区输入源
+  ;; 切换 buffer 时恢复 buffer input source
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
   ;; 根据当前光标位置的前后字符判断合适输入法
   ;; 通过 (sis--context-guess) 获取
   ;; 不知道有什么实际应用场景
-  (sis-global-context-mode nil)
+  ;; (sis-global-context-mode nil)
   ;; enable the /inline english/ mode for all buffers
   (sis-global-inline-mode t)
   (sis-inline-tighten-head-rule 0)
