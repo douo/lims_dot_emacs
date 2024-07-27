@@ -2,10 +2,51 @@
 (use-package gptel
   :straight t)
 
+(use-package llm
+  :straight t
+  :init
+  (require 'llm-openai)
+  (require 'llm-gemini)
+  :config
+  (setopt llm-gpt4o-provider (make-llm-openai
+                                :key (auth-info-password
+                                      (car (auth-source-search
+                                            :host "api.openai.com"
+                                            :user "apikey")))
+                                :chat-model "gpt-4o-mini"))
+  (setopt llm-gemini-provider
+          (make-llm-gemini :key (auth-info-password
+                                 (car (auth-source-search
+                                       :host "generativelanguage.googleapis.com"
+                                       :user "apikey")))
+                           :chat-model "gemini-1.5-flash-latest"))
+
+  (setopt llm-copilot-provider (make-llm-openai-compatible
+                                :key (auth-info-password
+                                      (car (auth-source-search
+                                            :host "copilot.p44"
+                                            :user "apikey")))
+                                :chat-model "gpt-3.5-turbo"
+                                :url "http://p44.zero:8080/v1/"))
+
+  (setopt llm-vertex-claude-provider (make-llm-openai-compatible
+                               :key (auth-info-password
+                                     (car (auth-source-search
+                                           :host "oneapi.p44"
+                                           :user "apikey")))
+                               :chat-model "claude-3-5-sonnet@20240620"
+                               :url "http://p44.zero:3030/v1/"))
+  :custom
+  (llm-warn-on-nonfree nil)
+  )
+
+
 (use-package magit-gptcommit
   :straight t
+  :after llm
   :demand t
-  :after gptel magit
+  :custom
+  (magit-gptcommit-llm-provider llm-gemini-provider)
   :config
   ;; Enable magit-gptcommit-mode to watch staged changes and generate commit message automatically in magit status buffer
   ;; This mode is optional, you can also use `magit-gptcommit-generate' to generate commit message manually
@@ -23,6 +64,7 @@
 ;; llm
 (use-package ellama  ;; 依赖 https://github.com/ahyatt/llm
   :straight t
+  :after llm
   :init
   ;; setup key bindings
   (setopt ellama-keymap-prefix "s-o")
@@ -42,9 +84,9 @@
   ;; without it. It is just example.
   (setopt ellama-providers
 	  '(("llama3" . (make-llm-ollama
-                            :host "p44.zero"
-		            :chat-model "llama3"
-			    :embedding-model "llama3"))
+                         :host "p44.zero"
+		         :chat-model "llama3"
+			 :embedding-model "llama3"))
 	    ("dolphin-llama3" . (make-llm-ollama
                                  :host "p44.zero"
 			         :chat-model "dolphin-llama3:8b-v2.9-fp16"
@@ -52,7 +94,12 @@
 	    ("qwen" . (make-llm-ollama
                        :host "p44.zero"
 		       :chat-model "qwen:32b"
-		       :embedding-model "qwen:32b"))))
+		       :embedding-model "qwen:32b"))
+            ("gpt4o" . llm-gpt4o-provider)
+            ("claude-3.5-sonnet" . llm-vertex-claude-provider)
+            ("gemini-1.5-flash-latest" . llm-gemini-provider)
+            ("copilot" . llm-copilot)
+            ))
   ;; Naming new sessions with llm
   (setopt ellama-naming-provider ellama-provider)
   (setopt ellama-naming-scheme 'ellama-generate-name-by-llm)
@@ -82,7 +129,8 @@
                  ellama-language
                  content)))))
   :bind
-  ("s-o c d" . douo/ellama-code-explain)
+  (:map ellama-command-map
+        ("c d" . douo/ellama-code-explain))
   )
 
 

@@ -35,10 +35,12 @@
      (float-time (time-since time))))
 
 (defvar k-gc-timer
-  (run-with-idle-timer 15 t
+  (run-with-idle-timer 60 t
                        (lambda ()
-                         (message "Garbage Collector has run for %.06fsec"
-                                  (k-time (garbage-collect))))))
+                         (garbage-collect)
+                         ;; (message "Garbage Collector has run for %.06fsec"
+                         ;;          (k-time (garbage-collect)))
+                         )))
 ;; gc end
 
 
@@ -532,7 +534,7 @@
          ("s-e" . isearch-yank-kill)
          ;; crux
          ("C-s-k" . kill-current-buffer)
-         ("C-c o" . crux-open-with)
+         ;; ("C-c o" . crux-open-with)
          ("C-c N" . crux-cleanup-buffer-or-region)
          ("C-c f" . crux-recentf-find-file)
          ("C-M-z" . crux-indent-defun)
@@ -1250,18 +1252,49 @@
 ;; download os relate module from: https://github.com/emacs-tree-sitter/tree-sitter-langs
 (when (and (not (version< emacs-version "29")) (treesit-available-p))
   (setq treesit-extra-load-path '(concat (file-name-directory user-init-file) "tree-sitter"))
-  (add-to-list 'major-mode-remap-alist
-               '(c-mode . c-ts-mode)
-               '(c++-mode . c++-ts-mode)
-               '(python-mode . python-ts-mode)
-               )
-  )
+  (dolist (mapping
+           '((c-mode . c-ts-mode)
+             (c++-mode . c++-ts-mode)
+             (python-mode . python-ts-mode)
+             (bash-mode . bash-ts-mode)
+             (typescript-mode . typescript-ts-mode)
+             (js2-mode . js-ts-mode)
+             (css-mode . css-ts-mode)
+             (json-mode . json-ts-mode)
+             (js-json-mode . json-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping)))
+
 
 (use-package treesit-auto
   :straight t
   :config
   (global-treesit-auto-mode))
 ;; treesit end
+
+(use-package combobulate
+  :straight (combobulate
+             :type git
+             :host nil
+             :nonrecursive t
+             :repo "https://github.com/mickeynp/combobulate")
+  :preface
+  ;; You can customize Combobulate's key prefix here.
+  ;; Note that you may have to restart Emacs for this to take effect!
+  (setq combobulate-key-prefix "C-c o")
+
+  ;; Optional, but recommended.
+  ;;
+  ;; You can manually enable Combobulate with `M-x
+  ;; combobulate-mode'.
+  :hook
+  ((python-ts-mode . combobulate-mode)
+   (js-ts-mode . combobulate-mode)
+   (html-ts-mode . combobulate-mode)
+   (css-ts-mode . combobulate-mode)
+   (yaml-ts-mode . combobulate-mode)
+   (typescript-ts-mode . combobulate-mode)
+   (json-ts-mode . combobulate-mode)
+   (tsx-ts-mode . combobulate-mode)))
 
 ;; 主模式
 
@@ -1367,10 +1400,14 @@
 ;; (setq web-mode-css-indent-offset 2)
 (use-package web-mode
   :straight t
-  :mode (("\\.js\\'" . web-mode)
-	 ("\\.jsx\\'" .  web-mode)
-	 ("\\.html\\'" . web-mode))
+  :mode (("\\.html\\'" . web-mode))
   :commands web-mode)
+
+(use-package js2-mode
+  :straight t
+  :mode (("\\.js\\'" . js2-mode)
+	 ("\\.jsx\\'" .  js2-mode))
+  :commands js2-mode)
 
 
 (use-package typescript-mode :defer
@@ -1504,6 +1541,21 @@
   ;; 手动重置一下
   (setq sis--ism-inited nil)
   (sis-global-respect-mode)
+  ;; 切换 emacs 焦点时，保存当前输入法状态
+  ;; 防止在 emacs 外修改输入法状态，导致 emacs 内输入法状态不一致
+  ;; 主要 sis-global-respect-mode 恢复 buffer 输入法失效
+  ;; FIXME 未处理多个 emacs frame 的情况
+  (setq douo/sis--current sis--current)
+  (defun douo/restore-sis-after-focus-change ()
+    "Restore sis-current after emacs frame focus back."
+    (when (display-graphic-p)
+      (if (frame-focus-state)
+          ;; focused
+          (when (not (eq douo/sis--current sis--current))
+            (sis--set douo/sis--current))
+        ;; lost focus
+        (setq douo/sis--current sis--current))))
+  (add-function :after after-focus-change-function #'douo/restore-sis-after-focus-change)
   ;; hack end
   :custom
   (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
@@ -1517,9 +1569,16 @@
   (sis-default-cursor-color "white")
   (sis-other-cursor-color "orange")
   ;; enable the /respect/ mode
+  ;; 使用指定语言启动 Emacs
+  ;; 离开 evil insert 模式时切换到英语
+  ;; 切换到英文的 C-c / C-x / C-h 等
+  ;; 切换 buffer 时恢复 buffer input source
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
-  (sis-global-context-mode t)
+  ;; 根据当前光标位置的前后字符判断合适输入法
+  ;; 通过 (sis--context-guess) 获取
+  ;; 不知道有什么实际应用场景
+  ;; (sis-global-context-mode nil)
   ;; enable the /inline english/ mode for all buffers
   (sis-global-inline-mode t)
   (sis-inline-tighten-head-rule 0)
@@ -1586,6 +1645,7 @@
   ;; 在 eglot 模式激活时将 xref-find-apropos 映射到 consult-eglot-symbols
   ;; 默认快捷键 C-M-.
   (define-key eglot-mode-map [remap xref-find-apropos] 'consult-eglot-symbols)
+  (define-key eglot-mode-map (kbd "M-.") 'eglot-find-declaration)
   )
 
 ;; end_eglot

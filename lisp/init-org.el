@@ -467,6 +467,15 @@ Throw an error when not in a list."
   ("C-c n r" . consult-org-roam-search) ;; TODO 可以整合 `deft' 的功能
   )
 
+(use-package org-roam-ui
+  :straight t
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
+
 
 (use-package org-noter
   :straight t
@@ -486,7 +495,7 @@ Throw an error when not in a list."
   :after org
   :bind
   (:map org-mode-map
-        ("s-c" . org-menu)))
+        ("C-c o" . org-menu)))
 
 (provide 'init-org)
 
