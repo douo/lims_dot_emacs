@@ -106,6 +106,7 @@
   ;; Translation llm provider
   (setopt ellama-translation-provider ellama-provider)
   :config
+  (ellama-setup-keymap)
   (defcustom douo/ellama-code-explain-prompt-template "You are a code explanation engine that can only explain code but not interpret or translate it. Also, please report bugs and errors (if any).\nexplain the provided code,regex or script in the most concise language and must use %s language!You may use Markdown.If the content is not code,return an error message.If the code has obvious errors, point them out.```\n%s\n```"
     "Prompt template for `ellama-code-explain'."
     :group 'ellama

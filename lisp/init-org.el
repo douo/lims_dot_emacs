@@ -346,9 +346,7 @@ Throw an error when not in a list."
 ;;   )
 ;;
 ;;
-(use-package org-analyzer
-  :straight t
-  :after org)
+
 
 
 (use-package org-agenda-property
@@ -490,12 +488,26 @@ Throw an error when not in a list."
 
 ;; org 当前元素相关的 transient 菜单
 ;; TODO 相当于一个简短的提醒菜单，现在功能还不是很好，以后可以自己整理
+;; https://github.com/alphapapa/org-ql?tab=readme-ov-file#queries
 (use-package org-menu
   :straight t
   :after org
   :bind
   (:map org-mode-map
         ("C-c o" . org-menu)))
+
+;; org-ql
+;; 该包提供了 Org 文件的查询语言。它提供两种语法风格：类似 Lisp 的 sexps 和类似搜索引擎的关键字。
+;; ex: 7 月份完成的任务
+;; (org-ql-search (org-agenda-files) "todo:DONE ts:from=2024-07-01,to=2024-07-31" :narrow nil :super-groups '((:auto-tags)) :sort nil)
+(use-package org-ql
+  :straight t
+  :after org)
+
+
+(use-package org-analyzer
+  :straight t
+  :after org)
 
 (provide 'init-org)
 

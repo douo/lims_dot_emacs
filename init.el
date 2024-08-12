@@ -182,11 +182,13 @@
 (require 'init-vars)
 (require 'init-utils)
 (with-system darwin
-  (require 'init-osx)
-  )
+  (require 'init-osx))
 (with-system windows-nt
-  (require 'init-windows)
-  )
+  (require 'init-windows))
+(with-system darwin
+  ;; https://stackoverflow.com/questions/57591432/gpg-signing-failed-inappropriate-ioctl-for-device-on-macos-with-maven
+  ;; 让 EPA 使用 Emacs 自己的密码提示，而不是外部的 Pinentry 程序。
+  (setq epa-pinentry-mode 'loopback))
 
 
 (use-package nerd-icons
@@ -1774,6 +1776,8 @@
   )
 ;; end_copilot
 
+
+
 ;; begin_other_init
 (require 'init-org)
 (require 'init-llm)
@@ -1783,3 +1787,4 @@
   (require 'init-tui)
   )
 ;; end_other_init
+(require 'local)
