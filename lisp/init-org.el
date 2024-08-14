@@ -194,13 +194,6 @@ Throw an error when not in a list."
   (org-mode . org-add-electric-pairs)
   )
 
-(use-package embark-org
-  :straight t
-  :after (embark org)
-  :demand t ;
-)
-
-
 ;; 优先度可以继承
 ;; https://emacs.stackexchange.com/questions/37800/how-to-inherit-priority-in-org-mode
 (defun douo/org-inherited-priority (s)
