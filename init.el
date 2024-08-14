@@ -190,6 +190,26 @@
   ;; 让 EPA 使用 Emacs 自己的密码提示，而不是外部的 Pinentry 程序。
   (setq epa-pinentry-mode 'loopback))
 
+;; 为 calc-mode 提供 transient 菜单
+(use-package casual-calc
+  :straight t
+  :bind (:map
+         calc-mode-map
+         ("C-o" . casual-calc-tmenu)
+         :map
+         calc-alg-map
+         ("C-o" . casual-calc-tmenu))
+  :after (calc))
+(use-package casual-dired
+  :straight t
+  :bind (:map dired-mode-map
+              ("C-o" . #'casual-dired-tmenu)
+              ("s" . #'casual-dired-sort-by-tmenu)
+              ("/" . #'casual-dired-search-replace-tmenu)))
+(use-package casual-info
+  :straight t
+  :bind (:map Info-mode-map ("C-o" . 'casual-info-tmenu)))
+
 
 (use-package nerd-icons
   :straight t
@@ -1052,12 +1072,10 @@
   ;;           args)))
   )
 
-;; 为当前目标提供 context action, 每个 category 都有一份 action
-;; 保存在变量里，比如文件对应的是 `embark-file-map'
-;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
-;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
-;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
-;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
+;; 为当前目标提供 context action, 每个 target 都有一份 keymap，保存在 `embark-keymap-alist' 中
+;; 比如文件对应的是 `embark-file-map'，target 的 keymap 会继承自 `embark-general-map'
+;; *target* 通过 `embark-target-finders' 确定，
+;; 会将 completion metadata 中的 category 作为 target，配合 `margianlia' 增强了许多 Emacs 命令以报告准确的类别元数据
 (use-package embark
   :straight t
   :after (ace-window)
@@ -1070,13 +1088,18 @@
   ;;(setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
 
   :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
-   ;; 默认行为是 `xref-find-definitions'(M-.)
+  (("C-." . embark-act)
+   ("C-。" . embark-act)
    ;; 用 `embark-dwim' 提供更多功能性
-   ("M-." . embark-dwim)        ;; good alternative: C-;
+   ("C-;" . embark-dwim) ;; 默认行为是 `xref-find-definitions'(M-.)
    ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
    ;; ("C-;" . embark-act-noquit)
    )
+
+  ;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
+  ;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
+  ;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
+  ;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
   (:map embark-collect-mode-map
         ("m" . embark-select)
         )
@@ -1086,7 +1109,15 @@
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
                  (window-parameters (mode-line-format . none))))
-
+  ;; indicator
+  ;; 触发 act 时候的行为，由 `embark-indicators' 确定
+  (setq embark-indicators
+        '(
+          embark-minimal-indicator  ; default is embark-mixed-indicator
+          embark-highlight-indicator
+          embark-isearch-highlight-indicator))
+  ;; 用 helpful 替代默认的 describe-symbol
+  (define-key embark-symbol-map (kbd "h") #'helpful-at-point)
   ;; begin_ace_window
   ;; 配合 ace-window 指定 window 打开目标
   (eval-when-compile

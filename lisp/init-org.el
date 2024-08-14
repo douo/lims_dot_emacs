@@ -194,6 +194,12 @@ Throw an error when not in a list."
   (org-mode . org-add-electric-pairs)
   )
 
+(use-package embark-org
+  :straight t
+  :after (embark org)
+  :demand t ;
+)
+
 
 ;; 优先度可以继承
 ;; https://emacs.stackexchange.com/questions/37800/how-to-inherit-priority-in-org-mode
@@ -494,7 +500,7 @@ Throw an error when not in a list."
   :after org
   :bind
   (:map org-mode-map
-        ("C-c o" . org-menu)))
+        ("C-o" . org-menu))) ;; 覆盖了 org-open-line
 
 ;; org-ql
 ;; 该包提供了 Org 文件的查询语言。它提供两种语法风格：类似 Lisp 的 sexps 和类似搜索引擎的关键字。
