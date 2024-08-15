@@ -9,6 +9,11 @@
 - [[https://github.com/ryanoasis/nerd-fonts][ryanoasis/nerd-fonts]] (nerd-icons)
 - [[https://wiki.archlinux.org/title/locate][locate - ArchWiki]] (consult-locate)
 
+* 本地配置
+
+- =lisp/init-local.el= 存放本地环境相关信息，比如各类 ip ，tramp 跳板等。
+- gitignore 配置忽略
+
 * 环境变量
 
 不同主机通过配置环境变量自定义，目前所用环境变量:

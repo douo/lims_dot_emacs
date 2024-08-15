@@ -1817,5 +1817,6 @@
     (require 'init-gui)
   (require 'init-tui)
   )
+
+(require 'init-local)
 ;; end_other_init
-(require 'local)
