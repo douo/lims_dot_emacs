@@ -1075,6 +1075,7 @@
 ;; 为当前目标提供 context action, 每个 target 都有一份 keymap，保存在 `embark-keymap-alist' 中
 ;; 比如文件对应的是 `embark-file-map'，target 的 keymap 会继承自 `embark-general-map'
 ;; *target* 通过 `embark-target-finders' 确定，
+;; 当前位置遍历 `embark-target-finders' 所有函数，收集所有非 nil 的结果，去重得到结果，可通过 `embark-cycle' 进行切换
 ;; 会将 completion metadata 中的 category 作为 target，配合 `margianlia' 增强了许多 Emacs 命令以报告准确的类别元数据
 (use-package embark
   :straight t
@@ -1086,23 +1087,6 @@
   ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
   ;; 调整 Eldoc 策略，如果您想从多个提供者那里看到文档。
   ;;(setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-  :bind
-  (("C-." . embark-act)
-   ("C-。" . embark-act)
-   ;; 用 `embark-dwim' 提供更多功能性
-   ("C-;" . embark-dwim) ;; 默认行为是 `xref-find-definitions'(M-.)
-   ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
-   ;; ("C-;" . embark-act-noquit)
-   )
-
-  ;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
-  ;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
-  ;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
-  ;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
-  (:map embark-collect-mode-map
-        ("m" . embark-select)
-        )
   :config
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
@@ -1111,13 +1095,12 @@
                  (window-parameters (mode-line-format . none))))
   ;; indicator
   ;; 触发 act 时候的行为，由 `embark-indicators' 确定
-  (setq embark-indicators
-        '(
-          embark-minimal-indicator  ; default is embark-mixed-indicator
-          embark-highlight-indicator
-          embark-isearch-highlight-indicator))
-  ;; 用 helpful 替代默认的 describe-symbol
-  (define-key embark-symbol-map (kbd "h") #'helpful-at-point)
+  ;; 有 `vertico' 时候，indicator 会被默认设置 https://github.com/oantolin/embark/commit/175f0abaf6b1538533e245358bbbe42e27567822
+  ;; (setq embark-indicators
+  ;;       '(
+  ;;         embark-minimal-indicator  ; default is embark-mixed-indicator
+  ;;         embark-highlight-indicator ; 高亮当前的作用区域
+  ;;         embark-isearch-highlight-indicator))
   ;; begin_ace_window
   ;; 配合 ace-window 指定 window 打开目标
   (eval-when-compile
@@ -1128,16 +1111,6 @@
            (let ((aw-dispatch-always t))
              (aw-switch-to-window (aw-select nil))
              (call-interactively (symbol-function ',fn)))))))
-  (define-key embark-file-map     (kbd "o") (my/embark-ace-action find-file))
-  (define-key embark-buffer-map   (kbd "o") (my/embark-ace-action switch-to-buffer))
-  (define-key embark-bookmark-map (kbd "o") (my/embark-ace-action bookmark-jump))
-  ;; end_ace_window
-
-  ;; begin_0x0
-  (define-key embark-region-map   (kbd "U") '0x0-dwim)
-  (define-key embark-file-map   (kbd "U") '0x0-dwim)
-  ;; end_0x0
-
   ;; begin_sudo_find_file
   ;; root 权限打开文件
   (defun sudo-find-file (file)
@@ -1155,13 +1128,37 @@
       (set-buffer
        (find-file (concat "/sudo::" (expand-file-name file)))
        )))
-  (define-key embark-file-map (kbd "S") (my/embark-ace-action sudo-find-file))
   ;; end_sudo_find_file
 
   ;; :custom
   ;; 因为 `C-u C-.' 能实现 noquit  所以这里不需要了
   ;; (embark-quit-after-action nil) ;; 执行操作后不退出 minibuffer，默认是 t
-  )
+  :bind  (("C-." . embark-act)
+   ;; 用 `embark-dwim' 提供更多功能性
+   ("C-;" . embark-dwim) ;; 默认行为是 `xref-find-definitions'(M-.)
+   ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
+   ;; ("C-;" . embark-act-noquit)
+   (:map embark-symbol-map
+         ;; 用 helpful 替代默认的 describe-symbol
+         ("h" . helpful-at-point))
+   (:map embark-file-map
+         ("S" . sudo-find-file)
+         ("o" . find-file)
+         ("U" . 0x0-dwim))
+   (:map embark-buffer-map
+         ("o" . switch-to-buffer))
+   (:map embark-bookmark-map
+         ("o" . bookmark-jump))
+   (:map embark-region-map
+         ("U" . 0x0-dwim))
+   ;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
+   ;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
+   ;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
+   ;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
+   (:map embark-collect-mode-map
+         ("m" . embark-select)
+         ))
+   )
 
 ;;
 (use-package consult-dir

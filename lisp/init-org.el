@@ -495,6 +495,38 @@ Throw an error when not in a list."
   (:map org-mode-map
         ("C-o" . org-menu))) ;; 覆盖了 org-open-line
 
+;; 与 org-menu 职责有重叠，但是 embark 根据当前元素的上下文提供更精细的操作
+(use-package embark-org
+  :after (embark org org-menu)
+  :config
+  (defun douo/embark-org-timestamp-target ()
+    "判断当前位置是不是 timestamp ，返回 `embark-org-target-element-context' 相同的结构，
+但是不同的是，它无视上下文，只要满足时间戳的正则就返回"
+    (when (org-at-timestamp-p 'lax) ;; 无视上下文
+      (let* ((begin (match-beginning 0))
+             (end (match-end 0))
+             (ts (buffer-substring-no-properties begin end)))
+        `(org-timestamp ,ts ,begin . ,end))))
+  ;; 添加在 `embark-org-target-element-context' 之后
+  (if-let (((not (memq 'douo/embark-org-timestamp-target embark-target-finders)))
+           (tail (memq 'embark-org-target-element-context embark-target-finders)))
+      (push 'douo/embark-org-timestamp-target (cdr tail))
+    (push 'douo/embark-org-timestamp-target embark-target-finders))
+  ;; 添加 embark-org-timestamp-map
+  (add-to-list 'embark-keymap-alist '(org-timestamp . embark-org-timestamp-map))
+  (defvar-keymap embark-org-timestamp-map
+    :doc "Keymap for actions on org-timestamps."
+    :parent embark-general-map
+    "RET" #'org-menu-fix-timestamp ; harmless default
+    "t" #'org-toggle-timestamp-type
+    "e" (lambda (_) "edit a time stamp." nil (org-time-stamp nil))
+    )
+  ;; modify default embark key for org-mode
+  (defun douo/setup-embark-org-keymap ()
+    (add-to-list 'embark-keymap-alist '(region . embark-org-timestamp-map))
+    )
+  )
+
 ;; org-ql
 ;; 该包提供了 Org 文件的查询语言。它提供两种语法风格：类似 Lisp 的 sexps 和类似搜索引擎的关键字。
 ;; ex: 7 月份完成的任务
