@@ -256,16 +256,22 @@
           "Multi vterm transient"
           ["Multi vterm"
            ("c" "Create new terminal" multi-vterm)
-           ("n" "Switch to next terminal" multi-vterm-next)
-           ("p" "Switch to next terminal" multi-vterm-prev)
+           ("n" "Switch to next terminal" multi-vterm-next :transient t)
+           ("p" "Switch to next terminal" multi-vterm-prev :transient t)
+           ;; dedicated ;在当前 window 中 按照高度百分比创建一个 terminal（单例）
            ("t" "Toggle dedicated terminal" multi-vterm-dedicated-toggle)
            ("g" "Create/toggle terminal based on current project" multi-vterm-project)
            ]
           )
+        (defun douo/multi-vterm-dedicated-toggle (arg)
+          "Toggle dedicated vterm."
+          (interactive "P")
+                (if arg
+                    (call-interactively 'multi-vterm-transient)
+                  (multi-vterm-dedicated-toggle)))
         :bind (
-               ("s-t" . multi-vterm)
-               ("C-c M-t" . multi-vterm-transient))
-        )))
+               ("s-t" . douo/multi-vterm-dedicated-toggle)
+               ("C-c t" . douo/multi-vterm-dedicated-toggle)))))
 
 ;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
 (use-package pinyinlib
