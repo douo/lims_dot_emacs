@@ -484,11 +484,15 @@
   (gt-langs '(en zh))
   (gt-default-translator
    (gt-translator
-    :taker (gt-taker :langs '(en zh) :text 'paragraph)
+    :taker (gt-taker :langs '(en zh) :text (lambda () (replace-regexp-in-string
+                              "\\([^\n]\\)\n\\([^\n]\\)" "\\1 \\2"
+                              (thing-at-point 'paragraph)))
+                     :prompt t
+                     )
     :engines (gt-google-engine)
     :render (gt-buffer-render)))
   :bind
-  
+
   (:map embark-prose-map
         ;; 覆盖 transpose-xxx
         ("t" . douo/go-do-translate)
@@ -497,6 +501,7 @@
         ;; 覆盖 transpose-regions
         ("t" . douo/go-do-translate)
         )
+  :commands gt-do-translate
   )
 
 
@@ -537,8 +542,7 @@
 
   ;; 自定义 pdf 翻译文本提取器
   ;; 如果有高亮返回高亮文本，无则返回整页文本
-  (defclass douo/gts-pdf-view-selection-texter (gts-texter) ())
-  (cl-defmethod gts-text ((_ douo/gts-pdf-view-selection-texter))
+  (defun douo/gts-pdf-view-selection-texter ()
     (unless (pdf-view-active-region-p)
       (pdf-view-mark-whole-page)
       )
@@ -549,16 +553,16 @@
                               (car (pdf-view-active-region-text)))
     )
   (defvar douo/pdf-translater
-    (gts-translator
-     :picker (gts-noprompt-picker :texter (douo/gts-pdf-view-selection-texter))
-     :engines (list (gts-google-rpc-engine))
-     :render (gts-buffer-render)
+    (gt-translator
+     :taker (gt-taker :text 'douo/gts-pdf-view-selection-texter)
+     :engines (list (gt-google-engine))
+     :render (gt-buffer-render)
      ;; :splitter (gts-paragraph-splitter)
      )
     )
   (defun douo/pdf-view-translate ()
     (interactive)
-    (gts-translate douo/pdf-translater)
+    (gt-start douo/pdf-translater)
     ;;  cancel selection in emacs
     (deactivate-mark)
     )
