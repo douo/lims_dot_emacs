@@ -469,16 +469,34 @@
 ;; 翻译
 (use-package go-translate
   :straight t
+  :init
+  (defun douo/go-do-translate (text-property-string)
+    (gt-start (gt-translator
+               :taker (gt-taker
+                       ;; 单个换行替换为空格
+                       :text (replace-regexp-in-string
+                              "\\([^\n]\\)\n\\([^\n]\\)" "\\1 \\2"
+                              text-property-string))
+               :engines (gt-google-engine)
+               :render (gt-posframe-pop-render))))
   :custom
-  (gts-translate-list '(("en" "zh")))
-  (gts-default-translator
-   (gts-translator
-    :picker (gts-prompt-picker)
-    :engines (list (gts-google-rpc-engine))
-    :render (gts-buffer-render)
-    ;; :splitter (gts-paragraph-splitter)
-    )
-   )
+  (gt-cache-p t)
+  (gt-langs '(en zh))
+  (gt-default-translator
+   (gt-translator
+    :taker (gt-taker :langs '(en zh) :text 'paragraph)
+    :engines (gt-google-engine)
+    :render (gt-buffer-render)))
+  :bind
+  
+  (:map embark-prose-map
+        ;; 覆盖 transpose-xxx
+        ("t" . douo/go-do-translate)
+        )
+  (:map embark-region-map
+        ;; 覆盖 transpose-regions
+        ("t" . douo/go-do-translate)
+        )
   )
 
 
@@ -1162,7 +1180,7 @@
   ;; (embark-quit-after-action nil) ;; 执行操作后不退出 minibuffer，默认是 t
   :bind  (("C-." . embark-act)
    ;; 用 `embark-dwim' 提供更多功能性
-   ("C-;" . embark-dwim) ;; 默认行为是 `xref-find-definitions'(M-.)
+   ("C-'" . embark-dwim) ;; 默认行为是 `xref-find-definitions'(M-.)
    ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
    ;; ("C-;" . embark-act-noquit)
    (:map embark-symbol-map
