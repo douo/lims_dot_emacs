@@ -458,15 +458,6 @@
   :straight t
   )
 
-;; 用于上传文本、文件到 https://0x0.st/ 或其它短链接分享服务
-;; 可自建 https://git.0x0.st/mia/0x0
-(use-package 0x0
-  :straight t
-  :custom
-  ;; 0x0 屏蔽了整个谷歌云 IP 段
-  (0x0-default-server 'ttm)
-  )
-
 ;; 隐藏文本内容
 ;; 保留颜色用方块代替字符
 ;; 类似内置的 `toggle-rot13-mode'
