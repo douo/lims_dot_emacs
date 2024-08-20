@@ -324,11 +324,43 @@
 ;; https://github.com/abo-abo/avy
 (use-package avy
   :straight t
+  :init
+  (transient-define-prefix douo/avy-goto-transient ()
+          "Avy goto transient menu"
+          ["Avy Goto"
+           ["Char"
+            ("c" "Type 1" avy-goto-char)
+            ("b" "Type 2" avy-goto-char-2)
+            ("t" "Jump to the char when stop typing" avy-goto-char-timer)]
+           ["Line"
+            ("l" "Type 0" avy-goto-line)]
+           ["Word"
+            ("w" "Type 1" avy-goto-word-1)
+            ("W" "Type 0" avy-goto-word-0)
+            ("s" "Type 1 or subword" avy-goto-word-or-subword-1)
+           ]
+           ["Org"
+            ;; `consult-org-heading' 比较方便
+            ("o" "Jump to org heading when stop typing" avy-org-goto-heading-timer)
+            ("r" "Refile as Child with point in an entry" avy-org-refile-as-child)
+            ]
+           ])
+  (defun douo/avy-goto-char (arg)
+    "`avy-goto-char' or create a avy-goto transient menu or `avy-resume' depend on `ARG'."
+    (interactive "P")
+    (cond
+     ((equal arg '(4))
+     (call-interactively 'douo/avy-goto-transient))
+     ((null arg)
+        (call-interactively 'avy-goto-char))
+     (t (call-interactively 'avy-resume))))
   :bind
-  ("M-g w" . avy-goto-word-or-subword-1)
-  ("M-g c" . avy-goto-char)
+  ("C-;" . douo/avy-goto-char)
+  (:map isearch-mode-map
+  ("C-;" . avy-isearch))
   :config
-  (setq avy-background t))
+  (setq avy-background t)
+  )
 ;; avy 支持拼音
 (use-package ace-pinyin
   :straight t
