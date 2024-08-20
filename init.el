@@ -378,13 +378,11 @@
 (use-package magit-todos
   :straight t
   :after magit
-  :config (magit-todos-mode 1)
+  :config (magit-todos-mode 0)
   )
 (use-package git-timemachine
   :straight t
   :bind (("M-g t" . git-timemachine)))
-
-
 
 ;; rg
 (use-package rg
