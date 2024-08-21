@@ -1207,6 +1207,7 @@
    (:map embark-collect-mode-map
          ("m" . embark-select)
          ))
+  :commands (embark-act embark-dwim embark-bindings embark-export embark-collect)
    )
 
 ;;
@@ -1859,9 +1860,8 @@
 (require 'init-org)
 (require 'init-llm)
 ;; tui/gui 切换不同配置，+主要是切换 lsp-bridge 和 eglot+
-(if (display-graphic-p)
-    (require 'init-gui)
-  (require 'init-tui)
+(when (or (not (display-graphic-p)) (server-running-p))
+    (require 'init-tui)
   )
 
 (require 'init-local)
