@@ -21,13 +21,7 @@
       (f-write-text
        (concat "#+TITLE: " (format-time-string "%Y年%m月%d日杂记") "\n"
                "#+date: " (format-time-string "[%Y-%m-%d]") "\n\n")
-       'utf-8
-       file
-       )
-      file
-      )
-    )
-  )
+       'utf-8 file) file)))
 
 (defun douo/insert-header-from-note-name ()
   (interactive)
@@ -35,9 +29,7 @@
     (save-excursion
       (goto-char (point-min))
       (insert (concat "#+TITLE: " (org-format-time-string "%Y年%m月%d日杂记" date nil)  "\n"
-                      "#+date: " (format-time-string "[%Y-%m-%d]" date) "\n\n")
-              )))
-  )
+                      "#+date: " (format-time-string "[%Y-%m-%d]" date) "\n\n")))))
 
 ;; https://emacs.stackexchange.com/a/2559/30746
 ;; FYI: 手动补全 C-c C-x C-f *
@@ -48,9 +40,7 @@
   (setq-local
    electric-pair-pairs (append electric-pair-pairs org-electric-pairs))
   (setq-local
-   electric-pair-text-pairs electric-pair-pairs)
-  )
-
+   electric-pair-text-pairs electric-pair-pairs))
 
 ;; https://xenodium.com/emacs-dwim-do-what-i-mean/
 ;; 检测剪切板是否是 url
@@ -112,10 +102,8 @@ Throw an error when not in a list."
       (setq consult-ripgrep-args original))  ; Restore the original value
     )
   )
+
 (advice-add 'consult-ripgrep :around #'douo/consult-ripgrep-advice)
-
-
-
 
 ;; config
 (use-package org
@@ -191,8 +179,7 @@ Throw an error when not in a list."
          ("C-c C-l" . ar/org-insert-link-dwim)
          )
   :hook
-  (org-mode . org-add-electric-pairs)
-  )
+  (org-mode . org-add-electric-pairs))
 
 ;; 优先度可以继承
 ;; https://emacs.stackexchange.com/questions/37800/how-to-inherit-priority-in-org-mode
@@ -214,26 +201,17 @@ Throw an error when not in a list."
 
 (setq org-priority-get-priority-function #'douo/org-inherited-priority)
 
-;; this allows you use `(,org-gtd-directory) for your agenda files
-(use-package org-agenda
-  :straight nil
-  :after org-gtd
-  :custom
-  (org-agenda-files `(,org-gtd-directory))
-  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
-  )
-
 (use-package org-gtd
   :straight t
   :after org
   :init
   (setq org-gtd-update-ack "3.0.0")
+  :config
   (defun douo/org-gtd-archive ()
     "Process GTD inbox item as a reference item without jump to inbox."
     (interactive)
     (with-org-gtd-context (org-archive-subtree))
     )
-  :config
   (defun douo/org-gtd-engage()
     "Display `org-agenda' customized by org-gtd."
     (interactive)
@@ -309,10 +287,15 @@ Throw an error when not in a list."
    :map org-gtd-clarify-map
    ("C-c C" . org-gtd-organize)
    :map org-mode-map
-   ("C-c d a" . douo/org-gtd-archive)
-   )
-  )
+   ("C-c d a" . douo/org-gtd-archive)))
 
+;; this allows you use `(,org-gtd-directory) for your agenda files
+(use-package org-agenda
+  :straight nil
+  :after org-gtd
+  :custom
+  (org-agenda-files `(,org-gtd-directory))
+  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
 (use-package org-contrib ; Includes more than the standard org-mode
   :straight  '(org-contrib :includes org-protocol)
   :config
@@ -325,8 +308,7 @@ Throw an error when not in a list."
     )
   ;; 自定义 org-protocol 的 gtd-capture 模板
   (push '("org-gtd-catpure"  :protocol "gtd-capture"   :function org-gtd-protocol-capture)
-        org-protocol-protocol-alist)
-  )
+        org-protocol-protocol-alist))
 
 ;; (use-package org-protocol
 ;;   :straight  '(org-contrib :includes org-protocol)
@@ -380,7 +362,7 @@ Throw an error when not in a list."
   )
 
 ;; https://github.com/minad/org-modern
-;; 美好似乎只是一时的新鲜感
+;; 美化似乎只是一时的新鲜感
 ;; (use-package org-modern
 ;;   :straight t
 ;;   :hook
@@ -420,16 +402,17 @@ Throw an error when not in a list."
                                    (format "%s->%s" (org-roam-node-file-title node) (org-roam-node-title node))
                                  (org-roam-node-title node)))))
   (org-roam-dailies-directory "quick/")
-  :bind
-  ("C-c n l" . org-roam-buffer-toggle)
-  ("C-c n f" . org-roam-note-find)
-  ("C-c n g" . org-roam-graph)
-  ("C-c n i" . org-roam-node-insert)
-  ("C-c n c" . org-roam-capture)
-  ;; Dailies
-  ("C-c n j" . org-roam-dailies-capture-today)
+  :bind-keymap ("C-c n" . my-org-roam-map)
+  :bind (:map my-org-roam-map
+              ("l" . org-roam-buffer-toggle)
+              ("f" . org-roam-note-find)
+              ("g" . org-roam-graph)
+              ("i" . org-roam-node-insert)
+              ("c" . org-roam-capture)
+              ;; Dailies
+              ("j" . org-roam-dailies-capture-today))
   :config
-
+  (define-prefix-command 'my-org-roam-map)
   ;; If you're using a vertical completion framework, you might want a more informative completion interface
   (setq org-roam-node-display-template (concat "${formatted:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-db-autosync-mode)
@@ -439,8 +422,6 @@ Throw an error when not in a list."
   ;; 通过 `consult-org-roam-node-read' 为选择 node 提供 consult 包装（主要支持 preview ）
   :straight t
   :after org-roam
-  :init
-  (consult-org-roam-mode 1)
   :custom
   ;; Use `ripgrep' for searching with `consult-org-roam-search'
   (consult-org-roam-grep-func #'consult-ripgrep)
@@ -456,13 +437,16 @@ Throw an error when not in a list."
   (consult-customize
    consult-org-roam-forward-links
    :preview-key (kbd "M-."))
+  (consult-org-roam-mode 1)
   :bind
-  ;; Define some convenient keybindings as an addition
-  ("C-c n F" . consult-org-roam-file-find) ;; 只列出文件
-  ("C-c n b" . consult-org-roam-backlinks)
-  ("C-c n k" . consult-org-roam-forward-links)
-  ("C-c n r" . consult-org-roam-search) ;; TODO 可以整合 `deft' 的功能
-  )
+  (:map my-org-roam-map
+  ("F" . consult-org-roam-file-find) ;; 只列出文件
+  ("b" . consult-org-roam-backlinks)
+  ("k" . consult-org-roam-forward-links)
+  ;; TODO 可以整合 `deft' 的功能
+  ("r" . consult-org-roam-search)))
+
+
 
 (use-package org-roam-ui
   :straight t
@@ -471,18 +455,24 @@ Throw an error when not in a list."
   (setq org-roam-ui-sync-theme t
         org-roam-ui-follow t
         org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
+        org-roam-ui-open-on-start t)
+  :commands (org-roam-ui-mode))
 
 
+;; - 在 Org 笔记文件的一个标题内 M-x org-noter
+;;   这会将该标题与一个文档关联起来，并用它打开一个会话。
+;; - 文档中 M-x org-noter
+;;   在浏览文档时（例如 PDF、epub……）运行 M-x org-noter。
+;;   这会尝试自动查找相应的笔记文件。它会在所有父文件夹和你设置的某些特定文件夹中搜索。
 (use-package org-noter
   :straight t
-  :defer t
-  )
+  :commands (org-noter))
 
 ;; 导出
 (use-package htmlize
   :straight t
-  :after org)
+  :after org
+  :commands (htmlize-buffer htmlize-file htmlize-many-files))
 
 
 ;; org 当前元素相关的 transient 菜单
@@ -493,11 +483,12 @@ Throw an error when not in a list."
   :after org
   :bind
   (:map org-mode-map
-        ("C-o" . org-menu))) ;; 覆盖了 org-open-line
+        ;; 覆盖了 org-open-line
+        ("C-o" . org-menu)))
 
 ;; 与 org-menu 职责有重叠，但是 embark 根据当前元素的上下文提供更精细的操作
 (use-package embark-org
-  :after (embark org org-menu)
+  :after (embark org)
   :config
   (defun douo/embark-org-timestamp-target ()
     "判断当前位置是不是 timestamp ，返回 `embark-org-target-element-context' 相同的结构，
@@ -524,8 +515,7 @@ Throw an error when not in a list."
   ;; modify default embark key for org-mode
   (defun douo/setup-embark-org-keymap ()
     (add-to-list 'embark-keymap-alist '(region . embark-org-timestamp-map))
-    )
-  )
+    ))
 
 ;; org-ql
 ;; 该包提供了 Org 文件的查询语言。它提供两种语法风格：类似 Lisp 的 sexps 和类似搜索引擎的关键字。
@@ -533,12 +523,13 @@ Throw an error when not in a list."
 ;; (org-ql-search (org-agenda-files) "todo:DONE ts:from=2024-07-01,to=2024-07-31" :narrow nil :super-groups '((:auto-tags)) :sort nil)
 (use-package org-ql
   :straight t
-  :after org)
-
+  :after org
+  :commands (org-ql-find org-ql-search org-ql-view))
 
 (use-package org-analyzer
   :straight t
-  :after org)
+  :after org
+  :commands (org-analyzer-start))
 
 (provide 'init-org)
 

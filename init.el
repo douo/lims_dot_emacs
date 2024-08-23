@@ -136,6 +136,12 @@
 
 (straight-use-package 'package-lint)
 (straight-use-package 'org)
+;; 以下代码可以用于调试 use-package，将宏展开后的代码输出到当前位置
+;; (let ((use-package-expand-minimally t))
+;;   (pp-emacs-lisp-code
+;;    (macroexpand-all
+;;     '(use-package foo
+;;        :after bar))))
 (straight-use-package 'use-package)
 ;; 提供简单的方法修改 minor-mode 在 modeline 中的 indicator
 (straight-use-package 'diminish)
@@ -492,7 +498,6 @@
     :engines (gt-google-engine)
     :render (gt-buffer-render)))
   :bind
-
   (:map embark-prose-map
         ;; 覆盖 transpose-xxx
         ("t" . douo/go-do-translate)
@@ -500,9 +505,7 @@
   (:map embark-region-map
         ;; 覆盖 transpose-regions
         ("t" . douo/go-do-translate)
-        )
-  :commands gt-do-translate
-  )
+        ))
 
 
 ;; begin_epub
@@ -1128,7 +1131,6 @@
 ;; 会将 completion metadata 中的 category 作为 target，配合 `margianlia' 增强了许多 Emacs 命令以报告准确的类别元数据
 (use-package embark
   :straight t
-  :after (ace-window)
   :init
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
@@ -1375,16 +1377,17 @@
 
 (use-package kbd-mode
   :straight (:host github :repo "kmonad/kbd-mode")
-  :defer t
-  )
+  :mode "\\.kbd\\'")
 
 ;;
 (use-package pkgbuild-mode
-  :straight t)
+  :straight t
+  :mode "PKGBUILD\\'")
 
 ;;
 (use-package cmake-mode
-  :straight t)
+  :straight t
+  :mode ("CMakeLists.txt\\'" "\\.cmake\\'"))
 
 ;; beigin_python
 
@@ -1748,10 +1751,10 @@
            ("TAB" . douo/copilot-complete)
            ("M-f" . copilot-accept-completion-by-word)
 	   ("M-<return>" . copilot-accept-completion-by-line)
-           ("M-[" . copilot-previous-completion)
-	   ("M-]" . copilot-next-completion)
-           ("C-g" . copilot-clear-overlay)
-           )
+           ;; M-[ 与 CSI 冲突，会导致 kkp.el 失效
+           ;; ("M-[" . copilot-previous-completion)
+	   ;; ("M-]" . copilot-next-completion)
+           ("C-g" . copilot-clear-overlay))
      :config
      (add-to-list 'minions-prominent-modes 'copilot-mode)
      )
@@ -1781,7 +1784,8 @@
      (:map  tabnine-completion-map
 	    ("M-TAB" . tabnine-accept-completion)
 	    ("C-g" . tabnine-clear-overlay)
-	    ("M-[" . tabnine-previous-completion)
+            ;; M-[ 与 CSI 冲突，会导致 kkp.el 失效
+	    ;; ("M-[" . tabnine-previous-completion)
 	    ("M-]" . tabnine-next-completion))))
   (`codeium
    ;; ** Codeium
