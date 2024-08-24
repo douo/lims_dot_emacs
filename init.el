@@ -429,16 +429,13 @@
 ;; 用不同颜色区别嵌套的括号引号等
 (use-package rainbow-delimiters
   :straight t
-  :config
-  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
-  )
+  :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; 代码中的颜色值可视化
 (use-package rainbow-mode
   :straight t
   :diminish  "括";;"  " ;; "🌈"
-  :config
-  (add-hook 'prog-mode-hook #'rainbow-mode))
+  :hook prog-mode)
 
 ;; 空格可视化
 (use-package whitespace
@@ -465,16 +462,14 @@
 
 ;; 旋转 frame 布局
 (use-package transpose-frame
-  :straight t
-  )
+  :straight t)
 
 ;; 隐藏文本内容
 ;; 保留颜色用方块代替字符
 ;; 类似内置的 `toggle-rot13-mode'
 (use-package redacted
   :straight t
-  :defer t
-  )
+  :commands redacted-mode)
 
 ;; 翻译
 (use-package go-translate
@@ -516,8 +511,7 @@
 (use-package nov
   :straight t
   :config
-  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
-  )
+  :mode ("\\.epub\\'" . nov-mode))
 
 ;; TODO
 ;; - [ ] search
@@ -533,15 +527,12 @@
   (:map nov-xwidget-webkit-mode-map
         ("n" . nov-xwidget-next-document)
         ("p" . nov-xwidget-previous-document)
-        ("t" . nov-xwidget-goto-toc)
-        )
-  )
+        ("t" . nov-xwidget-goto-toc)))
 ;; end_epub
 
 ;; begin_pdf
 (use-package pdf-tools
   :straight t
-  :defer t
   :config
   (custom-set-variables
    '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
@@ -551,28 +542,24 @@
   ;; 如果有高亮返回高亮文本，无则返回整页文本
   (defun douo/gts-pdf-view-selection-texter ()
     (unless (pdf-view-active-region-p)
-      (pdf-view-mark-whole-page)
-      )
+      (pdf-view-mark-whole-page))
     ;; remove-newline-characters-if-not-at-the-end-of-sentence
     ;; ::HACK:: 解决 pdf 提取文本不能正确断行的问题
     ;; 移除不是处于句尾[.!?]的换行符
     (replace-regexp-in-string "\\([^.!?]\\)\n\\([^ ]\\)" "\\1 \\2"
-                              (car (pdf-view-active-region-text)))
-    )
+                              (car (pdf-view-active-region-text))))
   (defvar douo/pdf-translater
     (gt-translator
      :taker (gt-taker :text 'douo/gts-pdf-view-selection-texter)
      :engines (list (gt-google-engine))
      :render (gt-buffer-render)
      ;; :splitter (gts-paragraph-splitter)
-     )
-    )
+     ))
   (defun douo/pdf-view-translate ()
     (interactive)
     (gt-start douo/pdf-translater)
     ;;  cancel selection in emacs
-    (deactivate-mark)
-    )
+    (deactivate-mark))
   ;; 如果没有 epdfinfo，以下命令重新编译
   (pdf-tools-install)
   :bind
@@ -580,9 +567,8 @@
         ;; consult 不支持与 pdf-tools 的交互
         ("C-s" . isearch-forward)
         ("C-r" . isearch-backward)
-        ("T" . douo/pdf-view-translate)
-        )
-  )
+        ("T" . douo/pdf-view-translate))
+  :mode ("\\.pdf\\'" . pdf-view-mode))
 ;; end_pdf
 
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
@@ -661,8 +647,7 @@
   (require 'dired-x))
 
 (use-package eldoc
-  :diminish "显"
-  )
+  :diminish "显")
 
 ;;
 ;; 代码补完前端，当前位置代码补完，弹出补全菜单。
@@ -697,9 +682,7 @@
   :bind
   (:map corfu-map
         ("SPC" . corfu-insert-separator)
-        ("C-M-m" . corfu-move-to-minibuffer)
-        )
-  )
+        ("C-M-m" . corfu-move-to-minibuffer)))
 
 ;; M-g 跳转候选位置
 ;; M-h 显示候选文档

@@ -1,6 +1,7 @@
 ;; gpt
 (use-package gptel
-  :straight t)
+  :straight t
+  :disabled)
 
 (use-package llm
   :straight t
@@ -37,14 +38,12 @@
                                :chat-model "claude-3-5-sonnet@20240620"
                                :url "http://p44.zero:3030/v1/"))
   :custom
-  (llm-warn-on-nonfree nil)
-  )
+  (llm-warn-on-nonfree nil))
 
 
 (use-package magit-gptcommit
   :straight t
   :after llm
-  :demand t
   :custom
   (magit-gptcommit-llm-provider llm-gemini-provider)
   :config
@@ -57,8 +56,7 @@
   ;; Eval (transient-remove-suffix 'magit-commit '(1 -1)) to remove gptcommit transient commands
   (magit-gptcommit-status-buffer-setup)
   :bind (:map git-commit-mode-map
-              ("C-c C-g" . magit-gptcommit-commit-accept))
-  )
+              ("C-c C-g" . magit-gptcommit-commit-accept)))
 
 
 ;; llm
@@ -131,8 +129,7 @@
                  content)))))
   :bind
   (:map ellama-command-map
-        ("c d" . douo/ellama-code-explain))
-  )
+        ("c d" . douo/ellama-code-explain)))
 
 
 (provide 'init-llm)
