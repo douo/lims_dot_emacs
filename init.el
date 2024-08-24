@@ -136,6 +136,12 @@
 
 (straight-use-package 'package-lint)
 (straight-use-package 'org)
+;; 以下代码可以用于调试 use-package，将宏展开后的代码输出到当前位置
+;; (let ((use-package-expand-minimally t))
+;;   (pp-emacs-lisp-code
+;;    (macroexpand-all
+;;     '(use-package foo
+;;        :after bar))))
 (straight-use-package 'use-package)
 
 (use-package transient
@@ -185,11 +191,33 @@
 (require 'init-vars)
 (require 'init-utils)
 (with-system darwin
-  (require 'init-osx)
-  )
+  (require 'init-osx))
 (with-system windows-nt
-  (require 'init-windows)
-  )
+  (require 'init-windows))
+(with-system darwin
+  ;; https://stackoverflow.com/questions/57591432/gpg-signing-failed-inappropriate-ioctl-for-device-on-macos-with-maven
+  ;; 让 EPA 使用 Emacs 自己的密码提示，而不是外部的 Pinentry 程序。
+  (setq epa-pinentry-mode 'loopback))
+
+;; 为 calc-mode 提供 transient 菜单
+(use-package casual-calc
+  :straight t
+  :bind (:map
+         calc-mode-map
+         ("C-o" . casual-calc-tmenu)
+         :map
+         calc-alg-map
+         ("C-o" . casual-calc-tmenu))
+  :after (calc))
+(use-package casual-dired
+  :straight t
+  :bind (:map dired-mode-map
+              ("C-o" . #'casual-dired-tmenu)
+              ("s" . #'casual-dired-sort-by-tmenu)
+              ("/" . #'casual-dired-search-replace-tmenu)))
+(use-package casual-info
+  :straight t
+  :bind (:map Info-mode-map ("C-o" . 'casual-info-tmenu)))
 
 
 (use-package nerd-icons
@@ -237,16 +265,22 @@
           "Multi vterm transient"
           ["Multi vterm"
            ("c" "Create new terminal" multi-vterm)
-           ("n" "Switch to next terminal" multi-vterm-next)
-           ("p" "Switch to next terminal" multi-vterm-prev)
+           ("n" "Switch to next terminal" multi-vterm-next :transient t)
+           ("p" "Switch to next terminal" multi-vterm-prev :transient t)
+           ;; dedicated ;在当前 window 中 按照高度百分比创建一个 terminal（单例）
            ("t" "Toggle dedicated terminal" multi-vterm-dedicated-toggle)
            ("g" "Create/toggle terminal based on current project" multi-vterm-project)
            ]
           )
+        (defun douo/multi-vterm-dedicated-toggle (arg)
+          "Toggle dedicated vterm."
+          (interactive "P")
+                (if arg
+                    (call-interactively 'multi-vterm-transient)
+                  (multi-vterm-dedicated-toggle)))
         :bind (
-               ("s-t" . multi-vterm)
-               ("C-c M-t" . multi-vterm-transient))
-        )))
+               ("s-t" . douo/multi-vterm-dedicated-toggle)
+               ("C-c t" . douo/multi-vterm-dedicated-toggle)))))
 
 ;; Library for converting first letter of Pinyin to Simplified/Traditional Chinese characters.
 (use-package pinyinlib
@@ -299,11 +333,43 @@
 ;; https://github.com/abo-abo/avy
 (use-package avy
   :straight t
+  :init
+  (transient-define-prefix douo/avy-goto-transient ()
+          "Avy goto transient menu"
+          ["Avy Goto"
+           ["Char"
+            ("c" "Type 1" avy-goto-char)
+            ("b" "Type 2" avy-goto-char-2)
+            ("t" "Jump to the char when stop typing" avy-goto-char-timer)]
+           ["Line"
+            ("l" "Type 0" avy-goto-line)]
+           ["Word"
+            ("w" "Type 1" avy-goto-word-1)
+            ("W" "Type 0" avy-goto-word-0)
+            ("s" "Type 1 or subword" avy-goto-word-or-subword-1)
+           ]
+           ["Org"
+            ;; `consult-org-heading' 比较方便
+            ("o" "Jump to org heading when stop typing" avy-org-goto-heading-timer)
+            ("r" "Refile as Child with point in an entry" avy-org-refile-as-child)
+            ]
+           ])
+  (defun douo/avy-goto-char (arg)
+    "`avy-goto-char' or create a avy-goto transient menu or `avy-resume' depend on `ARG'."
+    (interactive "P")
+    (cond
+     ((equal arg '(4))
+     (call-interactively 'douo/avy-goto-transient))
+     ((null arg)
+        (call-interactively 'avy-goto-char))
+     (t (call-interactively 'avy-resume))))
   :bind
-  ("M-g w" . avy-goto-word-or-subword-1)
-  ("M-g c" . avy-goto-char)
+  ("C-;" . douo/avy-goto-char)
+  (:map isearch-mode-map
+  ("C-;" . avy-isearch))
   :config
-  (setq avy-background t))
+  (setq avy-background t)
+  )
 ;; avy 支持拼音
 (use-package ace-pinyin
   :straight t
@@ -322,13 +388,11 @@
 (use-package magit-todos
   :straight t
   :after magit
-  :config (magit-todos-mode 1)
+  :config (magit-todos-mode 0)
   )
 (use-package git-timemachine
   :straight t
   :bind (("M-g t" . git-timemachine)))
-
-
 
 ;; rg
 (use-package rg
@@ -404,15 +468,6 @@
   :straight t
   )
 
-;; 用于上传文本、文件到 https://0x0.st/ 或其它短链接分享服务
-;; 可自建 https://git.0x0.st/mia/0x0
-(use-package 0x0
-  :straight t
-  :custom
-  ;; 0x0 屏蔽了整个谷歌云 IP 段
-  (0x0-default-server 'ttm)
-  )
-
 ;; 隐藏文本内容
 ;; 保留颜色用方块代替字符
 ;; 类似内置的 `toggle-rot13-mode'
@@ -424,17 +479,37 @@
 ;; 翻译
 (use-package go-translate
   :straight t
+  :init
+  (defun douo/go-do-translate (text-property-string)
+    (gt-start (gt-translator
+               :taker (gt-taker
+                       ;; 单个换行替换为空格
+                       :text (replace-regexp-in-string
+                              "\\([^\n]\\)\n\\([^\n]\\)" "\\1 \\2"
+                              text-property-string))
+               :engines (gt-google-engine)
+               :render (gt-posframe-pop-render))))
   :custom
-  (gts-translate-list '(("en" "zh")))
-  (gts-default-translator
-   (gts-translator
-    :picker (gts-prompt-picker)
-    :engines (list (gts-google-rpc-engine))
-    :render (gts-buffer-render)
-    ;; :splitter (gts-paragraph-splitter)
-    )
-   )
-  )
+  (gt-cache-p t)
+  (gt-langs '(en zh))
+  (gt-default-translator
+   (gt-translator
+    :taker (gt-taker :langs '(en zh) :text (lambda () (replace-regexp-in-string
+                              "\\([^\n]\\)\n\\([^\n]\\)" "\\1 \\2"
+                              (thing-at-point 'paragraph)))
+                     :prompt t
+                     )
+    :engines (gt-google-engine)
+    :render (gt-buffer-render)))
+  :bind
+  (:map embark-prose-map
+        ;; 覆盖 transpose-xxx
+        ("t" . douo/go-do-translate)
+        )
+  (:map embark-region-map
+        ;; 覆盖 transpose-regions
+        ("t" . douo/go-do-translate)
+        ))
 
 
 ;; begin_epub
@@ -474,8 +549,7 @@
 
   ;; 自定义 pdf 翻译文本提取器
   ;; 如果有高亮返回高亮文本，无则返回整页文本
-  (defclass douo/gts-pdf-view-selection-texter (gts-texter) ())
-  (cl-defmethod gts-text ((_ douo/gts-pdf-view-selection-texter))
+  (defun douo/gts-pdf-view-selection-texter ()
     (unless (pdf-view-active-region-p)
       (pdf-view-mark-whole-page)
       )
@@ -486,16 +560,16 @@
                               (car (pdf-view-active-region-text)))
     )
   (defvar douo/pdf-translater
-    (gts-translator
-     :picker (gts-noprompt-picker :texter (douo/gts-pdf-view-selection-texter))
-     :engines (list (gts-google-rpc-engine))
-     :render (gts-buffer-render)
+    (gt-translator
+     :taker (gt-taker :text 'douo/gts-pdf-view-selection-texter)
+     :engines (list (gt-google-engine))
+     :render (gt-buffer-render)
      ;; :splitter (gts-paragraph-splitter)
      )
     )
   (defun douo/pdf-view-translate ()
     (interactive)
-    (gts-translate douo/pdf-translater)
+    (gt-start douo/pdf-translater)
     ;;  cancel selection in emacs
     (deactivate-mark)
     )
@@ -1054,15 +1128,13 @@
   ;;           args)))
   )
 
-;; 为当前目标提供 context action, 每个 category 都有一份 action
-;; 保存在变量里，比如文件对应的是 `embark-file-map'
-;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
-;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
-;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
-;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
+;; 为当前目标提供 context action, 每个 target 都有一份 keymap，保存在 `embark-keymap-alist' 中
+;; 比如文件对应的是 `embark-file-map'，target 的 keymap 会继承自 `embark-general-map'
+;; *target* 通过 `embark-target-finders' 确定，
+;; 当前位置遍历 `embark-target-finders' 所有函数，收集所有非 nil 的结果，去重得到结果，可通过 `embark-cycle' 进行切换
+;; 会将 completion metadata 中的 category 作为 target，配合 `margianlia' 增强了许多 Emacs 命令以报告准确的类别元数据
 (use-package embark
   :straight t
-  :after (ace-window)
   :init
   ;; Optionally replace the key help with a completing-read interface
   (setq prefix-help-command #'embark-prefix-help-command)
@@ -1070,25 +1142,20 @@
   ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
   ;; 调整 Eldoc 策略，如果您想从多个提供者那里看到文档。
   ;;(setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
-
-  :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
-   ;; 默认行为是 `xref-find-definitions'(M-.)
-   ;; 用 `embark-dwim' 提供更多功能性
-   ("M-." . embark-dwim)        ;; good alternative: C-;
-   ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
-   ;; ("C-;" . embark-act-noquit)
-   )
-  (:map embark-collect-mode-map
-        ("m" . embark-select)
-        )
   :config
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                  nil
                  (window-parameters (mode-line-format . none))))
-
+  ;; indicator
+  ;; 触发 act 时候的行为，由 `embark-indicators' 确定
+  ;; 有 `vertico' 时候，indicator 会被默认设置 https://github.com/oantolin/embark/commit/175f0abaf6b1538533e245358bbbe42e27567822
+  ;; (setq embark-indicators
+  ;;       '(
+  ;;         embark-minimal-indicator  ; default is embark-mixed-indicator
+  ;;         embark-highlight-indicator ; 高亮当前的作用区域
+  ;;         embark-isearch-highlight-indicator))
   ;; begin_ace_window
   ;; 配合 ace-window 指定 window 打开目标
   (eval-when-compile
@@ -1099,16 +1166,6 @@
            (let ((aw-dispatch-always t))
              (aw-switch-to-window (aw-select nil))
              (call-interactively (symbol-function ',fn)))))))
-  (define-key embark-file-map     (kbd "o") (my/embark-ace-action find-file))
-  (define-key embark-buffer-map   (kbd "o") (my/embark-ace-action switch-to-buffer))
-  (define-key embark-bookmark-map (kbd "o") (my/embark-ace-action bookmark-jump))
-  ;; end_ace_window
-
-  ;; begin_0x0
-  (define-key embark-region-map   (kbd "U") '0x0-dwim)
-  (define-key embark-file-map   (kbd "U") '0x0-dwim)
-  ;; end_0x0
-
   ;; begin_sudo_find_file
   ;; root 权限打开文件
   (defun sudo-find-file (file)
@@ -1126,13 +1183,38 @@
       (set-buffer
        (find-file (concat "/sudo::" (expand-file-name file)))
        )))
-  (define-key embark-file-map (kbd "S") (my/embark-ace-action sudo-find-file))
   ;; end_sudo_find_file
 
   ;; :custom
   ;; 因为 `C-u C-.' 能实现 noquit  所以这里不需要了
   ;; (embark-quit-after-action nil) ;; 执行操作后不退出 minibuffer，默认是 t
-  )
+  :bind  (("C-." . embark-act)
+   ;; 用 `embark-dwim' 提供更多功能性
+   ("C-'" . embark-dwim) ;; 默认行为是 `xref-find-definitions'(M-.)
+   ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
+   ;; ("C-;" . embark-act-noquit)
+   (:map embark-symbol-map
+         ;; 用 helpful 替代默认的 describe-symbol
+         ("h" . helpful-at-point))
+   (:map embark-file-map
+         ("S" . sudo-find-file)
+         ("o" . find-file)
+         ("U" . 0x0-dwim))
+   (:map embark-buffer-map
+         ("o" . switch-to-buffer))
+   (:map embark-bookmark-map
+         ("o" . bookmark-jump))
+   (:map embark-region-map
+         ("U" . 0x0-dwim))
+   ;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
+   ;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
+   ;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
+   ;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
+   (:map embark-collect-mode-map
+         ("m" . embark-select)
+         ))
+  :commands (embark-act embark-dwim embark-bindings embark-export embark-collect)
+   )
 
 ;;
 (use-package consult-dir
@@ -1300,16 +1382,17 @@
 
 (use-package kbd-mode
   :straight (:host github :repo "kmonad/kbd-mode")
-  :defer t
-  )
+  :mode "\\.kbd\\'")
 
 ;;
 (use-package pkgbuild-mode
-  :straight t)
+  :straight t
+  :mode "PKGBUILD\\'")
 
 ;;
 (use-package cmake-mode
-  :straight t)
+  :straight t
+  :mode ("CMakeLists.txt\\'" "\\.cmake\\'"))
 
 ;; beigin_python
 
@@ -1673,10 +1756,10 @@
            ("TAB" . douo/copilot-complete)
            ("M-f" . copilot-accept-completion-by-word)
 	   ("M-<return>" . copilot-accept-completion-by-line)
-           ("M-[" . copilot-previous-completion)
-	   ("M-]" . copilot-next-completion)
-           ("C-g" . copilot-clear-overlay)
-           )
+           ;; M-[ 与 CSI 冲突，会导致 kkp.el 失效
+           ;; ("M-[" . copilot-previous-completion)
+	   ;; ("M-]" . copilot-next-completion)
+           ("C-g" . copilot-clear-overlay))
      :config
      (add-to-list 'minions-prominent-modes 'copilot-mode)
      )
@@ -1706,7 +1789,8 @@
      (:map  tabnine-completion-map
 	    ("M-TAB" . tabnine-accept-completion)
 	    ("C-g" . tabnine-clear-overlay)
-	    ("M-[" . tabnine-previous-completion)
+            ;; M-[ 与 CSI 冲突，会导致 kkp.el 失效
+	    ;; ("M-[" . tabnine-previous-completion)
 	    ("M-]" . tabnine-next-completion))))
   (`codeium
    ;; ** Codeium
@@ -1778,12 +1862,15 @@
   )
 ;; end_copilot
 
+
+
 ;; begin_other_init
 (require 'init-org)
 (require 'init-llm)
 ;; tui/gui 切换不同配置，+主要是切换 lsp-bridge 和 eglot+
-(if (display-graphic-p)
-    (require 'init-gui)
-  (require 'init-tui)
+(when (or (not (display-graphic-p)) (server-running-p))
+    (require 'init-tui)
   )
+
+(require 'init-local)
 ;; end_other_init

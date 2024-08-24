@@ -41,3 +41,4 @@ org-roam.db
 
 # emacs config
 custom-vars.el
+init-local.el
