@@ -1423,25 +1423,21 @@
   :straight t
   :bind
   (:map python-mode-map
-        ("C-c M-f" . blacken-buffer)
-        )
-  )
+        ("C-c M-f" . blacken-buffer)))
 
 (use-package cython-mode
-  :straight t)
+  :straight t
+  :mode  ("\\.pyx\\'" "\\.pxd\\'" "\\.pxi\\'"))
 
 
 (use-package pyvenv
-  :straight t
-  :config
-  )
+  :straight t)
 
 ;;; start_juptyer
 
 (use-package jupyter
   :straight t
-  :config
-  )
+  :commands (jupyter-run-repl jupyter-connect-repl))
 
 (use-package code-cells
   :straight t
@@ -1483,13 +1479,12 @@
 ;; (setq web-mode-css-indent-offset 2)
 (use-package web-mode
   :straight t
-  :mode (("\\.html\\'" . web-mode))
+  :mode "\\.html\\'"
   :commands web-mode)
 
 (use-package js2-mode
   :straight t
-  :mode (("\\.js\\'" . js2-mode)
-	 ("\\.jsx\\'" .  js2-mode))
+  :mode ("\\.js\\'" "\\.jsx\\'")
   :commands js2-mode)
 
 
@@ -1511,7 +1506,8 @@
   :straight t
   :custom
   (ruby-insert-encoding-magic-comment nil)
-  )
+  :commands ruby-mode
+  :mode "\\.rb\\'")
 
 ;;provides a REPL buffer connected to a Ruby subprocess.
 (use-package inf-ruby
@@ -1520,7 +1516,6 @@
 
 (use-package subword-mode
   :hook ruby-mode)
-
 ;; end_ruby
 
 (with-system darwin
@@ -1532,19 +1527,14 @@
     (with-eval-after-load 'eglot
       (add-to-list 'eglot-server-programs
                    '(swift-mode . ("xcrun" "sourcekit-lsp"))))
-    )
-  )
-
-
-
+  :commands swift-mode))
 
 ;; begin_golang
 ;; 需安装 goimports gopls
 (use-package go-mode
   :straight t
-  ;; 依赖 ffap 初始化太费时间
-  :defer t
-  )
+  :commands go-mode
+  :mode "\\.go\\'")
 ;; end_golang
 
 ;; begin_md
@@ -1566,7 +1556,6 @@
     (let* ((files (remove "." (mapcar #'file-name-sans-extension (directory-files "."))))
            (selected-file (completing-read "Select article: " files nil t)))
       (insert (format "{%% post_url %s %%}" selected-file)))))
-
 ;; end_md
 
 (use-package lua-mode
@@ -1574,23 +1563,25 @@
   :mode "\\.lua\\'")
 
 (use-package yaml-mode
-  :straight t)
+  :straight t
+  :mode "\\.ya?ml\\'")
 
 (use-package cask-mode
-  :straight t)
+  :straight t
+  :mode "Cask\\'")
 
 (use-package nginx-mode
   :straight t
-  )
+  :mode "/nginx/sites-\\(?:available\\|enabled\\)/")
 
 ;; openwrt uci config file
 (use-package uci-mode
-  :init
   :straight `(uci-mode :type git :host github :repo "jkjuopperi/uci-mode")
-  )
+  :mode "\\.uci\\'")
 
 (use-package dockerfile-mode
-  :straight t)
+  :straight t
+  :mode "Dockerfile\\'")
 
 ;; 输入法
 (use-package sis
@@ -1601,24 +1592,23 @@
   ;; 需要先安装 https://github.com/laishulu/macism
   (with-system darwin
     (sis-ism-lazyman-config
-     "com.apple.keylayout.ABC" ;; 英文输入法
-     "com.apple.inputmethod.SCIM.ITABC" 'macism)  ;; 拼音输入法
-    )
+     ;; 英文输入法
+     "com.apple.keylayout.ABC"
+     ;; 拼音输入法
+     "com.apple.inputmethod.SCIM.ITABC" 'macism))
   ;;https://github.com/daipeihust/im-select
   ;;只能切换不同语言的输入法，拼音输入法的中英文切换无法识别
   (with-system windows-nt
     (sis-ism-lazyman-config
      "1033" ;; 英文输入法
      "2052" ;; 拼音输入法
-     'im-select)
-    )
+     'im-select))
   (with-system gnu/linux
     (message "linux")
     ;; ibus
     ;; (sis-ism-lazyman-config "xkb:us::eng" "libpinyin" 'ibus)
     ;; fcitx5
-    (sis-ism-lazyman-config "1" "2" 'fcitx5)
-    )
+    (sis-ism-lazyman-config "1" "2" 'fcitx5))
   ;; hack start
   ;; emacs 启动的时候 sis-global-respect-mode 调用 sis--ensure-ism 导致 sis--ism-inited 被置 t。默认 macos 没问题，其他系统没法正确初始化。
   ;; 手动重置一下
@@ -1645,8 +1635,7 @@
                                   ;; avy & consult
                                   "M-g" "C-。" "M-s"
                                   ;; ace-window
-                                  "M-o"
-                                  ))
+                                  "M-o"))
   ;; enable the /cursor color/ mode
   (sis-global-cursor-color-mode t)
   (sis-default-cursor-color "white")
@@ -1669,7 +1658,6 @@
   )
 ;; End
 
-
 ;; 在 mode-line 显示时间
 (use-package time
   :custom
@@ -1677,16 +1665,14 @@
   (display-time-24hr-format 1)
   (display-time-interval 1)
   :config
-  (display-time-mode 1)
-  )
+  (display-time-mode 1))
 
 ;; begin_eglot
-(defun douo/update_eglot_pyright_configuraton ()
-  (setq eglot-workspace-configuration
-        (list (cons ':python (list ':venvPath pyvenv-virtual-env ':pythonPath (executable-find "python")))))
-  )
-
 (use-package eglot
+  :init
+  (defun douo/update_eglot_pyright_configuraton ()
+  (setq eglot-workspace-configuration
+        (list (cons ':python (list ':venvPath pyvenv-virtual-env ':pythonPath (executable-find "python"))))))
   :preface
   ;; https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc#fixing-flymake-and-eglot
   (defun mp-eglot-eldoc ()
@@ -1715,8 +1701,7 @@
   :hook
   (python-mode . douo/update_eglot_pyright_configuraton)
   (python-mode . eglot-ensure)
-  (eglot-managed-mode . mp-eglot-eldoc)
-  )
+  (eglot-managed-mode . mp-eglot-eldoc))
 
 (use-package consult-eglot
   :straight (consult-eglot
@@ -1728,9 +1713,7 @@
   ;; 在 eglot 模式激活时将 xref-find-apropos 映射到 consult-eglot-symbols
   ;; 默认快捷键 C-M-.
   (define-key eglot-mode-map [remap xref-find-apropos] 'consult-eglot-symbols)
-  (define-key eglot-mode-map (kbd "M-.") 'eglot-find-declaration)
-  )
-
+  (define-key eglot-mode-map (kbd "M-.") 'eglot-find-declaration))
 ;; end_eglot
 
 
@@ -1761,9 +1744,7 @@
 	   ;; ("M-]" . copilot-next-completion)
            ("C-g" . copilot-clear-overlay))
      :config
-     (add-to-list 'minions-prominent-modes 'copilot-mode)
-     )
-   )
+     (add-to-list 'minions-prominent-modes 'copilot-mode)))
   ;; ** Tabnine
   ;; https://github.com/shuxiao9058/tabnine
   (`tabnine
@@ -1858,8 +1839,7 @@
      (setq codeium/document/text 'my-codeium/document/text)
      (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
    )
-  (otherwise (message "copilot not set"))
-  )
+  (otherwise (message "copilot not set")))
 ;; end_copilot
 
 
@@ -1869,8 +1849,7 @@
 (require 'init-llm)
 ;; tui/gui 切换不同配置，+主要是切换 lsp-bridge 和 eglot+
 (when (or (not (display-graphic-p)) (server-running-p))
-    (require 'init-tui)
-  )
+    (require 'init-tui))
 
 (require 'init-local)
 ;; end_other_init
