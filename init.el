@@ -600,10 +600,8 @@
          ("C-M-z" . crux-indent-defun)
          ("C-c u" . crux-view-url)
          ("C-c e" . crux-eval-and-replace)
-         ("C-c w" . crux-swap-windows)
          ("C-c D" . crux-delete-file-and-buffer)
          ("C-c r" . crux-rename-buffer-and-file)
-         ("C-c t" . crux-visit-term-buffer)
          ("C-c k" . crux-kill-other-buffers)
          ("C-c TAB" . crux-indent-rigidly-and-copy-to-clipboard)
          ("C-c I" . crux-find-user-init-file)
@@ -703,23 +701,6 @@
 ;; 能将 company 后端转换为 capfs
 (use-package cape
   :straight t
-  ;; Bind dedicated completion commands
-  ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-  :bind (("C-c p p" . completion-at-point) ;; capf
-         ("C-c p t" . complete-tag)        ;; etags
-         ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
-         ("C-c p h" . cape-history)
-         ("C-c p f" . cape-file)
-         ("C-c p k" . cape-keyword)
-         ("C-c p s" . cape-symbol)
-         ("C-c p a" . cape-abbrev)
-         ("C-c p l" . cape-line)
-         ("C-c p w" . cape-dict)
-         ("C-c p \\" . cape-tex)
-         ("C-c p _" . cape-tex)
-         ("C-c p ^" . cape-tex)
-         ("C-c p &" . cape-sgml)
-         ("C-c p r" . cape-rfc1345))
   :init
   ;; Add `completion-at-point-functions', used by `completion-at-point'.
   ;; NOTE: The order matters!
@@ -735,7 +716,29 @@
   ;;(add-to-list 'completion-at-point-functions #'cape-dict)
   ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
   ;;(add-to-list 'completion-at-point-functions #'cape-line)
-  )
+
+  ;; Bind dedicated completion commands
+  ;; Alternative prefix keys: C-c p, M-p, M-+, ...
+  :bind-keymap ("M-p" . my-cape-map)
+  :bind (:map my-cape-map
+              ("p" . completion-at-point) ;; capf
+              ("t" . complete-tag)        ;; etags
+              ("d" . cape-dabbrev)        ;; or dabbrev-completion
+              ("h" . cape-history)
+              ("f" . cape-file)
+              ("k" . cape-keyword)
+              ("s" . cape-elisp-symbol)
+              ("b" . cape-elisp-block)
+              ("a" . cape-abbrev)
+              ("l" . cape-line)
+              ("w" . cape-dict)
+              ("\\" . cape-tex)
+              ("_" . cape-tex)
+              ("^" . cape-tex)
+              ("&" . cape-sgml)
+              ("r" . cape-rfc1345))
+  :config
+  (define-prefix-command 'my-cape-map))
 
 
 (use-package ace-window
@@ -747,27 +750,21 @@
   (aw-minibuffer-flag t)
 
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
-  :bind  (
-          ("M-o" . ace-window)
-          )
-  )
+  :bind  (("M-o" . ace-window)
+          ("C-c w" . ace-swap-window)))
 
 ;; 内置的 winner-mode 可以记忆窗口布局
 (use-package winner-mode
   :config
   (winner-mode 1)
-  :bind (
-         ;; 回退窗口布局
+  :bind (;; 回退窗口布局
          ("M-S-<left>" . winner-undo)
          ("M-S-<right>" . winner-redo)
          ;; 与 ace-window 重复
          ("M-<right>" . windmove-right)
          ("M-<left>" . windmove-left)
          ("M-<up>" . windmove-up)
-         ("M-<down>" . windmove-down)
-         )
-  )
-
+         ("M-<down>" . windmove-down)))
 
 
 ;; alternative to the built-in Emacs help that provides much more contextual information.
@@ -787,17 +784,14 @@
   (vertico-mode)
   :custom
   (vertico-cycle t)
-  (vertico-count 10)
-  )
+  (vertico-count 10))
 ;; extensions
 ;; 在普通 buffer 而不是 minibuffer 中显示候选项
 (use-package vertico-buffer
-  :after vertico
-  )
+  :after vertico)
 
 (use-package vertico-reverse
-  :after vertico
-  )
+  :after vertico)
 
 (use-package vertico-multiform
   :after vertico
