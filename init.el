@@ -1833,5 +1833,8 @@
 (when (or (not (display-graphic-p)) (server-running-p))
     (require 'init-tui))
 
-(require 'init-local)
+;; 加载本地配置，不会因为不存在导致整个配置加载失败
+(condition-case nil
+    (require 'init-local)
+  ((debug error) nil))
 ;; end_other_init
