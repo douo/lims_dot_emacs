@@ -753,8 +753,8 @@
   ;; 搭配使用，通过 minibuf 提示当前处于 ace-window 模式
   (aw-background nil)
   (aw-minibuffer-flag t)
-
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  (aw-scope 'frame)
   :bind  (("M-o" . ace-window)
           ("C-c w" . ace-swap-window)))
 
