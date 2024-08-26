@@ -44,6 +44,7 @@
 (use-package magit-gptcommit
   :straight t
   :after llm
+  :demand t
   :custom
   (magit-gptcommit-llm-provider llm-gemini-provider)
   :config
