@@ -218,7 +218,12 @@
 (use-package casual-info
   :straight t
   :bind (:map Info-mode-map ("C-o" . 'casual-info-tmenu)))
-
+(use-package casual-re-builder
+  :straight t
+  :bind (:map
+         reb-mode-map ("C-o" . casual-re-builder-tmenu)
+         :map
+         reb-lisp-mode-map ("C-o" . casual-re-builder-tmenu)))
 
 (use-package nerd-icons
   :straight t
