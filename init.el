@@ -652,6 +652,10 @@
 (use-package eldoc
   :diminish "显")
 
+;; 显示音频视频信息
+;; require https://archlinux.org/packages/extra/x86_64/mediainfo/
+(use-package mediainfo-mode
+  :straight (mediainfo-mode :type git :host github :repo "xFA25E/mediainfo-mode"))
 ;;
 ;; 代码补完前端，当前位置代码补完，弹出补全菜单。
 (use-package corfu
