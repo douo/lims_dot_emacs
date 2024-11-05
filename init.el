@@ -225,6 +225,25 @@
          :map
          reb-lisp-mode-map ("C-o" . casual-re-builder-tmenu)))
 
+(use-package ibuffer
+  :hook (ibuffer-mode . ibuffer-auto-mode)
+  :defer t)
+(use-package casual-ibuffer
+  :straight t
+  :bind (:map
+         ibuffer-mode-map
+         ("C-o" . casual-ibuffer-tmenu)
+         ("F" . casual-ibuffer-filter-tmenu)
+         ("s" . casual-ibuffer-sortby-tmenu)
+         ("<double-mouse-1>" . ibuffer-visit-buffer) ; optional
+         ("M-<double-mouse-1>" . ibuffer-visit-buffer-other-window) ; optional
+         ("{" . ibuffer-backwards-next-marked) ; optional
+         ("}" . ibuffer-forward-next-marked)   ; optional
+         ("[" . ibuffer-backward-filter-group) ; optional
+         ("]" . ibuffer-forward-filter-group)  ; optional
+         ("$" . ibuffer-toggle-filter-group))  ; optional
+  :after (ibuffer))
+
 (use-package nerd-icons
   :straight t
   ;; The Nerd Font you want to use in GUI
