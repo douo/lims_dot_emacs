@@ -200,30 +200,36 @@
   (setq epa-pinentry-mode 'loopback))
 
 ;; 为 calc-mode 提供 transient 菜单
+(use-package casual-lib
+  :straight (:type git :host github :repo "kickingvegas/casual-lib")
+  )
 (use-package casual-calc
-  :straight t
+  :straight (:type git :host github :repo "kickingvegas/casual-calc")
   :bind (:map
          calc-mode-map
          ("C-o" . casual-calc-tmenu)
          :map
          calc-alg-map
          ("C-o" . casual-calc-tmenu))
-  :after (calc))
+  :after (calc casual))
 (use-package casual-dired
-  :straight t
+  :straight (:type git :host github :repo "kickingvegas/casual-dired")
   :bind (:map dired-mode-map
               ("C-o" . #'casual-dired-tmenu)
               ("s" . #'casual-dired-sort-by-tmenu)
-              ("/" . #'casual-dired-search-replace-tmenu)))
+              ("/" . #'casual-dired-search-replace-tmenu))
+  :after (casual))
 (use-package casual-info
-  :straight t
-  :bind (:map Info-mode-map ("C-o" . 'casual-info-tmenu)))
+    :straight (:type git :host github :repo "kickingvegas/casual-info")
+  :bind (:map Info-mode-map ("C-o" . 'casual-info-tmenu))
+  :after (casual))
 (use-package casual-re-builder
-  :straight t
+    :straight (:type git :host github :repo "kickingvegas/casual-re-builder")
   :bind (:map
          reb-mode-map ("C-o" . casual-re-builder-tmenu)
          :map
-         reb-lisp-mode-map ("C-o" . casual-re-builder-tmenu)))
+         reb-lisp-mode-map ("C-o" . casual-re-builder-tmenu))
+  :after (casual))
 
 (use-package nerd-icons
   :straight t
