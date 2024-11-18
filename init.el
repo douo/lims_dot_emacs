@@ -626,7 +626,7 @@
          ("C-c e" . crux-eval-and-replace)
          ("C-c D" . crux-delete-file-and-buffer)
          ("C-c r" . crux-rename-buffer-and-file)
-         ("C-c k" . crux-kill-other-buffers)
+         ("C-c p" . crux-kill-buffer-truename)
          ("C-c TAB" . crux-indent-rigidly-and-copy-to-clipboard)
          ("C-c I" . crux-find-user-init-file)
          ("C-c S" . crux-find-shell-init-file)
@@ -1382,6 +1382,14 @@
    (typescript-ts-mode . combobulate-mode)
    (json-ts-mode . combobulate-mode)
    (tsx-ts-mode . combobulate-mode)))
+
+(use-package multiple-cursors
+  :straight t
+  :bind
+  (("C-S-c" . mc/edit-lines)
+   ("C->" . mc/mark-next-like-this)
+   ("C-<" . mc/mark-previous-like-this)
+   ("C-c C-<" . mc/mark-all-like-this)))
 
 ;; 主模式
 

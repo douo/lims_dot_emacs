@@ -199,6 +199,13 @@ Throw an error when not in a list."
    (t
     (douo/org-inherited-priority (org-get-heading)))))
 
+;; 解决 org-mode table 中英文混排对齐问题
+;; 无需设置中西文等宽字体（https://feeshy.github.io/lists/monospace-fonts-width）
+(use-package valign
+  :straight t
+  :hook
+  (org-mode . valign-mode))
+
 (setq org-priority-get-priority-function #'douo/org-inherited-priority)
 
 (use-package org-gtd
