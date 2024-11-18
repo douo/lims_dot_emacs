@@ -44,9 +44,12 @@
   :straight (:host github :repo "tninja/aider.el" :files ("aider.el"))
   :config
   (setq aider-args '("--model" "gpt-4o-mini"))
-  (setenv "OPENAI_API_KEY" "")
+  (setenv "OPENAI_API_KEY" (auth-info-password
+                            (car (auth-source-search
+                                  :host "api.openai.com"
+                                  :user "apikey"))))
   ;; Optional: Set a key binding for the transient menu
-  (global-set-key (kbd "C-c a") 'aider-transient-menu)))
+  (global-set-key (kbd "C-c a") 'aider-transient-menu))
 
 
 (use-package magit-gptcommit
