@@ -220,11 +220,11 @@
               ("/" . #'casual-dired-search-replace-tmenu))
   :after (casual))
 (use-package casual-info
-    :straight (:type git :host github :repo "kickingvegas/casual-info")
+  :straight (:type git :host github :repo "kickingvegas/casual-info")
   :bind (:map Info-mode-map ("C-o" . 'casual-info-tmenu))
   :after (casual))
 (use-package casual-re-builder
-    :straight (:type git :host github :repo "kickingvegas/casual-re-builder")
+  :straight (:type git :host github :repo "kickingvegas/casual-re-builder")
   :bind (:map
          reb-mode-map ("C-o" . casual-re-builder-tmenu)
          :map
@@ -235,7 +235,7 @@
   :hook (ibuffer-mode . ibuffer-auto-mode)
   :defer t)
 (use-package casual-ibuffer
-  :straight t
+  :straight (:type git :host github :repo "kickingvegas/casual-re-builder")
   :bind (:map
          ibuffer-mode-map
          ("C-o" . casual-ibuffer-tmenu)
@@ -305,9 +305,9 @@
         (defun douo/multi-vterm-dedicated-toggle (arg)
           "Toggle dedicated vterm."
           (interactive "P")
-                (if arg
-                    (call-interactively 'multi-vterm-transient)
-                  (multi-vterm-dedicated-toggle)))
+          (if arg
+              (call-interactively 'multi-vterm-transient)
+            (multi-vterm-dedicated-toggle)))
         :bind (
                ("s-t" . douo/multi-vterm-dedicated-toggle)
                ("C-c t" . douo/multi-vterm-dedicated-toggle)))))
@@ -365,38 +365,38 @@
   :straight t
   :init
   (transient-define-prefix douo/avy-goto-transient ()
-          "Avy goto transient menu"
-          ["Avy Goto"
-           ["Char"
-            ("c" "Type 1" avy-goto-char)
-            ("b" "Type 2" avy-goto-char-2)
-            ("t" "Jump to the char when stop typing" avy-goto-char-timer)]
-           ["Line"
-            ("l" "Type 0" avy-goto-line)]
-           ["Word"
-            ("w" "Type 1" avy-goto-word-1)
-            ("W" "Type 0" avy-goto-word-0)
-            ("s" "Type 1 or subword" avy-goto-word-or-subword-1)
-           ]
-           ["Org"
-            ;; `consult-org-heading' 比较方便
-            ("o" "Jump to org heading when stop typing" avy-org-goto-heading-timer)
-            ("r" "Refile as Child with point in an entry" avy-org-refile-as-child)
-            ]
-           ])
+    "Avy goto transient menu"
+    ["Avy Goto"
+     ["Char"
+      ("c" "Type 1" avy-goto-char)
+      ("b" "Type 2" avy-goto-char-2)
+      ("t" "Jump to the char when stop typing" avy-goto-char-timer)]
+     ["Line"
+      ("l" "Type 0" avy-goto-line)]
+     ["Word"
+      ("w" "Type 1" avy-goto-word-1)
+      ("W" "Type 0" avy-goto-word-0)
+      ("s" "Type 1 or subword" avy-goto-word-or-subword-1)
+      ]
+     ["Org"
+      ;; `consult-org-heading' 比较方便
+      ("o" "Jump to org heading when stop typing" avy-org-goto-heading-timer)
+      ("r" "Refile as Child with point in an entry" avy-org-refile-as-child)
+      ]
+     ])
   (defun douo/avy-goto-char (arg)
     "`avy-goto-char' or create a avy-goto transient menu or `avy-resume' depend on `ARG'."
     (interactive "P")
     (cond
      ((equal arg '(4))
-     (call-interactively 'douo/avy-goto-transient))
+      (call-interactively 'douo/avy-goto-transient))
      ((null arg)
-        (call-interactively 'avy-goto-char))
+      (call-interactively 'avy-goto-char))
      (t (call-interactively 'avy-resume))))
   :bind
   ("C-;" . douo/avy-goto-char)
   (:map isearch-mode-map
-  ("C-;" . avy-isearch))
+        ("C-;" . avy-isearch))
   :config
   (setq avy-background t)
   )
@@ -520,8 +520,8 @@
   (gt-default-translator
    (gt-translator
     :taker (gt-taker :langs '(en zh) :text (lambda () (replace-regexp-in-string
-                              "\\([^\n]\\)\n\\([^\n]\\)" "\\1 \\2"
-                              (thing-at-point 'paragraph)))
+                                                       "\\([^\n]\\)\n\\([^\n]\\)" "\\1 \\2"
+                                                       (thing-at-point 'paragraph)))
                      :prompt t
                      )
     :engines (gt-google-engine)
@@ -1125,7 +1125,7 @@
     ;; PROS: 与 SPOTLIGHT 一致，不需要手动建立数据库
     ;; CONS: 不能搜索隐藏目录
     ;; (setopt consult-locate-args "mdfind --name")
-  )
+    )
 
 
   ;; :custom
@@ -1200,32 +1200,32 @@
   ;; 因为 `C-u C-.' 能实现 noquit  所以这里不需要了
   ;; (embark-quit-after-action nil) ;; 执行操作后不退出 minibuffer，默认是 t
   :bind  (("C-." . embark-act)
-   ;; 用 `embark-dwim' 提供更多功能性
-   ("C-'" . embark-dwim) ;; 默认行为是 `xref-find-definitions'(M-.)
-   ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
-   ;; ("C-;" . embark-act-noquit)
-   (:map embark-symbol-map
-         ;; 用 helpful 替代默认的 describe-symbol
-         ("h" . helpful-at-point))
-   (:map embark-file-map
-         ("S" . sudo-find-file)
-         ("o" . find-file)
-         ("U" . 0x0-dwim))
-   (:map embark-buffer-map
-         ("o" . switch-to-buffer))
-   (:map embark-bookmark-map
-         ("o" . bookmark-jump))
-   (:map embark-region-map
-         ("U" . 0x0-dwim))
-   ;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
-   ;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
-   ;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
-   ;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
-   (:map embark-collect-mode-map
-         ("m" . embark-select)
-         ))
+          ;; 用 `embark-dwim' 提供更多功能性
+          ("C-'" . embark-dwim) ;; 默认行为是 `xref-find-definitions'(M-.)
+          ("C-h B" . embark-bindings) ;; alternative for `describe-bindings'
+          ;; ("C-;" . embark-act-noquit)
+          (:map embark-symbol-map
+                ;; 用 helpful 替代默认的 describe-symbol
+                ("h" . helpful-at-point))
+          (:map embark-file-map
+                ("S" . sudo-find-file)
+                ("o" . find-file)
+                ("U" . 0x0-dwim))
+          (:map embark-buffer-map
+                ("o" . switch-to-buffer))
+          (:map embark-bookmark-map
+                ("o" . bookmark-jump))
+          (:map embark-region-map
+                ("U" . 0x0-dwim))
+          ;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
+          ;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
+          ;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
+          ;; 若临时目标列表为空，在迷你缓冲区中，它们对所有当前完成候选进行操作，或者在 Dired 缓冲区中，它们对所有标记的文件（或所有文件，如果没有标记）进行操作。
+          (:map embark-collect-mode-map
+                ("m" . embark-select)
+                ))
   :commands (embark-act embark-dwim embark-bindings embark-export embark-collect)
-   )
+  )
 
 ;;
 (use-package consult-dir
@@ -1468,13 +1468,13 @@
     ["Cursor"
      ;; up
      ("k" "Backward" code-cells-backward-cell :transient t)
-      ;; down
-      ("j" "forward" code-cells-forward-cell :transient t)]
+     ;; down
+     ("j" "forward" code-cells-forward-cell :transient t)]
     ["Movement"
      ;; up
      ("K" "Move Up" code-cells-move-cell-up :transient t)
-      ;; down
-      ("J" "Move Down" code-cells-move-cell-down :transient t)]
+     ;; down
+     ("J" "Move Down" code-cells-move-cell-down :transient t)]
     ["Other"
      ("e" "Cell Eval" code-cells-eval)
      ("q" "Quit" transient-quit-all)])
@@ -1546,7 +1546,7 @@
     (with-eval-after-load 'eglot
       (add-to-list 'eglot-server-programs
                    '(swift-mode . ("xcrun" "sourcekit-lsp"))))
-  :commands swift-mode))
+    :commands swift-mode))
 
 ;; begin_golang
 ;; 需安装 goimports gopls
@@ -1690,8 +1690,8 @@
 (use-package eglot
   :init
   (defun douo/update_eglot_pyright_configuraton ()
-  (setq eglot-workspace-configuration
-        (list (cons ':python (list ':venvPath pyvenv-virtual-env ':pythonPath (executable-find "python"))))))
+    (setq eglot-workspace-configuration
+          (list (cons ':python (list ':venvPath pyvenv-virtual-env ':pythonPath (executable-find "python"))))))
   :preface
   ;; https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc#fixing-flymake-and-eglot
   (defun mp-eglot-eldoc ()
@@ -1868,7 +1868,7 @@
 (require 'init-llm)
 ;; tui/gui 切换不同配置，+主要是切换 lsp-bridge 和 eglot+
 (when (or (not (display-graphic-p)) (server-running-p))
-    (require 'init-tui))
+  (require 'init-tui))
 
 ;; 加载本地配置，不会因为不存在导致整个配置加载失败
 (condition-case nil
