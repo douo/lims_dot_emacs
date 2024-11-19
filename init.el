@@ -145,7 +145,7 @@
 (straight-use-package 'use-package)
 
 (use-package transient
-  :straight `(transient :type git :host github :repo "magit/transient" :branch "builtin"))
+  :straight `(transient :type git :host github :repo "magit/transient" :branch "main"))
 ;; 提供简单的方法修改 minor-mode 在 modeline 中的 indicator
 (straight-use-package 'diminish)
 ;; 与 diminish 不兼容
@@ -409,17 +409,14 @@
   (setq ace-pinyin-simplified-chinese-only-p nil)
   (ace-pinyin-global-mode +1)
   )
+
 ;; git
 (use-package magit
-  :straight t
+  :straight `(magit :type git :host github :repo "magit/magit")
   :after transient
   :bind (("C-x g" . magit-status)))
 
-(use-package magit-todos
-  :straight t
-  :after magit
-  :config (magit-todos-mode 0)
-  )
+
 (use-package git-timemachine
   :straight t
   :bind (("M-g t" . git-timemachine)))
