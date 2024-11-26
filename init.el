@@ -1858,6 +1858,18 @@
   (otherwise (message "copilot not set")))
 ;; end_copilot
 
+;; start_GhostText
+(use-package atomic-chrome
+  :straight t
+  :custom
+  (atomic-chrome-default-major-mode 'python-ts-mode)
+  (atomic-chrome-url-major-mode-alist
+   '(("github\\.com" . gfm-mode)
+     ("redmine" . textile-mode)))
+  )
+;; end_GhostText
+
+
 
 
 ;; begin_other_init
