@@ -97,3 +97,14 @@ launchctl start ~/Library/LaunchAgents/environment.plist
 #+begin_src shell
 xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
 #+end_src
+
+** chrome
+
+- [[https://chromewebstore.google.com/detail/logpjaacgmcbpdkdchjiaagddngobkck][Shortkeys]] 将当前页面转换为 org-procotol 协议，比如：添加如下的 Run JavaScript Shortcut：
+  #+begin_src js
+  location.href='org-protocol://gtd-capture://r/'+
+              encodeURIComponent(location.href)+'/'+
+              encodeURIComponent(document.title)+'/'+
+              encodeURIComponent(window.getSelection())
+  #+end_src
+- [[https://mybrowseraddon.com/content-security-policy.html][CSP]] 部分网站的 CSP 规则导致 Shortkeys 的 Run JavaScript 无法执行。需要这个扩展强制允许
