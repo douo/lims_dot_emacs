@@ -1411,10 +1411,58 @@
   :mode ("CMakeLists.txt\\'" "\\.cmake\\'"))
 
 ;; beigin_python
+(use-package python
+  :hook
+  (python-mode . eglot-ensure)
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list
+     'eglot-server-programs
+     `((python-mode python-ts-mode) . (lambda(a)
+                                        `(,(executable-find "pyright-langserver") "--stdio")))))
+                                       ;; `(,(executable-find "ruff") "server")))))
+  ;; 交给 reformatter
+  ;; (after-save . eglot-format)
+  )
 
-;; (setq douo/python-lsp-server "pylsp")
-(setq douo/python-lsp-server "pyright")
+(use-package reformatter
+  :straight t
+  :hook
+  (python-mode . ruff-format-on-save-mode)
+  (python-ts-mode . ruff-format-on-save-mode)
+  :config
+  (reformatter-define ruff-format
+    :program "ruff"
+    :args `("format" "--stdin-filename" ,buffer-file-name "-")))
+;;
+(use-package flymake-ruff
+  :straight (flymake-ruff
+             :type git
+             :host github
+             :repo "erickgnavar/flymake-ruff")
+  :init
+  (defun my-filter-eglot-diagnostics (diags)
+    "Drop Pyright 'variable not accessed' notes from DIAGS."
+    (list (seq-remove (lambda (d)
+                        (and (eq (flymake-diagnostic-type d) 'eglot-note)
+                             (s-starts-with? "Pyright:" (flymake-diagnostic-text d))
+                             (s-ends-with? "is not accessed" (flymake-diagnostic-text d))))
+                      (car diags))))
+  :config
+  (advice-add 'eglot--report-to-flymake :filter-args #'my-filter-eglot-diagnostics)
+  :hook (eglot-managed-mode . flymake-ruff-load))
 
+(use-package pyvenv
+  :straight t
+  :init
+  (defun douo/update_eglot_pyright_configuraton ()
+    (setq eglot-workspace-configuration
+          (list (cons ':python (list ':venvPath pyvenv-virtual-env ':pythonPath (executable-find "python"))))))
+  :config
+  (add-hook 'pyvenv-post-activate-hooks 'douo/update_eglot_pyright_configuraton)
+  :hook
+  (python-mode . douo/update_eglot_pyright_configuraton)
+  )
 
 ;; 只有安装了 conda 才启用
 (use-package conda
@@ -1433,21 +1481,12 @@
     )
   )
 
-;; reformat
-;; 需要在环境中已经安装 https://github.com/psf/black
-(use-package blacken
-  :straight t
-  :bind
-  (:map python-mode-map
-        ("C-c M-f" . blacken-buffer)))
-
 (use-package cython-mode
   :straight t
   :mode  ("\\.pyx\\'" "\\.pxd\\'" "\\.pxi\\'"))
 
 
-(use-package pyvenv
-  :straight t)
+
 
 ;;; start_juptyer
 
@@ -1685,10 +1724,6 @@
 
 ;; begin_eglot
 (use-package eglot
-  :init
-  (defun douo/update_eglot_pyright_configuraton ()
-    (setq eglot-workspace-configuration
-          (list (cons ':python (list ':venvPath pyvenv-virtual-env ':pythonPath (executable-find "python"))))))
   :preface
   ;; https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc#fixing-flymake-and-eglot
   (defun mp-eglot-eldoc ()
@@ -1696,10 +1731,6 @@
           'eldoc-documentation-compose-eagerly))
   :straight t
   :config
-  (add-to-list
-   'eglot-server-programs
-   `(python-mode . (lambda(a)
-                     `(,(executable-find "pyright-langserver") "--stdio"))))
   (add-to-list
    'eglot-server-programs
    '((c-mode c++-mode)
@@ -1713,11 +1744,10 @@
         "--pch-storage=memory"
         "--function-arg-placeholders"
         "--header-insertion=iwyu")))
-  (add-hook 'pyvenv-post-activate-hooks 'douo/update_eglot_pyright_configuraton)
   :hook
-  (python-mode . douo/update_eglot_pyright_configuraton)
-  (python-mode . eglot-ensure)
-  (eglot-managed-mode . mp-eglot-eldoc))
+  (eglot-managed-mode . mp-eglot-eldoc)
+  :bind (:map eglot-mode-map
+              ("C-c M-f" . #'eglot-format)))
 
 (use-package consult-eglot
   :straight (consult-eglot
