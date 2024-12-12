@@ -201,10 +201,11 @@ Throw an error when not in a list."
 
 ;; 解决 org-mode table 中英文混排对齐问题
 ;; 无需设置中西文等宽字体（https://feeshy.github.io/lists/monospace-fonts-width）
-(use-package valign
-  :straight t
-  :hook
-  (org-mode . valign-mode))
+;; XXX valign 会导致 emacs hangs: https://github.com/casouri/valign/issues/35
+;; (use-package valign
+;;   :straight t
+;;   :hook
+;;   (org-mode . valign-mode))
 
 (setq org-priority-get-priority-function #'douo/org-inherited-priority)
 
@@ -307,6 +308,7 @@ Throw an error when not in a list."
   :straight  '(org-contrib :includes org-protocol)
   :config
   ;; Your other org-mode configurations here
+  (require 'org-tempo) ;; <s TAB 补全
   (require 'org-protocol)
   (defun org-gtd-protocol-capture (info)
     "Capture a task from anywhere in Emacs."
