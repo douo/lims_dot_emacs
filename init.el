@@ -459,7 +459,7 @@
   :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; 代码中的颜色值可视化
-(use-package rainbow-mode
+(use-package colorful-mode
   :straight t
   :diminish  "括";;"  " ;; "🌈"
   :hook prog-mode)
