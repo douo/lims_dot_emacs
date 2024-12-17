@@ -135,7 +135,7 @@
   (load bootstrap-file nil 'nomessage))
 
 (straight-use-package 'package-lint)
-(straight-use-package 'org)
+(straight-use-package '(org :type built-in))
 ;; 以下代码可以用于调试 use-package，将宏展开后的代码输出到当前位置
 ;; (let ((use-package-expand-minimally t))
 ;;   (pp-emacs-lisp-code
