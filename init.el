@@ -1669,37 +1669,39 @@
   ;; 手动重置一下
   (setq sis--ism-inited nil)
   (sis-global-respect-mode)
-  ;; 切换 emacs 焦点时，保存当前输入法状态
-  ;; 防止在 emacs 外修改输入法状态，导致 emacs 内输入法状态不一致
-  ;; 主要 sis-global-respect-mode 恢复 buffer 输入法失效
-  ;; FIXME 未处理多个 emacs frame 的情况
-  (setq douo/sis--current sis--current)
-  (defun douo/restore-sis-after-focus-change ()
-    "Restore sis-current after emacs frame focus back."
-    (when (display-graphic-p)
-      (if (frame-focus-state)
-          ;; focused
-          (when (not (eq douo/sis--current sis--current))
-            (sis--set douo/sis--current))
-        ;; lost focus
-        (setq douo/sis--current sis--current))))
-  (add-function :after after-focus-change-function #'douo/restore-sis-after-focus-change)
   ;; hack end
+  ;; 将一些忘记切换拼音输入法时容易误按的快捷键映射到实际意图
+  (let ((keys '("C-；" "C-;"
+                "C-。" "C-."
+                "C-：" "C-:"
+                "C-，" "C-,"
+                "M-；" "M-;"
+                "M-。" "M-."
+                "M-：" "M-:"
+                "M-，" "M-,")))
+    (while keys
+      (let ((src (pop keys))
+            (dst (pop keys)))
+        (define-key key-translation-map (kbd src) (kbd dst)))))
+
   :custom
-  (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
-                                  ;; avy & consult
-                                  "M-g" "C-。" "M-s"
-                                  ;; ace-window
-                                  "M-o"))
   ;; enable the /cursor color/ mode
   (sis-global-cursor-color-mode t)
   (sis-default-cursor-color "white")
   (sis-other-cursor-color "orange")
   ;; enable the /respect/ mode
-  ;; 使用指定语言启动 Emacs
-  ;; 离开 evil insert 模式时切换到英语
-  ;; 切换到英文的 C-c / C-x / C-h 等
-  ;; 切换 buffer 时恢复 buffer input source
+  ;; - 使用指定语言启动 Emacs `sis-respect-start'
+  ;; - 离开 evil insert 模式时切换到 english
+  ;; - 按特定 prefix key `sis-prefix-override-keys' 后切换到 english
+  ;; - 切换 buffer (或者 frame 重新获得焦点)时恢复 buffer input source
+  ;; - 执行特定的命令前切换到 english `sis-respect-go-english-triggers'
+  (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
+                                  ;; avy & consult
+                                  "M-g" "M-s"
+                                  ))
+  (sis-respect-go-english-triggers '(embark-act
+                                     ace-window
+                                     douo/multi-vterm-dedicated-toggle))
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
   ;; 根据当前光标位置的前后字符判断合适输入法
