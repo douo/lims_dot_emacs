@@ -1702,6 +1702,9 @@
   (sis-respect-go-english-triggers '(embark-act
                                      ace-window
                                      douo/multi-vterm-dedicated-toggle))
+  (sis-respect-restore-triggers '(embark-act
+                                     ace-window
+                                     douo/multi-vterm-dedicated-toggle))
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
   ;; 根据当前光标位置的前后字符判断合适输入法
