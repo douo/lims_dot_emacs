@@ -1650,7 +1650,9 @@
      ;; 英文输入法
      "com.apple.keylayout.ABC"
      ;; 拼音输入法
-     "com.apple.inputmethod.SCIM.ITABC" 'macism))
+     ;; "com.apple.inputmethod.SCIM.ITABC"
+     "im.rime.inputmethod.Squirrel.Hans"
+     'macism))
   ;;https://github.com/daipeihust/im-select
   ;;只能切换不同语言的输入法，拼音输入法的中英文切换无法识别
   (with-system windows-nt
@@ -1669,6 +1671,23 @@
   ;; 手动重置一下
   (setq sis--ism-inited nil)
   (sis-global-respect-mode)
+  ;; Emacs 焦点切换的时候不要切换到英文输入法
+  (defun sis--respect-focus-out-handler ()
+  "Handler for `focus-out-hook'."
+
+  ;; `mouse-drag-region' causes lots of noise.
+  (unless (eq this-command 'mouse-drag-region)
+    ;; can't use `sis--save-to-buffer' directly
+    ;; because OS may has already changed input source
+    ;; when other windows get focus.
+    ;; so, don't get the current OS input source
+    (setq sis--for-buffer-locked t)
+    ;(sis--set-english)
+    )
+
+  (when sis-log-mode
+    (message "Handle save hook, save [%s] to [%s]."
+             sis--for-buffer (current-buffer))))
   ;; hack end
   ;; 将一些忘记切换拼音输入法时容易误按的快捷键映射到实际意图
   (let ((keys '("C-；" "C-;"
