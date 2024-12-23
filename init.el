@@ -1726,10 +1726,14 @@
                                      douo/multi-vterm-dedicated-toggle))
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
+  ;; `sis-context-hooks' 触发时会触发 `sis-context'
   ;; 根据当前光标位置的前后字符判断合适输入法
-  ;; 通过 (sis--context-guess) 获取
-  ;; 不知道有什么实际应用场景
+  ;; `sis-context-triggers' 每个 trigger 添加一个 :around advice
+  ;;    - 执行前调用 detector： 默认 `sis--context-line'
+  ;;    - 执行后调用 detector： 默认 `sis--context-line'
+  ;;    - `sis--context-line':  当前行有任意满足正则的字符便触发，优先 other
   ;; (sis-global-context-mode nil)
+
   ;; enable the /inline english/ mode for all buffers
   (sis-global-inline-mode t)
   (sis-inline-tighten-head-rule 0)
