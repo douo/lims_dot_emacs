@@ -421,10 +421,13 @@
   :straight t
   :bind (("M-g t" . git-timemachine)))
 
+;;; 高亮未提交更改
 (use-package diff-hl
   :straight t
   :config
   (global-diff-hl-mode +1)
+  ;; 在 margin 显示 diff 而不是 fringe
+  (diff-hl-margin-mode +1)
   ;; 开启实时更新，默认情况需要保存文件才会更新
   (diff-hl-flydiff-mode +1)
   :hook (magit-post-refresh . diff-hl-magit-post-refresh))
