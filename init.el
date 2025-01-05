@@ -199,6 +199,40 @@
   ;; 让 EPA 使用 Emacs 自己的密码提示，而不是外部的 Pinentry 程序。
   (setq epa-pinentry-mode 'loopback))
 
+;; repeat-mode
+;; emacs 28 之后内置
+
+(use-package repeat
+  :straight (:type built-in)
+  :init
+  (defun repeatize (keymap)
+    "Add `repeat-mode' support to a KEYMAP."
+    (map-keymap
+     (lambda (_key cmd)
+       (when (symbolp cmd)
+         (put cmd 'repeat-map keymap)))
+     (symbol-value keymap)))
+  :config
+  (repeatize 'smerge-basic-map)
+  :hook
+  ;; 当repeat-mode处于活动状态时，第一次调用前缀 ( ex:M-g ) 会“激活”键盘映射
+  ;; 此后仅需要命令的“基本”键(ex: n/p) 即可重复调用命令
+  ;; 按任意非 keymap 里的按键会退出 repeat-mode（也可以通过`repeat-exit-key'配置）
+  ;; 类似的包有 hydra, smartrep
+  (after-init . repeat-mode)
+  )
+
+;;; 用 embark 或 which-key 代替原来的 `repeat-echo-function'
+;;; 能显示函数名和描述，而不仅仅是按键名
+(use-package repeat-help
+  :straight t
+  ;; 进入 repeat-mode 时自动显示 repeat-help
+  ;; 默认是通过 C-h （`repeat-help-key'）手动触发
+  ;; 因为 repeat-help 会 disable `repeat-echo-function'，
+  ;; 所以需要开启自动模式，不如进入 repeat-mode 时没有任何提示
+  :custom (repeat-help-auto t)
+  :hook (repeat-mode . repeat-help-mode))
+
 ;; 为 calc-mode 提供 transient 菜单
 (use-package casual-lib
   :straight (:type git :host github :repo "kickingvegas/casual-lib")
@@ -422,6 +456,7 @@
   :bind (("M-g t" . git-timemachine)))
 
 ;;; 高亮未提交更改
+;;; alternative: https://github.com/nonsequitur/git-gutter-plus
 (use-package diff-hl
   :straight t
   :config
@@ -430,6 +465,8 @@
   (diff-hl-margin-mode +1)
   ;; 开启实时更新，默认情况需要保存文件才会更新
   (diff-hl-flydiff-mode +1)
+  ;; `diff-hl-margin-symbols-alist' 可以自定义显示的符号
+  ;; 默认显示的符号是 (insert . "+") (delete . "-") (change . "!") (unknown . "?") (ignored . "i")
   :hook (magit-post-refresh . diff-hl-magit-post-refresh))
 
 ;; rg
