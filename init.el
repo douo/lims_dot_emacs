@@ -10,39 +10,10 @@
 (setq custom-file (locate-user-emacs-file "custom-vars.el"))
 (load custom-file 'noerror 'nomessage)
 
-;; gc 优化
-;; https://emacs-china.org/t/topic/5720/10
-(setq emacs-start-time (float-time))
-(setq gc-cons-threshold 10000000)
-
 ;; 正确处理 CJK 字符的自动断行
 ;; https://debbugs.gnu.org/cgi/bugreport.cgi?bug=29364#11
 ;; https://emacs-china.org/t/topic/2616/18
 (setq word-wrap-by-category t)
-
-(add-hook
- 'after-init-hook
- (lambda ()
-   (setq gc-cons-threshold (car (get 'gc-cons-threshold 'standard-value)))
-   (insert (format ";; Emacs started in %fs\n"
-                   (- (float-time) emacs-start-time)))))
-;; https://akrl.sdf.org/
-;; http://blog.lujun9972.win/blog/2019/05/16/%E4%BC%98%E5%8C%96emacs%E7%9A%84%E5%9E%83%E5%9C%BE%E6%90%9C%E9%9B%86%E8%A1%8C%E4%B8%BA/index.html
-(defmacro k-time (&rest body)
-  "Measure and return the time it takes evaluating BODY."
-  `(let ((time (current-time)))
-     ,@body
-     (float-time (time-since time))))
-
-(defvar k-gc-timer
-  (run-with-idle-timer 60 t
-                       (lambda ()
-                         (garbage-collect)
-                         ;; (message "Garbage Collector has run for %.06fsec"
-                         ;;          (k-time (garbage-collect)))
-                         )))
-;; gc end
-
 
 ;; 自动加载外部修改过的文件，如果当前 buffer 未修改
 ;; revert buffers automatically when underlying files are changed externally
