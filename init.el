@@ -200,9 +200,11 @@
   ;; 进入 repeat-mode 时自动显示 repeat-help
   ;; 默认是通过 C-h （`repeat-help-key'）手动触发
   ;; 因为 repeat-help 会 disable `repeat-echo-function'，
-  ;; 所以需要开启自动模式，不如进入 repeat-mode 时没有任何提示
-  :custom (repeat-help-auto t)
-  :hook (repeat-mode . repeat-help-mode))
+  :hook (repeat-mode . repeat-help-mode)
+  :config
+  ;; 取消 repeat-help 对 repeat-echo-function 的修改
+  ;; `ignore' 的话，进入 repeat-mode 时会没有任何提示
+  (advice-add 'repeat-help-mode :after (lambda (&rest _) (setq repeat-echo-function #'repeat-echo-message))))
 
 ;; 为 calc-mode 提供 transient 菜单
 (use-package casual-lib
