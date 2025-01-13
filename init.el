@@ -1431,6 +1431,10 @@
   :straight t
   :mode ("CMakeLists.txt\\'" "\\.cmake\\'"))
 
+(use-package css-mode
+  :straight (:type built-in)
+  :mode  "\\.rasi\\'")
+
 ;; beigin_python
 (use-package python
   :hook
