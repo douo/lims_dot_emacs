@@ -796,13 +796,28 @@
 (use-package ace-window
   :straight t
   :custom
-  ;; (aw-dispatch-always t)
-  ;; 搭配使用，通过 minibuf 提示当前处于 ace-window 模式
+  ;; 不显示全局遮罩，而是通过 minibuf 提示当前处于 ace-window 模式
   (aw-background nil)
   (aw-minibuffer-flag t)
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (aw-scope 'frame)
-  :bind  (("M-o" . ace-window)
+
+  :config
+  (set-face-attribute
+   'aw-mode-line-face nil
+   :inherit 'mode-line-buffer-id
+   :foreground "lawn green")
+  ;; 默认模式某些 buffer 经常无法显示 override layer
+  ;;; 终端模式也经常遇到显示问题
+  ;; posframe 又不支持终端
+  ;; 直接在 mode-line 固定显示 ace-window 热键
+  (ace-window-display-mode t)  ;;
+  (setq aw-display-mode-overlay nil)
+  ;; (ace-window-posframe-mode nil)
+  :bind  (
+          ;; 代替 `ace-window' 不用按 ? 就能显示帮助
+          ;; 会导致即便关闭 `aw-dispatch-always' 也会一直显示帮助
+          ("M-o" . aw-show-dispatch-help)
           ("C-c w" . ace-swap-window)))
 
 ;; 内置的 winner-mode 可以记忆窗口布局
