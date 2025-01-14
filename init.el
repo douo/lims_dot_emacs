@@ -206,33 +206,17 @@
   ;; `ignore' 的话，进入 repeat-mode 时会没有任何提示
   (advice-add 'repeat-help-mode :after (lambda (&rest _) (setq repeat-echo-function #'repeat-echo-message))))
 
-;; 为 calc-mode 提供 transient 菜单
+;; begin_casual
 (use-package casual
   :straight (:type git :host github :repo "kickingvegas/casual")
-  :bind
-  ("s-/" . casual-editkit-main-tmenu)
-  (:map calc-mode-map ("s-/" . casual-calc-tmenu))
-  (:map dired-mode-map
-        ("s-/" . casual-dired-tmenu)
-        ("s" . #'casual-dired-sort-by-tmenu)
-        ("/" . #'casual-dired-search-replace-tmenu))
-  (:map isearch-mode-map ("s-/" . casual-isearch-tmenu))
-  (:map ibuffer-mode-map
-        ("s-/" . casual-ibuffer-tmenu)
-        ("F" . casual-ibuffer-filter-tmenu)
-        ("s" . casual-ibuffer-sortby-tmenu))
-  (:map Info-mode-map ("s-/" . casual-info-tmenu))
-  (:map reb-mode-map ("s-/" . casual-re-builder-tmenu))
-  (:map reb-lisp-mode-map ("s-/" . casual-re-builder-tmenu))
-  (:map bookmark-bmenu-mode-map ("s-/" . casual-bookmarks-tmenu))
-  (:map org-agenda-mode-map ("s-/" . casual-agenda-tmenu)))
+  :defer t)
 
 (use-package casual-symbol-overlay
   :straight (:type git :host github :repo "kickingvegas/casual-symbol-overlay")
   :after symbol-overlay
   :bind
   (:map symbol-overlay-map
-        ("s-/" . casual-symbol-overlay-tmenu)))
+        ("C-o" . casual-symbol-overlay-tmenu)))
 
 (use-package casual-avy
   :straight (:type git :host github :repo "kickingvegas/casual-avy")
@@ -240,9 +224,59 @@
   :bind
   ("M-g a" . casual-avy-tmenu))
 
+(keymap-global-set "C-o" #'casual-editkit-main-tmenu)
+
+
+;; 参考 https://github.com/kickingvegas/casual/discussions/60
+(use-package calendar
+  :bind
+  (:map calendar-mode-map ("C-o" . casual-calendar-tmenu))
+  :defer t)
+;; Calc 模式的绑定
+(use-package calc
+  :bind
+  (:map calc-mode-map ("C-o" . casual-calc-tmenu))
+  :defer t)
+;; Dired 模式绑定
+(use-package dired
+  :bind
+  (:map dired-mode-map
+        ("C-o" . casual-dired-tmenu)
+        ("s" . casual-dired-sort-by-tmenu)
+        ("/" . casual-dired-search-replace-tmenu))
+  :defer t)
+;; Isearch 模式绑定
+(use-package isearch
+  :bind
+  (:map isearch-mode-map ("C-o" . casual-isearch-tmenu))
+  :defer t)
+;; Ibuffer 模式绑定
 (use-package ibuffer
   :hook (ibuffer-mode . ibuffer-auto-mode)
+  :bind
+  (:map ibuffer-mode-map
+        ("C-o" . casual-ibuffer-tmenu)
+        ("F" . casual-ibuffer-filter-tmenu)
+        ("s" . casual-ibuffer-sortby-tmenu))
   :defer t)
+;; Info 模式绑定
+(use-package info
+  :bind
+  (:map Info-mode-map ("C-o" . casual-info-tmenu))
+  :defer t)
+;; Reb 模式绑定
+(use-package re-builder
+  :bind
+  (:map reb-mode-map ("C-o" . casual-re-builder-tmenu)
+        :map reb-lisp-mode-map ("C-o" . casual-re-builder-tmenu))
+  :defer t)
+;; Bookmark 模式绑定
+(use-package bookmark
+  :bind
+  (:map bookmark-bmenu-mode-map ("C-o" . casual-bookmarks-tmenu))
+  :defer t)
+;; end_casual
+
 
 (use-package nerd-icons
   :straight t
@@ -1955,9 +1989,6 @@
      ("redmine" . textile-mode)))
   )
 ;; end_GhostText
-
-
-
 
 ;; begin_other_init
 (require 'init-org)

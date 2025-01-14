@@ -303,7 +303,10 @@ Throw an error when not in a list."
   :after org-gtd
   :custom
   (org-agenda-files `(,org-gtd-directory))
-  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT"))))))
+  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
+  :bind
+  (:map org-agenda-mode-map ("C-o" . casual-agenda-tmenu))
+  :defer t)
 (use-package org-contrib ; Includes more than the standard org-mode
   :straight  '(org-contrib :includes org-protocol)
   :config
