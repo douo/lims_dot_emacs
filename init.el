@@ -452,16 +452,21 @@
 ;;; 高亮未提交更改
 ;;; alternative: https://github.com/nonsequitur/git-gutter-plus
 (use-package diff-hl
-  :straight t
+  :straight
   :config
+  ;; `diff-hl-margin-symbols-alist' 可以自定义显示的符号
   (global-diff-hl-mode +1)
-  ;; 在 margin 显示 diff 而不是 fringe
-  (diff-hl-margin-mode +1)
   ;; 开启实时更新，默认情况需要保存文件才会更新
   (diff-hl-flydiff-mode +1)
-  ;; `diff-hl-margin-symbols-alist' 可以自定义显示的符号
+  :hook
+  (magit-post-refresh . diff-hl-magit-post-refresh)
+  ;; 在终端模式下开启 margin 显示，默认是 fringe（窗边） 模式，但是终端不支持
   ;; 默认显示的符号是 (insert . "+") (delete . "-") (change . "!") (unknown . "?") (ignored . "i")
-  :hook (magit-post-refresh . diff-hl-magit-post-refresh))
+  (diff-hl-mode-on-hook .
+          (lambda ()
+            (unless (window-system)
+              (diff-hl-margin-local-mode)))))
+
 
 
 ;; rg
