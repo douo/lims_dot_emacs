@@ -452,20 +452,23 @@
 ;;; 高亮未提交更改
 ;;; alternative: https://github.com/nonsequitur/git-gutter-plus
 (use-package diff-hl
-  :straight
+  :straight t
+  :after magit
+  :demand t ;; 保证启动后生效
   :config
   ;; `diff-hl-margin-symbols-alist' 可以自定义显示的符号
-  (global-diff-hl-mode +1)
+  (global-diff-hl-mode)
   ;; 开启实时更新，默认情况需要保存文件才会更新
-  (diff-hl-flydiff-mode +1)
+  (diff-hl-flydiff-mode)
   :hook
   (magit-post-refresh . diff-hl-magit-post-refresh)
   ;; 在终端模式下开启 margin 显示，默认是 fringe（窗边） 模式，但是终端不支持
-  ;; 默认显示的符号是 (insert . "+") (delete . "-") (change . "!") (unknown . "?") (ignored . "i")
-  (diff-hl-mode-on-hook .
-          (lambda ()
-            (unless (window-system)
-              (diff-hl-margin-local-mode)))))
+  ;; 用 hook 实现同时兼顾 gui 和终端
+  ;; margin 默认显示的符号是 (insert . "+") (delete . "-") (change . "!") (unknown . "?") (ignored . "i")
+  (diff-hl-mode .
+		(lambda ()
+		  (unless (window-system)
+		    (diff-hl-margin-local-mode)))))
 
 
 
