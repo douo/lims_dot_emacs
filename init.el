@@ -207,55 +207,42 @@
   (advice-add 'repeat-help-mode :after (lambda (&rest _) (setq repeat-echo-function #'repeat-echo-message))))
 
 ;; 为 calc-mode 提供 transient 菜单
-(use-package casual-lib
-  :straight (:type git :host github :repo "kickingvegas/casual-lib")
-  )
-(use-package casual-calc
-  :straight (:type git :host github :repo "kickingvegas/casual-calc")
-  :bind (:map
-         calc-mode-map
-         ("C-o" . casual-calc-tmenu)
-         :map
-         calc-alg-map
-         ("C-o" . casual-calc-tmenu))
-  :after (calc casual))
-(use-package casual-dired
-  :straight (:type git :host github :repo "kickingvegas/casual-dired")
-  :bind (:map dired-mode-map
-              ("C-o" . #'casual-dired-tmenu)
-              ("s" . #'casual-dired-sort-by-tmenu)
-              ("/" . #'casual-dired-search-replace-tmenu))
-  :after (casual))
-(use-package casual-info
-  :straight (:type git :host github :repo "kickingvegas/casual-info")
-  :bind (:map Info-mode-map ("C-o" . 'casual-info-tmenu))
-  :after (casual))
-(use-package casual-re-builder
-  :straight (:type git :host github :repo "kickingvegas/casual-re-builder")
-  :bind (:map
-         reb-mode-map ("C-o" . casual-re-builder-tmenu)
-         :map
-         reb-lisp-mode-map ("C-o" . casual-re-builder-tmenu))
-  :after (casual))
+(use-package casual
+  :straight (:type git :host github :repo "kickingvegas/casual")
+  :bind
+  ("s-/" . casual-editkit-main-tmenu)
+  (:map calc-mode-map ("s-/" . casual-calc-tmenu))
+  (:map dired-mode-map
+        ("s-/" . casual-dired-tmenu)
+        ("s" . #'casual-dired-sort-by-tmenu)
+        ("/" . #'casual-dired-search-replace-tmenu))
+  (:map isearch-mode-map ("s-/" . casual-isearch-tmenu))
+  (:map ibuffer-mode-map
+        ("s-/" . casual-ibuffer-tmenu)
+        ("F" . casual-ibuffer-filter-tmenu)
+        ("s" . casual-ibuffer-sortby-tmenu))
+  (:map Info-mode-map ("s-/" . casual-info-tmenu))
+  (:map reb-mode-map ("s-/" . casual-re-builder-tmenu))
+  (:map reb-lisp-mode-map ("s-/" . casual-re-builder-tmenu))
+  (:map bookmark-bmenu-mode-map ("s-/" . casual-bookmarks-tmenu))
+  (:map org-agenda-mode-map ("s-/" . casual-agenda-tmenu)))
+
+(use-package casual-symbol-overlay
+  :straight (:type git :host github :repo "kickingvegas/casual-symbol-overlay")
+  :after symbol-overlay
+  :bind
+  (:map symbol-overlay-map
+        ("s-/" . casual-symbol-overlay-tmenu)))
+
+(use-package casual-avy
+  :straight (:type git :host github :repo "kickingvegas/casual-avy")
+  :after avy
+  :bind
+  ("M-g a" . casual-avy-tmenu))
 
 (use-package ibuffer
   :hook (ibuffer-mode . ibuffer-auto-mode)
   :defer t)
-(use-package casual-ibuffer
-  :straight (:type git :host github :repo "kickingvegas/casual-re-builder")
-  :bind (:map
-         ibuffer-mode-map
-         ("C-o" . casual-ibuffer-tmenu)
-         ("F" . casual-ibuffer-filter-tmenu)
-         ("s" . casual-ibuffer-sortby-tmenu)
-         ("<double-mouse-1>" . ibuffer-visit-buffer) ; optional
-         ("M-<double-mouse-1>" . ibuffer-visit-buffer-other-window) ; optional
-         ("{" . ibuffer-backwards-next-marked) ; optional
-         ("}" . ibuffer-forward-next-marked)   ; optional
-         ("[" . ibuffer-backward-filter-group) ; optional
-         ("]" . ibuffer-forward-filter-group)  ; optional
-         ("$" . ibuffer-toggle-filter-group))  ; optional
-  :after (ibuffer))
 
 (use-package nerd-icons
   :straight t
