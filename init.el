@@ -413,7 +413,7 @@
 
 (use-package git-timemachine
   :straight t
-  :bind (("M-g t" . git-timemachine)))
+  :bind (("C-x v t" . git-timemachine)))
 
 ;;; 高亮未提交更改
 ;;; alternative: https://github.com/nonsequitur/git-gutter-plus
@@ -428,6 +428,7 @@
   ;; `diff-hl-margin-symbols-alist' 可以自定义显示的符号
   ;; 默认显示的符号是 (insert . "+") (delete . "-") (change . "!") (unknown . "?") (ignored . "i")
   :hook (magit-post-refresh . diff-hl-magit-post-refresh))
+
 
 ;; rg
 (use-package rg
@@ -783,8 +784,7 @@
 (use-package ace-window
   :straight t
   :custom
-  ;; 不显示全局遮罩，而是通过 minibuf 提示当前处于 ace-window 模式
-  (aw-background nil)
+  (aw-background t)
   (aw-minibuffer-flag t)
   (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
   (aw-scope 'frame)
@@ -802,7 +802,7 @@
   (setq aw-display-mode-overlay nil)
   ;; (ace-window-posframe-mode nil)
   :bind  (
-          ;; 代替 `ace-window' 不用按 ? 就能显示帮助
+          ;; 代替 `ace-window' 不用按 ? 就能显示帮助(打印到*Message*)
           ;; 会导致即便关闭 `aw-dispatch-always' 也会一直显示帮助
           ("M-o" . aw-show-dispatch-help)
           ("C-c w" . ace-swap-window)))
@@ -1747,10 +1747,12 @@
                                   ))
   (sis-respect-go-english-triggers '(embark-act
                                      ace-window
+                                     aw-show-dispatch-helpn
                                      douo/multi-vterm-dedicated-toggle))
   (sis-respect-restore-triggers '(embark-act
-                                     ace-window
-                                     douo/multi-vterm-dedicated-toggle))
+                                  ace-window
+                                  aw-show-dispatch-help
+                                  douo/multi-vterm-dedicated-toggle))
   (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
   ;; `sis-context-hooks' 触发时会触发 `sis-context'
