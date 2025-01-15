@@ -209,7 +209,8 @@
 ;; begin_casual
 (use-package casual
   :straight (:type git :host github :repo "kickingvegas/casual")
-  :defer t)
+  :defer t
+  :custom (casual-lib-use-unicode t))
 
 (use-package casual-symbol-overlay
   :straight (:type git :host github :repo "kickingvegas/casual-symbol-overlay")
