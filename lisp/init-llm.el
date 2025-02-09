@@ -1,4 +1,3 @@
-;; gpt
 (use-package gptel
   :straight t
   :disabled)
@@ -142,6 +141,15 @@
   :bind
   (:map ellama-command-map
         ("c d" . douo/ellama-code-explain)))
+
+
+(use-package immersive-translate
+  :straight t
+  :custom
+  (immersive-translate-backend 'chatgpt)
+  (immersive-translate-chatgpt-host "api.deepseek.com")
+  (immersive-translate-chatgpt-model "deepseek-chat")
+  (immersive-translate-failed-message "💢"))
 
 
 (provide 'init-llm)
