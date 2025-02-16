@@ -241,8 +241,6 @@
 ;; Dired 模式绑定
 (use-package dired
   :bind
-  :config
-  (add-hook 'dired-mode-hook 'dired-async-mode)   ; 启用异步模式
   (:map dired-mode-map
         ("C-o" . casual-dired-tmenu)
         ("s" . casual-dired-sort-by-tmenu)
@@ -276,6 +274,21 @@
   (:map image-dired-thumbnail-mode-map
         ("n" . image-dired-display-next)
         ("p" . image-dired-display-previous)))
+
+
+
+(use-package dired-async
+  :straight emacs-async
+  :after diredn
+  :config
+  ;; 启用异步模式
+  (add-hook 'dired-mode-hook 'dired-async-mode))
+
+(use-package dired-rsync
+  :straight t
+  :after dired
+  :bind (:map dired-mode-map
+              ("C-c C-r" . dired-rsync)))
 
 ;; Isearch 模式绑定
 (use-package isearch
