@@ -7,6 +7,7 @@
   :init
   (require 'llm-openai)
   (require 'llm-gemini)
+  (require 'llm-ollama)
   :config
   (setopt llm-gpt4o-provider (make-llm-openai
                                 :key (auth-info-password
