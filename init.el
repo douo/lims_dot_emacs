@@ -1949,7 +1949,7 @@
   ;; ** Copilot
   (`copilot
    (use-package copilot
-     :straight '(:type git :host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+     :straight '(:type git :host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
      :init
      ;; accept completion from copilot and fallback to corfu-complete
      (defun douo/copilot-complete ()
