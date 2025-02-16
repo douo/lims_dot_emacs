@@ -1,4 +1,3 @@
-;; gpt
 (use-package gptel
   :straight t
   :disabled)
@@ -8,6 +7,7 @@
   :init
   (require 'llm-openai)
   (require 'llm-gemini)
+  (require 'llm-ollama)
   :config
   (setopt llm-gpt4o-provider (make-llm-openai
                                 :key (auth-info-password
@@ -142,7 +142,6 @@
   :bind
   (:map ellama-command-map
         ("c d" . douo/ellama-code-explain)))
-
 
 
 (use-package immersive-translate

@@ -209,7 +209,8 @@
 ;; begin_casual
 (use-package casual
   :straight (:type git :host github :repo "kickingvegas/casual")
-  :defer t)
+  :defer t
+  :custom (casual-lib-use-unicode t))
 
 (use-package casual-symbol-overlay
   :straight (:type git :host github :repo "kickingvegas/casual-symbol-overlay")
@@ -243,13 +244,58 @@
   (:map dired-mode-map
         ("C-o" . casual-dired-tmenu)
         ("s" . casual-dired-sort-by-tmenu)
-        ("/" . casual-dired-search-replace-tmenu))
+        ("/" . casual-dired-search-replace-tmenu)
+        ;; build-in
+        ("<C-return>" . dired-do-open)
+        ("E" . wdired-change-to-wdired-mode) ;; default is `dired-do-open'
+        ("M-n" . dired-next-dirline)
+        ("M-p" . dired-prev-dirline)
+        ("]" . dired-next-subdir)
+        ("[" . dired-prev-subdir)
+        ("A-M-<mouse-1>" . browse-url-of-dired-file)
+        ("<backtab>" . dired-prev-subdir)
+        ("TAB" . dired-next-subdir)
+        ("M-j" . dired-goto-subdir)
+        (";" . image-dired-dired-toggle-marked-thumbs))
   :defer t)
+
+(use-package dired-x
+  ; dired-x 是 dired 的扩展，Emacs 内置
+  :after dired)
+
+(use-package wdired
+  ; wdired 是 Emacs 内置的
+  :after dired)
+
+(use-package image-dired
+  ; image-dired 是 Emacs 内置的
+  :after dired
+  :bind
+  (:map image-dired-thumbnail-mode-map
+        ("n" . image-dired-display-next)
+        ("p" . image-dired-display-previous)))
+
+
+
+(use-package dired-async
+  :straight emacs-async
+  :after diredn
+  :config
+  ;; 启用异步模式
+  (add-hook 'dired-mode-hook 'dired-async-mode))
+
+(use-package dired-rsync
+  :straight t
+  :after dired
+  :bind (:map dired-mode-map
+              ("C-c C-r" . dired-rsync)))
+
 ;; Isearch 模式绑定
 (use-package isearch
   :bind
   (:map isearch-mode-map ("C-o" . casual-isearch-tmenu))
   :defer t)
+
 ;; Ibuffer 模式绑定
 (use-package ibuffer
   :hook (ibuffer-mode . ibuffer-auto-mode)
@@ -257,12 +303,35 @@
   (:map ibuffer-mode-map
         ("C-o" . casual-ibuffer-tmenu)
         ("F" . casual-ibuffer-filter-tmenu)
-        ("s" . casual-ibuffer-sortby-tmenu))
+        ("s" . casual-ibuffer-sortby-tmenu)
+        ;; build-in
+        ("{" . ibuffer-backwards-next-marked)
+        ("}" . ibuffer-forward-next-marked)
+        ("[" . ibuffer-backward-filter-group)
+        ("]" . ibuffer-forward-filter-group)
+        ("$" . ibuffer-toggle-filter-group))
   :defer t)
 ;; Info 模式绑定
 (use-package info
+  :hook
+        (Info-mode . scroll-lock-mode)
   :bind
-  (:map Info-mode-map ("C-o" . casual-info-tmenu))
+  (:map Info-mode-map
+        ("C-o" . casual-info-tmenu)
+        ;; 历史导航
+        ("M-[" . Info-history-back)
+        ("M-]" . Info-history-forward)
+        ;; 段落导航
+        ("p" . casual-info-browse-backward-paragraph)
+        ("n" . casual-info-browse-forward-paragraph)
+        ;; 节点和引用导航
+        ("h" . Info-prev)
+        ("j" . Info-next-reference)
+        ("k" . Info-prev-reference)
+        ("l" . Info-next)
+        ;; 搜索和书签
+        ("/" . Info-search)
+        ("B" . bookmark-set))
   :defer t)
 ;; Reb 模式绑定
 (use-package re-builder
@@ -273,11 +342,13 @@
 ;; Bookmark 模式绑定
 (use-package bookmark
   :bind
-  (:map bookmark-bmenu-mode-map ("C-o" . casual-bookmarks-tmenu))
+  (:map bookmark-bmenu-mode-map
+        ("C-o" . casual-bookmarks-tmenu)
+        ("J" . bookmark-jump))
   :defer t)
 ;; end_casual
 
-
+;; begin_nerd-icons
 (use-package nerd-icons
   :straight t
   ;; The Nerd Font you want to use in GUI
@@ -303,6 +374,10 @@
   :hook
   (dired-mode . nerd-icons-dired-mode))
 
+(use-package nerd-icons-ibuffer
+  :straight t
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+
 ;; 提供 minibuf 补全的图标（文件）
 (use-package nerd-icons-completion
   :straight t
@@ -310,6 +385,23 @@
   :config
   (nerd-icons-completion-mode)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+
+
+(use-package nerd-icons-corfu
+  :straight t
+  :after corfu
+  :config
+  ;; Add formatter to Corfu margin
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter)
+
+  ;; Optionally customize icon mapping
+  (setq nerd-icons-corfu-mapping
+        '((array :style "cod" :icon "symbol_array" :face font-lock-type-face)
+          (boolean :style "cod" :icon "symbol_boolean" :face font-lock-builtin-face)
+          ;; ...
+          (t :style "cod" :icon "code" :face font-lock-warning-face))))
+
+;; end_nerd-icons
 
 ;; https://github.com/akermu/emacs-libvterm
 (if (not IS-WINDOWS)
@@ -752,11 +844,12 @@
   (global-corfu-mode)
   :config
   (defun corfu-move-to-minibuffer ()
-    (interactive)
-    (when completion-in-region--data
-      (let ((completion-extra-properties corfu--extra)
-            completion-cycle-threshold completion-cycling)
-        (apply #'consult-completion-in-region completion-in-region--data))))
+  (interactive)
+  (pcase completion-in-region--data
+    (`(,beg ,end ,table ,pred . ,extras)
+     (let ((completion-extra-properties (car extras))
+           completion-cycle-threshold completion-cycling)
+       (consult-completion-in-region beg end table pred)))))
   (keymap-set corfu-map "M-m" #'corfu-move-to-minibuffer)
   (add-to-list 'corfu-continue-commands #'corfu-move-to-minibuffer)
   :bind
@@ -1869,7 +1962,7 @@
   ;; ** Copilot
   (`copilot
    (use-package copilot
-     :straight '(:type git :host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+     :straight '(:type git :host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
      :init
      ;; accept completion from copilot and fallback to corfu-complete
      (defun douo/copilot-complete ()

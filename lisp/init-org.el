@@ -303,7 +303,6 @@ Throw an error when not in a list."
   :after org-gtd
   :custom
   (org-agenda-files `(,org-gtd-directory))
-  (org-agenda-custom-commands '(("g" "Scheduled today and all NEXT items" ((agenda "" ((org-agenda-span 1))) (todo "NEXT")))))
   :bind
   (:map org-agenda-mode-map ("C-o" . casual-agenda-tmenu))
   :defer t)
@@ -352,25 +351,6 @@ Throw an error when not in a list."
   (setq org-edna-use-inheritance t)
   :hook
   (org-mode . org-edna-mode)
-  )
-
-(use-package org-download
-  :straight t
-  :after org
-  :custom
-  (org-download-method 'attach)
-  (org-download-screenshot-method (cond
-                                   ((eq system-type 'darwin) "screencapture -i %s")
-                                   ((eq system-type 'gnu/linux) "maim -s %s")
-                                   ))
-  :bind
-  (:map org-mode-map
-        ;; FIXME `org-download-clipboard' 无法通过返回值判断是否成功
-        ;; FIXME 要实现配合 `org-download-yank' 的 DWIM 功能，需要修改 `org-download-clipboard' 的实现
-        ("C-c C-x 2" . org-download-clipboard) ;; linux 需要 `xclip' ; macOS 需要 `pngpaste'
-        ("C-c C-x 3" . org-download-yank) ;; 本地或远程图片链接可以直接下载插入 org 文件
-        ("C-c C-x 4" . org-download-screenshot))
-  ;; 另外还支持本地或远程图片可以直接拖拽插入 org 文件
   )
 
 ;; https://github.com/minad/org-modern
