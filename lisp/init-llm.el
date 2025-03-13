@@ -30,6 +30,14 @@
                                 :chat-model "gpt-3.5-turbo"
                                 :url "http://p44.zero:8080/v1/"))
 
+  (setopt llm-grok2-provider (make-llm-openai-compatible
+                                :key (auth-info-password
+                                      (car (auth-source-search
+                                            :host "api.x.ai"
+                                            :user "apikey")))
+                                :chat-model "grok-2-latest"
+                                :url "https://api.x.ai/v1/"))
+
   (setopt llm-vertex-claude-provider (make-llm-openai-compatible
                                :key (auth-info-password
                                      (car (auth-source-search
@@ -40,16 +48,33 @@
   :custom
   (llm-warn-on-nonfree nil))
 
-(use-package aider
-  :straight (:host github :repo "tninja/aider.el" :files ("aider.el"))
+;; (use-package aider
+;;   :straight (:host github :repo "tninja/aider.el" :files ("aider.el"))
+;;   :config
+;;   (setq aider-args '("--model" "gpt-4o-mini"))
+;;   (setenv "OPENAI_API_KEY" (auth-info-password
+;;                             (car (auth-source-search
+;;                                   :host "api.openai.com"
+;;                                   :user "apikey"))))
+;;   ;; Optional: Set a key binding for the transient menu
+;;   (global-set-key (kbd "C-c a") 'aider-transient-menu))
+
+(use-package aidermacs
+  :straight (:host github :repo "MatthewZMD/aidermacs")
+  :bind (("C-c a" . aidermacs-transient-menu))
   :config
-  (setq aider-args '("--model" "gpt-4o-mini"))
-  (setenv "OPENAI_API_KEY" (auth-info-password
-                            (car (auth-source-search
-                                  :host "api.openai.com"
-                                  :user "apikey"))))
-  ;; Optional: Set a key binding for the transient menu
-  (global-set-key (kbd "C-c a") 'aider-transient-menu))
+  ; defun my-get-openrouter-api-key yourself elsewhere for security reasons
+  (setenv "XAI_API_KEY" (auth-info-password
+                         (car (auth-source-search
+                               :host "api.x.ai"
+                               :user "apikey"))))
+  :custom
+  ; See the Configuration section below
+  (aidermacs-use-architect-mode t)
+  (aidermacs-backend 'vterm)
+  (aidermacs-default-model "xai/grok-2-latest")
+  (aidermacs-editor-model "xai/grok-2-latest")
+  (aidermacs-architect-model "xai/grok-2-latest"))
 
 
 (use-package magit-gptcommit
