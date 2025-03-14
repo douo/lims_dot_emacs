@@ -20,7 +20,7 @@
                                  (car (auth-source-search
                                        :host "generativelanguage.googleapis.com"
                                        :user "apikey")))
-                           :chat-model "gemini-1.5-flash-latest"))
+                           :chat-model "gemini-2.0-flash"))
 
   (setopt llm-copilot-provider (make-llm-openai-compatible
                                 :key (auth-info-password
@@ -132,7 +132,7 @@
 		       :embedding-model "qwen:32b"))
             ("gpt4o" . llm-gpt4o-provider)
             ("claude-3.5-sonnet" . llm-vertex-claude-provider)
-            ("gemini-1.5-flash-latest" . llm-gemini-provider)
+            ("gemini-2.0-flash" . llm-gemini-provider)
             ("copilot" . llm-copilot)
             ))
   ;; Naming new sessions with llm
