@@ -173,8 +173,8 @@
   :straight t
   :custom
   (immersive-translate-backend 'chatgpt)
-  (immersive-translate-chatgpt-host "api.deepseek.com")
-  (immersive-translate-chatgpt-model "deepseek-chat")
+  (immersive-translate-chatgpt-host "api.x.ai")
+  (immersive-translate-chatgpt-model "grok-2-latest")
   (immersive-translate-failed-message "💢"))
 
 (provide 'init-llm)
