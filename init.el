@@ -1807,6 +1807,7 @@
   ;; macos
   ;; 使用系统输入法
   ;; 需要先安装 https://github.com/laishulu/macism
+  ;; macism 是通过快捷键控制输入法，不能禁用系统输入法快捷键
   (with-system darwin
     (sis-ism-lazyman-config
      ;; 英文输入法
@@ -1940,6 +1941,14 @@
   (eglot-managed-mode . mp-eglot-eldoc)
   :bind (:map eglot-mode-map
               ("C-c M-f" . #'eglot-format)))
+
+(use-package eglot-booster
+  :straight (eglot-booster
+             :type git
+             :host github
+             :repo "jdtsmith/eglot-booster")
+  :after eglot
+  :config (eglot-booster-mode))
 
 (use-package consult-eglot
   :straight (consult-eglot
