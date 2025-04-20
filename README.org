@@ -122,7 +122,7 @@ xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
           encodeURIComponent(window.getSelection())
       #+end_src
   - [X] org-roam-protocol 捕获网页
-    快捷键：~ctrl+command+o~ / ~ctrl+alt+o~
+    快捷键：=ctrl+command+o= / =ctrl+alt+o=
     作用不大，只是提醒自己有这么一个功能而已
     #+begin_src js
       location.href =
@@ -134,7 +134,6 @@ xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
           + encodeURIComponent(window.getSelection())
     #+end_src
 - [X] Chrome 禁用打开外部链接提醒
-  在 [[file:~/.emacs.d/assets/README.org::*roam][README.org]] 有更详细说明
   参考：https://www.reddit.com/r/emacs/comments/icjaie/orgprotocol_users_is_there_a_way_to_disable/
   可以通过 ~chrome://policy/~ 检查是否生效
   - macOS
