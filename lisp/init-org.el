@@ -308,36 +308,19 @@ Throw an error when not in a list."
   :defer t)
 (use-package org-contrib ; Includes more than the standard org-mode
   :straight  '(org-contrib :includes org-protocol)
+  :after org-gtd
   :config
   ;; Your other org-mode configurations here
   (require 'org-tempo) ;; <s TAB 补全
   (require 'org-protocol)
   (defun org-gtd-protocol-capture (info)
     "Capture a task from anywhere in Emacs."
+    (message "Org-protocol INFO received: %s" info) ; <<<--- 添加这行来打印 URL
     (with-org-gtd-capture
      (org-protocol-capture info))
     )
   ;; 自定义 org-protocol 的 gtd-capture 模板
-  (push '("org-gtd-catpure"  :protocol "gtd-capture"   :function org-gtd-protocol-capture)
-        org-protocol-protocol-alist))
-
-;; (use-package org-protocol
-;;   :straight  '(org-contrib :includes org-protocol)
-;;   :after org
-;;   :after org-gtd
-;;   :config
-;;   (defun org-gtd-protocol-capture (info)
-;;     "Capture a task from anywhere in Emacs."
-;;     (message info)
-;;     (with-org-gtd-capture
-;;         (org-protocol-capture info))
-;;     )
-;;   ;; 自定义 org-protocol 的 gtd-capture 模板
-;;   (push '("org-gtd-catpure"  :protocol "gtd-capture"   :function org-gtd-protocol-capture)
-;;         org-protocol-protocol-alist)
-;;   )
-;;
-;;
+  (setq org-protocol-protocol-alist '(("org-gtd-capture"  :protocol "gtd-capture"   :function org-gtd-protocol-capture))))
 
 
 
