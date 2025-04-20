@@ -103,7 +103,7 @@ xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
   - 捕获 To Read 网页
     - MacOS
       注意是 =gtd-capture://=
-      快捷键：~ctrl+command+c~
+      快捷键：=ctrl+command+c=
       Run Javascript：
       #+begin_src js
         location.href='org-protocol://gtd-capture://r/'+
@@ -113,7 +113,7 @@ xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
       #+end_src
     - Linux
       注意是 =gtd-capture:/=
-      快捷键：~ctrl+alt+c~
+      快捷键：=ctrl+alt+c=
       Run Javascript：
       #+begin_src js
         location.href='org-protocol://gtd-capture:/r/'+
