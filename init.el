@@ -1965,128 +1965,30 @@
 
 
 ;; begin_copilot
-(setq douo/copilot-provider `copilot)
-;; switch...case by douo/copilot-provider
-(cl-case douo/copilot-provider
-  ;; ** Copilot
-  (`copilot
-   (use-package copilot
+(use-package copilot
      :straight '(:type git :host github :repo "copilot-emacs/copilot.el" :files ("dist" "*.el"))
      :init
-     ;; accept completion from copilot and fallback to corfu-complete
-     (defun douo/copilot-complete ()
-       (interactive)
-       (or (copilot-accept-completion)
-           (corfu-complete)))
      :hook (prog-mode . copilot-mode)
      :diminish "  "
      :bind
      (:map copilot-completion-map
-           ("<tab>" . douo/copilot-complete)
-           ("TAB" . douo/copilot-complete)
-           ("M-f" . copilot-accept-completion-by-word)
-	   ("M-<return>" . copilot-accept-completion-by-line)
-           ;; M-[ 与 CSI 冲突，会导致 kkp.el 失效
-           ;; ("M-[" . copilot-previous-completion)
-	   ;; ("M-]" . copilot-next-completion)
-           ("C-g" . copilot-clear-overlay))
+         ("C-g" . copilot-clear-overlay)
+         ("<right>" . copilot-accept-completion)
+         ("C-f" .  copilot-accept-completion)
+         ("M-<right>" . copilot-accept-completion-by-word)
+         ("M-f" . copilot-accept-completion-by-word)
+         ("C-e" .  copilot-accept-completion-by-line)
+         ("M-n" . copilot-next-completion)
+         ("M-p" . copilot-previous-completion))
      :config
-     (add-to-list 'minions-prominent-modes 'copilot-mode)))
-  ;; ** Tabnine
-  ;; https://github.com/shuxiao9058/tabnine
-  (`tabnine
-   (use-package tabnine
-     :init
-     ;; accept completion from copilot and fallback to corfu-complete
-     (defun douo/copilot-complete ()
-       (interactive)
-       (or (copilot-accept-completion)
-           (corfu-complete)))
-     :commands (tabnine-start-process)
-     :hook (prog-mode . tabnine-mode)
-     :straight t
-     :diminish " ⌬ "
+     (add-to-list 'minions-prominent-modes 'copilot-mode)
+     ;; 为 copilot 通知注册监听器，调试用
+     ;; (copilot-on-notification
+     ;;  'window/logMessage
+     ;;  (lambda (msg) (message (plist-get msg :message))))
      :custom
-     (tabnine-wait 1)
-     (tabnine-minimum-prefix-length 0)
-     :hook (kill-emacs . tabnine-kill-process)
-     :config
-     (add-to-list 'completion-at-point-functions #'tabnine-completion-at-point)
-     (tabnine-start-process)
-     :bind
-     (:map  tabnine-completion-map
-	    ("M-TAB" . tabnine-accept-completion)
-	    ("C-g" . tabnine-clear-overlay)
-            ;; M-[ 与 CSI 冲突，会导致 kkp.el 失效
-	    ;; ("M-[" . tabnine-previous-completion)
-	    ("M-]" . tabnine-next-completion))))
-  (`codeium
-   ;; ** Codeium
-   ;; https://github.com/codeium/codeium
-   ;; https://github.com/Exafunction/codeium.el
-   ;; we recommend using use-package to organize your init.el
-   (use-package codeium
-     ;; if you use straight
-     :straight '(:type git :host github :repo "Exafunction/codeium.el")
-     ;; otherwise, make sure that the codeium.el file is on load-path
-
-     :init
-     ;; use globally
-     ;; (add-to-list 'completion-at-point-functions #'codeium-completion-at-point)
-     ;; or on a hook
-     ;; (add-hook 'python-mode-hook
-     ;;     (lambda ()
-     ;;         (setq-local completion-at-point-functions '(codeium-completion-at-point))))
-
-     ;; if you want multiple completion backends, use cape (https://github.com/minad/cape):
-     (add-hook 'python-mode-hook
-               (lambda ()
-                 (setq-local completion-at-point-functions
-                             (list (cape-super-capf #'codeium-completion-at-point #'lsp-completion-at-point)))))
-     ;; an async company-backend is coming soon!
-
-     ;; codeium-completion-at-point is autoloaded, but you can
-     ;; optionally set a timer, which might speed up things as the
-     ;; codeium local language server takes ~0.2s to start up
-     ;; (add-hook 'emacs-startup-hook
-     ;;  (lambda () (run-with-timer 0.1 nil #'codeium-init)))
-
-     ;; :defer t ;; lazy loading, if you want
-     :config
-     (setq use-dialog-box nil) ;; do not use popup boxes
-
-     ;; if you don't want to use customize to save the api-key
-     ;; (setq codeium/metadata/api_key "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
-
-     ;; get codeium status in the modeline
-     (setq codeium-mode-line-enable
-           (lambda (api) (not (memq api '(CancelRequest Heartbeat AcceptCompletion)))))
-     (add-to-list 'mode-line-format '(:eval (car-safe codeium-mode-line)) t)
-     ;; alternatively for a more extensive mode-line
-     ;; (add-to-list 'mode-line-format '(-50 "" codeium-mode-line) t)
-
-     ;; use M-x codeium-diagnose to see apis/fields that would be sent to the local language server
-     (setq codeium-api-enabled
-           (lambda (api)
-             (memq api '(GetCompletions Heartbeat CancelRequest GetAuthToken RegisterUser auth-redirect AcceptCompletion))))
-     ;; you can also set a config for a single buffer like this:
-     ;; (add-hook 'python-mode-hook
-     ;;     (lambda ()
-     ;;         (setq-local codeium/editor_options/tab_size 4)))
-
-     ;; You can overwrite all the codeium configs!
-     ;; for example, we recommend limiting the string sent to codeium for better performance
-     (defun my-codeium/document/text ()
-       (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (min (+ (point) 1000) (point-max))))
-     ;; if you change the text, you should also change the cursor_offset
-     ;; warning: this is measured by UTF-8 encoded bytes
-     (defun my-codeium/document/cursor_offset ()
-       (codeium-utf8-byte-length
-        (buffer-substring-no-properties (max (- (point) 3000) (point-min)) (point))))
-     (setq codeium/document/text 'my-codeium/document/text)
-     (setq codeium/document/cursor_offset 'my-codeium/document/cursor_offset))
-   )
-  (otherwise (message "copilot not set")))
+     (copilot-idle-delay 0.8)
+     (copilot-server-args '("--stdio" "--debug")))
 ;; end_copilot
 
 ;; start_GhostText
