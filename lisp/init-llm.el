@@ -15,12 +15,19 @@
                                             :host "api.openai.com"
                                             :user "apikey")))
                                 :chat-model "gpt-4o-mini"))
-  (setopt llm-gemini-provider
-          (make-llm-gemini :key (auth-info-password
+  (setopt llm-gemini2-provider (make-llm-gemini
+                               :key (auth-info-password
                                  (car (auth-source-search
                                        :host "generativelanguage.googleapis.com"
                                        :user "apikey")))
-                           :chat-model "gemini-2.0-flash"))
+                               :chat-model "gemini-2.0-flash"))
+
+  (setopt llm-gemini-provider (make-llm-gemini
+                               :key (auth-info-password
+                                 (car (auth-source-search
+                                       :host "generativelanguage.googleapis.com"
+                                       :user "apikey")))
+                           :chat-model "gemini-2.5-pro-preview-05-06"))
 
   (setopt llm-copilot-provider (make-llm-openai-compatible
                                 :key (auth-info-password
@@ -36,6 +43,14 @@
                                             :host "api.x.ai"
                                             :user "apikey")))
                                 :chat-model "grok-2-latest"
+                                :url "https://api.x.ai/v1/"))
+
+  (setopt llm-grok3-provider (make-llm-openai-compatible
+                                :key (auth-info-password
+                                      (car (auth-source-search
+                                            :host "api.x.ai"
+                                            :user "apikey")))
+                                :chat-model "grok-3-beta"
                                 :url "https://api.x.ai/v1/"))
 
   (setopt llm-vertex-claude-provider (make-llm-openai-compatible
@@ -68,13 +83,18 @@
                          (car (auth-source-search
                                :host "api.x.ai"
                                :user "apikey"))))
+  (setenv "GEMINI_API_KEY" (auth-info-password
+                         (car (auth-source-search
+                               :host "generativelanguage.googleapis.com"
+                               :user "apikey"))))
   :custom
   ; See the Configuration section below
   (aidermacs-use-architect-mode t)
   (aidermacs-backend 'vterm)
-  (aidermacs-default-model "xai/grok-2-latest")
-  (aidermacs-editor-model "xai/grok-2-latest")
-  (aidermacs-architect-model "xai/grok-2-latest"))
+  (aidermacs-default-model "gemini")
+  ;; (aidermacs-editor-model "gemini/gemini-2.5-pro-preview-05-06")
+  ;; (aidermacs-architect-model "gemini/gemini-2.5-pro-preview-05-06")
+  )
 
 
 (use-package magit-gptcommit
