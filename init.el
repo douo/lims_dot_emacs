@@ -1995,6 +1995,7 @@
 ;; start_GhostText
 (use-package atomic-chrome
   :straight t
+  :defer t
   :custom
   (atomic-chrome-default-major-mode 'python-ts-mode)
   (atomic-chrome-url-major-mode-alist
