@@ -1578,11 +1578,13 @@
   :hook
   (python-mode . eglot-ensure)
   :config
-  (with-eval-after-load 'eglot
-    (add-to-list
-     'eglot-server-programs
-     `((python-mode python-ts-mode) . (lambda(a)
-                                        `(,(executable-find "pyright-langserver") "--stdio")))))
+  ;; XXX eglot-server-programs 默认的优先级
+  ;;"pylsp" "pyls" "basedpyright-langserver" "pyright-langserver" "jedi-language-server" "ruff"  "ruff-lsp"
+  ;; (with-eval-after-load 'eglot
+  ;;   (add-to-list
+  ;;    'eglot-server-programs
+  ;;    `((python-mode python-ts-mode) . (lambda(a)
+  ;;                                       `(,(executable-find "pyright-langserver") "--stdio")))))
                                        ;; `(,(executable-find "ruff") "server")))))
   ;; 交给 reformatter
   ;; (after-save . eglot-format)
