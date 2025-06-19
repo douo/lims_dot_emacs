@@ -34,6 +34,8 @@
 ;; disable startup screen
 (setq inhibit-startup-screen t)
 
+(setq project-list-file "~/.emacs.d/projects.eld")
+
 ;; nice scrolling
 (setq scroll-margin 0
       scroll-conservatively 100000
@@ -173,6 +175,9 @@
 ;; repeat-mode
 ;; emacs 28 之后内置
 
+(use-package smerge-mode
+  :straight (:type built-in)
+  )
 (use-package repeat
   :straight (:type built-in)
   :init
@@ -682,6 +687,12 @@
   :straight t
   :config
   :mode ("\\.epub\\'" . nov-mode))
+
+;; beigin_reader
+(use-package reader
+  :straight '(reader :type git :host codeberg :repo "divyaranjan/emacs-reader"
+  	             :files ("reader.el" "render-core.so")
+  	             :pre-build ("make" "all")))
 
 ;; TODO
 ;; - [ ] search
@@ -1460,7 +1471,7 @@
   )
 
 (use-package flymake
-  :straight t
+  :straight (:type built-in)
   :bind (:map flymake-mode-map
               ("C-c M-." . flymake-goto-next-error)
               ("C-c M-," . flymake-goto-prev-error)

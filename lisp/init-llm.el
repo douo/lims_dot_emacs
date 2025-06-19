@@ -91,10 +91,8 @@
   ; See the Configuration section below
   (aidermacs-use-architect-mode t)
   (aidermacs-backend 'vterm)
-  (aidermacs-default-model "gemini")
-  ;; (aidermacs-editor-model "gemini/gemini-2.5-pro-preview-05-06")
-  ;; (aidermacs-architect-model "gemini/gemini-2.5-pro-preview-05-06")
-  )
+  (aidermacs-default-model "gemini"))
+
 
 
 (use-package magit-gptcommit
