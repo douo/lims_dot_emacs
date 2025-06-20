@@ -1577,7 +1577,7 @@
 (use-package python
   :hook
   (python-mode . eglot-ensure)
-  :config
+  ;; :config
   ;; XXX eglot-server-programs 默认的优先级
   ;;"pylsp" "pyls" "basedpyright-langserver" "pyright-langserver" "jedi-language-server" "ruff"  "ruff-lsp"
   ;; (with-eval-after-load 'eglot
