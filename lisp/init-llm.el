@@ -15,19 +15,19 @@
                                             :host "api.openai.com"
                                             :user "apikey")))
                                 :chat-model "gpt-4o-mini"))
-  (setopt llm-gemini2-provider (make-llm-gemini
+  (setopt llm-gemini-flash-provider (make-llm-gemini
                                :key (auth-info-password
                                  (car (auth-source-search
                                        :host "generativelanguage.googleapis.com"
                                        :user "apikey")))
-                               :chat-model "gemini-2.0-flash"))
+                               :chat-model "gemini-2.5-flash"))
 
   (setopt llm-gemini-provider (make-llm-gemini
                                :key (auth-info-password
                                  (car (auth-source-search
                                        :host "generativelanguage.googleapis.com"
                                        :user "apikey")))
-                           :chat-model "gemini-2.5-pro-preview-05-06"))
+                           :chat-model "gemini-2.5-pro"))
 
   (setopt llm-copilot-provider (make-llm-openai-compatible
                                 :key (auth-info-password
@@ -53,13 +53,13 @@
                                 :chat-model "grok-3-beta"
                                 :url "https://api.x.ai/v1/"))
 
-  (setopt llm-vertex-claude-provider (make-llm-openai-compatible
-                               :key (auth-info-password
-                                     (car (auth-source-search
-                                           :host "oneapi.p44"
-                                           :user "apikey")))
-                               :chat-model "claude-3-5-sonnet@20240620"
-                               :url "http://p44.zero:3030/v1/"))
+  (setopt llm-vertex-gemini-provider (make-llm-vertex
+                                      :project (auth-info-password
+                                                (car (auth-source-search
+                                                      :host "vertex.ai"
+                                                      :user "projectid")))
+                                      :chat-model "gemini-2.5-pro"
+                                      :embedding-model "gemini-embedding-001"))
   :custom
   (llm-warn-on-nonfree nil))
 
@@ -100,7 +100,7 @@
   :after llm
   :demand t
   :custom
-  (magit-gptcommit-llm-provider llm-gemini-provider)
+  (magit-gptcommit-llm-provider llm-vertex-gemini-provider)
   :config
   ;; Enable magit-gptcommit-mode to watch staged changes and generate commit message automatically in magit status buffer
   ;; This mode is optional, you can also use `magit-gptcommit-generate' to generate commit message manually
