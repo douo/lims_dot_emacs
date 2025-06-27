@@ -1566,6 +1566,32 @@
 
 ;; 主模式
 
+(use-package indent-bars
+  :straight (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
+  :hook (prog-mode . indent-bars-mode)
+  :config
+  (setq indent-bars-display-on-blank-lines nil
+        indent-bars-width-frac 0.2
+        indent-bars-color '(highlight :face-bg t :blend 0.2)
+        indent-bars-zigzag nil
+        indent-bars-highlight-current-depth nil
+        indent-bars-pattern "|"
+        indent-bars-prefer-character t)
+  )
+
+(use-package treesit-fold
+  :straight (treesit-fold :type git :host github :repo "emacs-tree-sitter/treesit-fold")
+  :hook (prog-mode . treesit-fold-mode)
+  :bind
+  (:map treesit-fold-mode-map
+        ;; 推荐快捷键绑定示例 C-c f 原先绑定给 crux-recentf-find-file
+        ("C-c f c" . treesit-fold-close)             ;; 折叠当前节点
+        ("C-c f o" . treesit-fold-open)              ;; 打开当前节点最外层折叠
+        ("C-c f r" . treesit-fold-open-recursively) ;; 递归打开当前节点内所有折叠
+        ("C-c f a" . treesit-fold-close-all)         ;; 折叠所有节点
+        ("C-c f u" . treesit-fold-open-all)          ;; 展开所有节点
+        ("C-c f t" . treesit-fold-toggle)))          ;; 切换当前节点折叠状态
+
 (use-package kbd-mode
   :straight (:host github :repo "kmonad/kbd-mode")
   :mode "\\.kbd\\'")
