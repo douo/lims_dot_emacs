@@ -1555,6 +1555,19 @@
 
 ;; 主模式
 
+(use-package indent-bars
+  :straight (indent-bars :type git :host github :repo "jdtsmith/indent-bars")
+  :hook (prog-mode . indent-bars-mode)
+  :config
+  (setq indent-bars-display-on-blank-lines nil
+        indent-bars-width-frac 0.2
+        indent-bars-color '(highlight :face-bg t :blend 0.2)
+        indent-bars-zigzag nil
+        indent-bars-highlight-current-depth nil
+        indent-bars-pattern "|"
+        indent-bars-prefer-character t)
+  )
+
 (use-package kbd-mode
   :straight (:host github :repo "kmonad/kbd-mode")
   :mode "\\.kbd\\'")
