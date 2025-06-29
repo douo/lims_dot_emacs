@@ -1590,7 +1590,7 @@
         ("C-c f r" . treesit-fold-open-recursively) ;; 递归打开当前节点内所有折叠
         ("C-c f a" . treesit-fold-close-all)         ;; 折叠所有节点
         ("C-c f u" . treesit-fold-open-all)          ;; 展开所有节点
-        ("C-c f t" . treesit-fold-toggle)))          ;; 切换当前节点折叠状态
+        ("C-c f TAB" . treesit-fold-toggle)))          ;; 切换当前节点折叠状态
 
 (use-package kbd-mode
   :straight (:host github :repo "kmonad/kbd-mode")
@@ -2050,6 +2050,7 @@
 (when (or (not (display-graphic-p)) (server-running-p))
   (require 'init-tui))
 
+(require 'init-qtile)
 ;; 加载本地配置，不会因为不存在导致整个配置加载失败
 (condition-case nil
     (require 'init-local)
