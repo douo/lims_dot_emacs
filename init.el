@@ -1470,21 +1470,77 @@
   (("s-." . 'symbol-overlay-transient))
   )
 
+
+;; -------------------------------
+;; Flymake 配置
+;; -------------------------------
+;; 该配置为 flymake 增强：
+;; - 所有命令统一绑定在 C-c ! 前缀下
+;; - 启用 repeat-mode，支持 n/p/w 连续跳转或复制诊断
+;; - 添加 copy-sideline-flymake-message 命令，可复制光标下错误信息
+;; - sideline 仅在光标位置显示错误（不显示整行）
 (use-package flymake
   :straight (:type built-in)
-  :bind (:map flymake-mode-map
-              ("C-c M-." . flymake-goto-next-error)
-              ("C-c M-," . flymake-goto-prev-error)
-              ("C-c M-?" . flymake-show-buffer-diagnostics)
-              )
-  )
+  :config
+  (repeat-mode 1)
+
+  ;; 定义 prefix keymap C-c !
+  (define-prefix-command 'flymake-repeat-prefix-map)
+  (global-set-key (kbd "C-c !") 'flymake-repeat-prefix-map)
+
+  ;; 绑定基本命令
+  (define-key flymake-repeat-prefix-map (kbd "n") #'flymake-goto-next-error)
+  (define-key flymake-repeat-prefix-map (kbd "p") #'flymake-goto-prev-error)
+  (define-key flymake-repeat-prefix-map (kbd "?") #'flymake-show-buffer-diagnostics)
+
+  ;; 定义 repeat map
+  (defvar flymake-repeat-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "n") #'flymake-goto-next-error)
+      (define-key map (kbd "p") #'flymake-goto-prev-error)
+      map)
+    "Repeat keymap for flymake commands.")
+
+  ;; 注册 repeat-map
+  (dolist (cmd '(flymake-goto-next-error
+                 flymake-goto-prev-error))
+    (put cmd 'repeat-map 'flymake-repeat-map)))
 
 (use-package flymake-relint
   :straight `(flymake-relint :type git :host github :repo "liuyinz/flymake-relint")
   :hook
   (emacs-lisp-mode . flymake-relint-setup)
-  (lisp-interaction-mode . flymake-relint-setup)
-  )
+  (lisp-interaction-mode . flymake-relint-setup))
+
+(use-package sideline-flymake
+  :straight t
+  :after flymake
+  :hook (flymake-mode . sideline-mode)
+  :init
+  (setq sideline-flymake-display-mode 'point) ; 'point to show errors only on point
+                                        ; 'line to show errors on the current line
+  (setq sideline-backends-right '(sideline-flymake))
+  :config
+  (defun copy-sideline-flymake-message ()
+    "Copy flymake diagnostic messages shown by sideline to kill ring."
+    (interactive)
+    (require 'sideline-flymake)
+    (if (and (bound-and-true-p flymake-mode) (bound-and-true-p sideline-mode))
+        (let* ((errors (sideline-flymake--get-errors))
+               (messages (mapcar #'flymake-diagnostic-text errors)))
+          (if messages
+              (let ((message (mapconcat #'identity messages "\n")))
+                (kill-new message)
+                (message "Copied: %s" message))
+            (message "No Flymake diagnostics at point")))
+      (message "Enable flymake-mode and sideline-mode first")))
+
+  ;; 添加到 C-c ! w
+  (define-key flymake-repeat-prefix-map (kbd "w") #'copy-sideline-flymake-message)
+
+  ;; 添加到 repeat chain
+  (define-key flymake-repeat-map (kbd "w") #'copy-sideline-flymake-message)
+  (put 'copy-sideline-flymake-message 'repeat-map 'flymake-repeat-map))
 
 ;; lsp-bridge
 (use-package posframe
