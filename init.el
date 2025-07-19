@@ -755,49 +755,83 @@
 ;; A Collection of Ridiculously Useful eXtensions for Emacs
 (use-package crux
   :straight t
-  :bind (
-         ;; 同步常用 macOS 快捷键到其他系统
-         ("s-," . customize)
-         ("s-u" . revert-buffer)
-         ("s-?" . info)
-         ("s-?" . info)
-         ("s-a" . mark-whole-buffer)
-         ("s-w" . delete-frame)
-         ("s-n" . make-frame)
-         ("s-`" . other-frame)
-         ("s-'" . next-window-any-frame)
-         ("s-q" . save-buffers-kill-emacs)
-         ("s-f" . isearch-forward)
-         ("s-F" . isearch-backward)
-         ("s-d" . isearch-repeat-backward)
-         ("s-g" . isearch-repeat-forward)
-         ("s-d" . isearch-repeat-forward)
-         ("s-e" . isearch-yank-kill)
-         ;; crux
-         ("C-s-k" . kill-current-buffer)
-         ;; ("C-c o" . crux-open-with)
-         ("C-c N" . crux-cleanup-buffer-or-region)
-         ("C-c f" . crux-recentf-find-file)
-         ("C-M-z" . crux-indent-defun)
-         ("C-c u" . crux-view-url)
-         ("C-c e" . crux-eval-and-replace)
-         ("C-c D" . crux-delete-file-and-buffer)
-         ("C-c r" . crux-rename-buffer-and-file)
-         ("C-c p" . crux-kill-buffer-truename)
-         ("C-c TAB" . crux-indent-rigidly-and-copy-to-clipboard)
-         ("C-c I" . crux-find-user-init-file)
-         ("C-c S" . crux-find-shell-init-file)
-         ("s-r" . crux-recentf-find-file)
-         ("s-j" . crux-top-join-line)
-         ("C-^" . crux-top-join-line)
-         ("s-k" . crux-kill-whole-line)
-         ("C-<backspace>" . crux-kill-line-backwards)
-         ([remap move-beginning-of-line] . crux-move-beginning-of-line)
-         ;; ("M-o" . crux-smart-open-line)
-         ([(shift return)] . crux-smart-open-line)
-         ;; ("s-o" . crux-smart-open-line-above)
-         ([(control shift return)] . crux-smart-open-line-above)
-         ([remap kill-whole-line] . crux-kill-whole-line)))
+  :bind
+  (
+   ;; macOS 常用快捷键（非 crux，方便迁移习惯）
+   ("s-," . customize)                ;; 打开 Emacs 自定义界面
+   ("s-u" . revert-buffer)            ;; 重新加载当前 buffer
+   ("s-?" . info)                     ;; 打开 info 文档
+   ("s-a" . mark-whole-buffer)        ;; 全选
+   ("s-w" . delete-frame)             ;; 关闭当前窗口
+   ("s-n" . make-frame)               ;; 新建窗口
+   ("s-`" . other-frame)              ;; 切换到其他 frame
+   ("s-'" . next-window-any-frame)    ;; 切换到下一个窗口
+   ("s-q" . save-buffers-kill-emacs)  ;; 保存所有 buffer 并退出 Emacs
+   ("s-f" . isearch-forward)          ;; 向前增量搜索
+   ("s-F" . isearch-backward)         ;; 向后增量搜索
+   ("s-d" . isearch-repeat-backward)  ;; 搜索上一个
+   ("s-g" . isearch-repeat-forward)   ;; 搜索下一个
+   ("s-e" . isearch-yank-kill)        ;; 搜索剪贴板内容
+
+   ;; crux 常用命令
+   ;; 与 combobulate-key-prefix 冲突
+   ("C-c o"   . crux-open-with)                            ;; 用系统外部程序打开当前文件（支持 dired 选中）
+   ("C-k"     . crux-smart-kill-line)                      ;; 智能删除：首次到行尾，再次整行
+   ("C-S-<return>" . crux-smart-open-line-above)           ;; 在当前行上方插入一个空行并自动缩进
+   ("S-<return>" . crux-smart-open-line)                   ;; 在当前行下方插入空行并缩进（带参数上方插入）
+   ;; 与 org-roam-note 冲突
+   ;; ("C-c n"   . crux-cleanup-buffer-or-region)             ;; 自动缩进并去除空白（选区优先，否则全 buffer）
+   ("C-c f"   . crux-recentf-find-file)                    ;; 用补全方式打开最近访问过的文件
+   ("C-c F"   . crux-recentf-find-directory)               ;; 用补全方式打开最近访问过的目录
+   ("C-c u"   . crux-view-url)                             ;; 打开指定 URL 内容到新 buffer
+   ("C-c e"   . crux-eval-and-replace)                     ;; 执行并用结果替换前一个 elisp 表达式
+   ("C-x 4 t" . crux-transpose-windows)                    ;; 交换当前窗口和另一个窗口的 buffer
+   ("C-c D"   . crux-delete-file-and-buffer)               ;; 删除当前 buffer 对应文件并关闭该 buffer
+   ;; 与 org-capture 冲突
+   ;; ("C-c c"   . crux-copy-file-preserve-attributes)        ;; 复制当前 buffer 文件并保留属性
+   ("C-c d"   . crux-duplicate-current-line-or-region)     ;; 复制当前行或选区（可指定次数）
+   ("C-c M-d" . crux-duplicate-and-comment-current-line-or-region) ;; 复制并注释当前行或选区
+   ("C-c r"   . crux-rename-file-and-buffer)               ;; 重命名当前 buffer 和对应文件
+   ;; douo/multi-vterm-dedicated-toggle
+   ;; ("C-c t"   . crux-visit-term-buffer)                    ;; 打开或创建终端 buffer（默认 ansi-term）
+   ;; 杀伤力太大，同时与 consult-kmacro 冲突
+   ;; ("C-c k"   . crux-kill-other-buffers)                   ;; 关闭除当前 buffer 外的所有文件 buffer
+   ("C-M-z"   . crux-indent-defun)                         ;; 自动缩进光标处的 defun（函数/定义块）
+   ("C-c <tab>" . crux-indent-rigidly-and-copy-to-clipboard) ;; 选区缩进并复制到剪贴板
+   ("C-c I"   . crux-find-user-init-file)                  ;; 打开用户 init 文件
+   ("C-c ,"   . crux-find-user-custom-file)                ;; 打开 custom.el 文件（如有）
+   ("C-c S"   . crux-find-shell-init-file)                 ;; 打开当前 shell 的启动配置文件
+   ("C-c P"   . crux-kill-buffer-truename)                 ;; 复制当前 buffer 文件真实路径到剪贴板
+   ;; consult-info 冲突
+   ;; ("C-c i"   . crux-ispell-word-then-abbrev)              ;; 拼写检查并自动添加 abbrev（可选本地/全局）
+   ("C-x C-u" . crux-upcase-region)                        ;; 选区转为大写（需激活 region）
+   ("C-x C-l" . crux-downcase-region)                      ;; 选区转为小写（需激活 region）
+   ("C-x M-c" . crux-capitalize-region)                    ;; 选区首字母大写（需激活 region）
+   ;; ace-window 冲突
+   ;; ("M-o"     . crux-other-window-or-switch-buffer)         ;; 多窗口下切换窗口，单窗口切换最近 buffer
+
+
+   ;; 行相关操作
+   ("s-j"     . crux-top-join-line)                        ;; 合并当前行和下一行
+   ("s-k"     . crux-kill-whole-line)                      ;; 删除整行并跳到新行首
+   ("C-<backspace>" . crux-kill-line-backwards)            ;; 从光标处到行首删除
+   ("C-S-<backspace>" . crux-kill-and-join-forward)        ;; 行尾时合并下一行，否则 kill-line
+   ([remap move-beginning-of-line] . crux-move-beginning-of-line)
+   ([remap keyboard-quit] . crux-keyboard-quit-dwim)
+   )
+  :config
+
+  ;; 宏 advice：智能增强常用编辑命令
+  (crux-with-region-or-buffer indent-region)        ;; 没有选区时自动针对全 buffer
+  (crux-with-region-or-buffer untabify)
+  ;; 用 comment-dwim 替代
+  ;; (crux-with-region-or-line comment-or-uncomment-region)
+  (crux-with-region-or-sexp-or-line kill-region)
+  ;; 用 easy-kill 替代
+  ;; (crux-with-region-or-point-to-eol kill-ring-save)
+  ;; 自动以 root 权限打开不可写文件
+  (crux-reopen-as-root-mode 1)
+  )
 
 (use-package undo-tree
   :straight t
