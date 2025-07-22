@@ -84,15 +84,25 @@ Throw an error when not in a list."
      (progn (org-end-of-item) (1- (point))))))
 
 
-;; Define a function to check if the current file is inside the writing directory
+
 (defun douo/inside-writing ()
+  "Define a function to check if the current file is inside the writing directory"
   (let ((file-path (buffer-file-name)))
     (and file-path
          (string-prefix-p douo/writing-home file-path))))
 
-;; 为 writing 目录下的 ripgrep 添加 --hidden 参数
-;; 确保 .archive 目录下的文件也能被搜索到
-(defun douo/consult-ripgrep-advice (orig-fun &rest args)
+(defun douo/writing-consult-ripgrep-include-hidden-advice (orig-fun &rest args)
+  "为 `consult-ripgrep' 添加 :around 建议，在特定写作目录中自动包含隐藏文件.
+
+  当 douo/inside-writing 函数返回 t 时，此建议 (advice) 会
+  临时向 `consult-ripgrep-args' 变量追加 --hidden 参数。
+  这主要用于确保 ripgrep 能搜索到隐藏的归档目录，如 .archive。
+
+  ORIG-FUN 是被建议的原始函数 (consult-ripgrep)。
+  ARGS 是传递给原始函数的参数列表。
+
+  函数通过 `unwind-protect' 确保 `consult-ripgrep-args' 的值在
+  搜索结束后总能被恢复，即使发生错误。"
   (let ((original consult-ripgrep-args))
     (if (douo/inside-writing)
         (setq consult-ripgrep-args
@@ -103,7 +113,7 @@ Throw an error when not in a list."
     )
   )
 
-(advice-add 'consult-ripgrep :around #'douo/consult-ripgrep-advice)
+(advice-add 'consult-ripgrep :around #'douo/writing-consult-ripgrep-include-hidden-advice)
 
 ;; config
 (use-package org
