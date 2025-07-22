@@ -789,7 +789,7 @@
    ("C-c D"   . crux-delete-file-and-buffer)               ;; 删除当前 buffer 对应文件并关闭该 buffer
    ;; 与 org-capture 冲突
    ;; ("C-c c"   . crux-copy-file-preserve-attributes)        ;; 复制当前 buffer 文件并保留属性
-   ("C-c d"   . crux-duplicate-current-line-or-region)     ;; 复制当前行或选区（可指定次数）
+   ;; ("C-c d"   . crux-duplicate-current-line-or-region)     ;; 复制当前行或选区（可指定次数）
    ("C-c M-d" . crux-duplicate-and-comment-current-line-or-region) ;; 复制并注释当前行或选区
    ("C-c r"   . crux-rename-file-and-buffer)               ;; 重命名当前 buffer 和对应文件
    ;; douo/multi-vterm-dedicated-toggle
