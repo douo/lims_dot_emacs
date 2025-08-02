@@ -772,6 +772,7 @@
    ("s-d" . isearch-repeat-backward)  ;; 搜索上一个
    ("s-g" . isearch-repeat-forward)   ;; 搜索下一个
    ("s-e" . isearch-yank-kill)        ;; 搜索剪贴板内容
+   ("C-s-k" . kill-current-buffer)
 
    ;; crux 常用命令
    ;; 与 combobulate-key-prefix 冲突
@@ -2031,8 +2032,9 @@
 
   ;; enable the /inline english/ mode for all buffers
   (sis-global-inline-mode t)
-  (sis-inline-tighten-head-rule 0)
-  ;;(setq sis-inline-tighten-tail-rule 0)
+  (sis-inline-tighten-head-rule 'one)
+  ;; FIXME 退出 inline 时，会触发自动保存，自动格式清理会删除尾部的空格。导致这个变量设置了没有意义
+  (sis-inline-tighten-tail-rule 'one)
   )
 ;; End
 
