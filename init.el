@@ -3,6 +3,25 @@
 ;;; Code:
 ;;; 个人用
 
+;; 设置要忽略的 warning 类型，防止它们弹出 *Warnings* buffer。
+;; 这些类型可以从 *Warnings* buffer 中观察到，例如 (copilot)、(emacs)、(org-element)
+(setq warning-suppress-types
+      '((copilot)       ;; 忽略 Copilot 插件的警告
+        ;; (emacs)         ;; 忽略 Emacs 核心的一些非致命警告
+        (org-element))) ;; 忽略 Org-mode 相关元素警告
+
+;; 设置最小的 warning 级别为 error，低于 error（如 :warning、:debug）的警告将不再显示
+(setq-default warning-minimum-level :error)
+
+;; 禁止警告自动弹出窗口，但仍然允许在 *Warnings* buffer 中静默记录
+(defun my/inhibit-warnings-buffer (orig-fun &rest args)
+  "阻止 `display-warning` 弹出 *Warnings* buffer，但保留记录。"
+  (let ((inhibit-message t)) ;; 抑制 minibuffer 中的 echo 消息
+    (apply orig-fun args)))  ;; 调用原始的 display-warning 函数
+
+;; 应用上述抑制函数为 advice，包裹 `display-warning` 函数
+(advice-add 'display-warning :around #'my/inhibit-warnings-buffer)
+
 ;; disable first narrow hint
 (put 'narrow-to-region 'disabled nil)
 
@@ -689,10 +708,10 @@
   :mode ("\\.epub\\'" . nov-mode))
 
 ;; beigin_reader
-(use-package reader
-  :straight '(reader :type git :host codeberg :repo "divyaranjan/emacs-reader"
-  	             :files ("reader.el" "render-core.so")
-  	             :pre-build ("make" "all")))
+;; (use-package reader
+;;   :straight '(reader :type git :host codeberg :repo "divyaranjan/emacs-reader"
+;;   	             :files ("reader.el" "render-core.so")
+;;   	             :pre-build ("make" "all")))
 
 ;; TODO
 ;; - [ ] search
