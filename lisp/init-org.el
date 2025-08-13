@@ -159,6 +159,9 @@ Throw an error when not in a list."
   ;; arch 需安装 texlive 组
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
   :custom
+  (org-M-RET-may-split-line
+   '((item . nil)     ;; 插入 item 时不 split
+     (default . t))) ;; 其它场景保持默认
   (org-directory douo/writing-home)
 
   ;; (org-preview-latex-default-process 'dvisvgm)
