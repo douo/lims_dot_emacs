@@ -144,7 +144,25 @@ Throw an error when not in a list."
   (advice-add #'org-make-tags-matcher :around #'org-enforce-basic-completion)
   (advice-add #'org-agenda-filter :around #'org-enforce-basic-completion)
   ;; end_vertico
+  ;; Patch: 统一 org-id（及 org-attach 等模块）ID（UUID）为小写，跨平台性能稳定
+  ;;
+  ;; 根本原因说明（参考 emacs.stackexchange.com/questions/69236）
+  ;; ------------------------------------------------------------
+  ;; org-id 和 org-attach 默认调用 uuidgen 工具或相关 Emacs 内部逻辑生成唯一 ID。
+  ;; macOS上的uuidgen工具默认输出大写UUID，Linux/部分BSD为小写。
+  ;; Org-mode直接用UUID作为ID属性和目录名。
+  ;; 由于不同操作系统和同步工具对大小写敏感（如Syncthing以及大部分Linux/macOS文件系统），
+  ;; 大小写不一致时会导致 org-attach 目录路径找不到、附件链接丢失及同步冲突。
+  ;; 本 patch 利用 advice 机制强制 org-id-new 函数返回小写ID，从根源上统一 ID
+  ;; 格式，彻底杜绝因平台差异引发的路径冲突、找不到附件、同步失败和数据混乱问题。
+  ;;
+  ;; 相关讨论与原因细节见:
+  ;; https://emacs.stackexchange.com/questions/69236/how-to-force-org-attach-to-create-lowercase-uuids
+  ;;
+  ;; 历史数据，不导致冲突暂时不做处理
+  ;; ------------------------------------------------------------
 
+  (advice-add 'org-id-new :filter-return #'downcase)
   ;; 如果 emacs 不支持 sound， org-timer 使用外部程序播放提示音
   (unless (fboundp 'play-sound-internal)
     (add-hook 'org-timer-done-hook
