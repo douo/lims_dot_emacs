@@ -26,6 +26,12 @@
 ;; 设置 emacsformacosx option 作为 meta 键
 (setq mac-option-modifier 'meta)
 
+;; 使用 gnu ls 替代 macOS 自带的 ls
+;; brew install coreutils
+(setq insert-directory-program "gls")
+(setq dired-use-ls-dired t)
+
+
 (provide 'init-osx)
 
 ;;; init-osx.el ends here

@@ -100,7 +100,7 @@
   :after llm
   :demand t
   :custom
-  (magit-gptcommit-llm-provider llm-vertex-gemini-provider)
+  (magit-gptcommit-llm-provider llm-gemini-flash-provider)
   :config
   ;; Enable magit-gptcommit-mode to watch staged changes and generate commit message automatically in magit status buffer
   ;; This mode is optional, you can also use `magit-gptcommit-generate' to generate commit message manually

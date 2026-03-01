@@ -1963,8 +1963,8 @@
      ;; 英文输入法
      "com.apple.keylayout.ABC"
      ;; 拼音输入法
-     ;; "com.apple.inputmethod.SCIM.ITABC"
-     "im.rime.inputmethod.Squirrel.Hans"
+     "com.apple.inputmethod.SCIM.ITABC"
+     ;; "im.rime.inputmethod.Squirrel.Hans"
      'macism))
   ;;https://github.com/daipeihust/im-select
   ;;只能切换不同语言的输入法，拼音输入法的中英文切换无法识别
