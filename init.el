@@ -148,6 +148,8 @@
   ;; (add-to-list 'minions-promoted-modes 'flymake-mode)
   ;; 不隐藏 flymake-mode 的 indicator
   (add-to-list 'minions-prominent-modes 'flymake-mode)
+  ;; 单独保留 org-gtd-mode 的 mode-line 指示器。
+  (add-to-list 'minions-prominent-modes 'org-gtd-mode)
   )
 
 
@@ -666,8 +668,8 @@
   :commands redacted-mode)
 
 ;; 翻译
-(use-package go-translate
-  :straight t
+(use-package gt
+  :straight (gt :type git :host github :repo "lorniu/gt.el")
   :init
   (defun douo/go-do-translate (text-property-string)
     (gt-start (gt-translator
@@ -2158,7 +2160,8 @@
 (require 'init-org)
 (require 'init-llm)
 ;; tui/gui 切换不同配置，+主要是切换 lsp-bridge 和 eglot+
-(when (or (not (display-graphic-p)) (server-running-p))
+(if (display-graphic-p)
+    (require 'init-gui)
   (require 'init-tui))
 
 (require 'init-qtile)
