@@ -64,6 +64,42 @@ launchctl start ~/Library/LaunchAgents/environment.plist
   (treesit-auto-install-all)
 #+end_src
 
+** 启动性能与预编译
+
+懒加载可以减少 Emacs 启动时间，但某些包第一次打开时仍可能现场 native compile，表现为短时间卡顿。
+需要预热时，可以手动运行预编译脚本，把已有包和本地 =lisp/*.el= 提前编译成 =.eln= 缓存。
+
+查看帮助：
+#+begin_src shell
+emacs -Q --batch -l scripts/precompile.el -- --help
+#+end_src
+
+先查看本次会处理多少文件，不实际生成缓存：
+#+begin_src shell
+emacs -Q --batch -l scripts/precompile.el -- --dry-run
+#+end_src
+
+列出计划预编译的文件：
+#+begin_src shell
+emacs -Q --batch -l scripts/precompile.el -- --dry-run --list
+#+end_src
+
+执行预编译：
+#+begin_src shell
+emacs -Q --batch -l scripts/precompile.el
+#+end_src
+
+强制重新生成 =.eln=：
+#+begin_src shell
+emacs -Q --batch -l scripts/precompile.el -- --force
+#+end_src
+
+注意事项：
+- 脚本只启动独立的批处理 Emacs 进程，不连接、不重载当前正在使用的 Emacs。
+- 预编译产物写入 =eln-cache/=，不会生成本地配置的 =.elc=。
+- 更新包、切换 Emacs 版本、或者大量修改配置后，建议手动运行一次。
+- 这只能减少 Lisp/native-comp 首次加载成本；外部服务启动、网络请求、Tree-sitter grammar 下载、vterm 动态模块编译等仍需要单独处理。
+
 ** lsp
 
 *** python

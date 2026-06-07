@@ -1,6 +1,6 @@
-;;; init.el --- douo's emacs config -*- lexical-binding: t; -*-
-;;; Commentary:
-;;; Code:
+;;; init.el --- douo 的 Emacs 配置 -*- lexical-binding: t; -*-
+;;; 说明：
+;;; 代码：
 ;;; 个人用
 
 ;; 设置要忽略的 warning 类型，防止它们弹出 *Warnings* buffer。
@@ -114,6 +114,9 @@
 
 ;;初始化包管理器
 (defvar bootstrap-version)
+;; 注意：正常启动时不扫描每个包仓库，跳过 straight.el 较慢的 `find-at-startup' 检查。
+;; 如果在 Emacs 外部手动改过包目录，需要在 Emacs 内执行 `M-x straight-check-all'。
+(setq straight-check-for-modifications '(check-on-save find-when-checking))
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
       (bootstrap-version 6))
@@ -148,21 +151,23 @@
   ;; (add-to-list 'minions-promoted-modes 'flymake-mode)
   ;; 不隐藏 flymake-mode 的 indicator
   (add-to-list 'minions-prominent-modes 'flymake-mode)
-  ;; 单独保留 org-gtd-mode 的 mode-line 指示器。
-  (add-to-list 'minions-prominent-modes 'org-gtd-mode)
+  ;; org-tasklet 使用 global-mode-string 显示收件箱数量，不需要通过 minions 显示 minor-mode lighter。
   )
 
 
 ;;
 (use-package benchmark-init
   :straight t
+  :if (getenv "EMACS_BENCHMARK_INIT")
   :config
-  ;; To disable collection of benchmark data after init is done.
+  ;; 注意：只有设置环境变量 EMACS_BENCHMARK_INIT 时才启用，避免日常启动时加载性能采集器。
+  ;; 初始化完成后关闭采集，避免后续使用时继续记录性能数据。
   (add-hook 'after-init-hook 'benchmark-init/deactivate))
 
 (require 'minibuffer)
 
-(setq use-package-verbose t)
+;; 注意：日常启动保持安静，减少 use-package 输出；调试 use-package 声明时可临时改为 t。
+(setq use-package-verbose nil)
 
 ;;On OS X (and perhaps elsewhere) the $PATH environment variable and
 ;; `exec-path' used by a windowed Emacs instance will usually be the
@@ -305,10 +310,8 @@
 
 (use-package dired-async
   :straight emacs-async
-  :after diredn
-  :config
-  ;; 启用异步模式
-  (add-hook 'dired-mode-hook 'dired-async-mode))
+  ;; Dired 首次打开时再加载 dired-async，同时确保 hook 永远会注册。
+  :hook (dired-mode . dired-async-mode))
 
 (use-package dired-rsync
   :straight t
@@ -433,9 +436,17 @@
 (if (not IS-WINDOWS)
     (progn
       (use-package vterm
-        :straight t)
+        :straight t
+        ;; 注意：这里只注册命令，首次运行 vterm 时才加载动态模块，避免启动期编译或加载 vterm。
+        :commands (vterm vterm-other-window))
       (use-package multi-vterm
         :straight t
+        ;; 注意：multi-vterm 也按命令懒加载；相关菜单在包加载时再定义。
+        :commands (multi-vterm
+                   multi-vterm-next
+                   multi-vterm-prev
+                   multi-vterm-dedicated-toggle
+                   multi-vterm-project)
         :init
         (transient-define-prefix multi-vterm-transient ()
           "Multi vterm transient"
@@ -571,7 +582,6 @@
 ;;; alternative: https://github.com/nonsequitur/git-gutter-plus
 (use-package diff-hl
   :straight t
-  :after magit
   :demand t ;; 保证启动后生效
   :config
   ;; `diff-hl-margin-symbols-alist' 可以自定义显示的符号
@@ -593,8 +603,16 @@
 ;; rg
 (use-package rg
   :straight t
-  :config
-  (rg-enable-default-bindings))
+  ;; 注意：不要在启动时调用 `rg-enable-default-bindings'，否则会立即加载 rg。
+  ;; 这里只保留常用入口；如果需要恢复 rg 默认全局键位，可手动调用该函数。
+  :commands (rg
+             rg-menu
+             rg-dwim
+             rg-dwim-current-dir
+             rg-dwim-current-file
+             rg-project
+             rg-literal)
+  :bind ("C-c s" . rg-menu))
 
 ;; https://github.com/magnars/expand-region.el
 (use-package expand-region

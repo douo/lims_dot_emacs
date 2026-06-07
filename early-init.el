@@ -1,3 +1,5 @@
+;;; early-init.el --- 早期启动配置 -*- lexical-binding: t; -*-
+
 (setq package-enable-at-startup nil)
 
 ; Emacs GC 简述
@@ -27,5 +29,13 @@
    (efs/display-startup-time)
    (makunbound 'my/emacs-start-time)))
 
-;; 检查变量 `server-process' 是否存在可判断是否已经启动了 server
-(server-start)
+;; 检查变量 `server-process' 是否存在可判断是否已经启动了服务。
+;; 注意：延后到初始化加载后，并跳过批处理启动，避免测试/脚本启动时创建服务套接字。
+;; 这个调整只影响下一次新启动的 Emacs，不会触碰当前正在运行的进程。
+(add-hook
+ 'after-init-hook
+ (lambda ()
+   (unless noninteractive
+     (require 'server)
+     (unless (server-running-p)
+       (server-start)))))
