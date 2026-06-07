@@ -13,62 +13,27 @@
 (defvar  douo/gtd-home (concat (file-name-as-directory douo/roam-home) "_gtd"))
 
 (defun douo/org-gtd-archive ()
-  "将 GTD inbox 中的条目归档为参考资料，但不自动跳回 inbox。"
+  "使用 org-tasklet 将当前条目归档到年度归档文件。"
   (interactive)
-  ;; org-gtd 4.x 不再需要 with-org-gtd-context，直接局部绑定归档位置即可。
-  (let ((org-archive-location (org-gtd--effective-archive-location)))
-    (org-archive-subtree-default)))
+  ;; 兼容旧函数名，避免其他个人快捷键或命令历史失效。
+  (org-tasklet-archive-subtree))
 
 (defun douo/org-gtd-engage ()
-  "显示一个自定义的 GTD 总览 agenda。"
+  "显示 org-tasklet 总览 agenda。"
   (interactive)
-  ;; 临时定义自定义 agenda 命令，并立即跳转到该视图。
-  (let ((org-agenda-custom-commands
-     `(("g" "Scheduled today and all NEXT items"
-    ((agenda "" ((org-agenda-span 1)
-         (org-agenda-start-day nil)
-         (org-agenda-skip-additional-timestamps-same-entry t)))
-     ;; 4.x 起 GTD 语义状态由 org-gtd-keyword-mapping 决定，不再依赖旧变量。
-     ;; 用内置 %b（breadcrumbs）代替 org-get-outline-path 手动调用：
-     ;; %b 在 agenda 内批量缓存，不会对每条目反复遍历 outline 树，速度快很多。
-     (todo ,(alist-get 'next org-gtd-keyword-mapping)
-       ((org-agenda-overriding-header "All NEXT items")
-        (org-agenda-prefix-format '((todo . " %i %b")))))
-     (todo ,(alist-get 'wait org-gtd-keyword-mapping)
-       ((org-agenda-todo-ignore-with-date t)
-        (org-agenda-overriding-header "Delegated/Blocked items")
-        (org-agenda-prefix-format '((todo . " %i %b"))))))
-    ((org-agenda-inhibit-startup t))))))
-    (org-agenda nil "g")
-    (goto-char (point-min))))
+  ;; 兼容旧函数名；新的总览不再包含 WAIT，因为该状态已从工作流移除。
+  (org-tasklet-engage))
 
 (defun douo/org-agenda-todo-dwim (&optional arg)
-  "在 Agenda 中以 toggle 方式切换 GTD 条目的 TODO 状态。
+  "在 Agenda 中以 toggle 方式切换 org-tasklet 条目的 TODO 状态。
 
-默认情况下，如果当前 agenda 条目的 TODO 状态属于 GTD 的开放态，
-则直接切换到 `org-gtd-keyword-mapping' 中定义的 DONE 状态；
-如果当前已经是 DONE 或 CNCL，则切回默认开放态 TODO。
+默认情况下，如果当前 agenda 条目的 TODO 状态属于开放态，
+则直接切换到 DONE；如果当前已经是 DONE 或 CNCL，则切回 TODO。
 
 带前缀参数 ARG 时，回退到原生 `org-agenda-todo'，保留循环或手动选择
-TODO 状态的能力。非 GTD 条目也回退到原生命令。"
+TODO 状态的能力。"
   (interactive "P")
-  (if arg
-      (call-interactively #'org-agenda-todo)
-    (let* ((current-state (org-get-at-bol 'todo-state))
-           (todo-state (alist-get 'todo org-gtd-keyword-mapping))
-           (done-state (alist-get 'done org-gtd-keyword-mapping))
-           (canceled-state (alist-get 'canceled org-gtd-keyword-mapping))
-           (open-states (delq nil
-                              (mapcar (lambda (state)
-                                        (alist-get state org-gtd-keyword-mapping))
-                                      '(todo next wait)))))
-      (cond
-       ((member current-state open-states)
-        (org-agenda-todo done-state))
-       ((member current-state (delq nil (list done-state canceled-state)))
-        (org-agenda-todo todo-state))
-       (t
-        (call-interactively #'org-agenda-todo))))))
+  (org-tasklet-agenda-todo-dwim arg))
 
 (defun douo/generate-quick-note (path)
   "在 PATH 下按日期生成或返回当天 quick note 文件路径。"
@@ -351,111 +316,59 @@ S 是当前标题的内容字符串，通常由 org-get-heading 获得。"
 
 (setq org-priority-get-priority-function #'douo/org-inherited-priority)
 
-(use-package org-gtd
-  :straight t
+(use-package org-tasklet
+  :load-path "~/playground/org-tasklet"
   :after org
   :demand t
-  :init
-  ;; 已完成 4.0 配置迁移后，显式确认升级提示。
-  (setq org-gtd-update-ack "4.0.0")
-  :config
-  ;; org-gtd 4.x 默认把主任务文件名固定为 org-gtd-tasks.org。
-  ;; 这里统一覆盖为 tasks.org，确保自动 refile、target 创建和默认文件访问都落到旧文件名。
-  (setq org-gtd-default-file-name "tasks")
-
-  (defun douo/org-gtd-set-tags-from-source-context ()
-    "在 org-gtd 组织阶段借用源条目文件的 tags 上下文执行 `org-set-tags-command'。
-
-这是 issue #145 讨论里更简单的做法：不去同步整个 clarify buffer 的环境，
-而是在真正需要选择 tags 的那一刻，从源条目所在 buffer 读取其 `#+TAGS:'
-解析结果，临时 let-bind 给当前 buffer，然后直接调用原生
-`org-set-tags-command'。这样可以复用原有 UI，同时避免额外 advice 和临时
-buffer 篡改。"
-    (interactive)
-    (let* ((source-marker (and (boundp 'org-gtd-clarify--source-heading-marker)
-                               org-gtd-clarify--source-heading-marker))
-           (source-buffer (and (markerp source-marker)
-                               (buffer-live-p (marker-buffer source-marker))
-                               (marker-buffer source-marker))))
-      (if source-buffer
-          (let ((source-tag-context
-                 (with-current-buffer source-buffer
-                   (org-set-regexps-and-options 'tags-only)
-                   (list :org-tag-alist org-tag-alist
-                         :org-current-tag-alist org-current-tag-alist
-                         :org-tag-persistent-alist org-tag-persistent-alist))))
-            (let ((org-tag-alist (plist-get source-tag-context :org-tag-alist))
-                  (org-current-tag-alist
-                   (plist-get source-tag-context :org-current-tag-alist))
-                  (org-tag-persistent-alist
-                   (plist-get source-tag-context :org-tag-persistent-alist)))
-              (call-interactively #'org-set-tags-command)))
-        (call-interactively #'org-set-tags-command))))
-
-  ;; lambda 值不适合 customize-set-variable，在 :config 里用 setq 设置归档路径。
-  ;; 自定义归档路径为 .archive/gtd_{year}.org
-  (setq org-gtd-archive-location
-        (lambda ()
-          (let ((year (number-to-string (caddr (calendar-current-date)))))
-            (string-join `(,douo/gtd-home "/.archive/gtd_" ,year ".org::datetree/")))))
-
-  ;; 启用全局 GTD mode-line 指示器，在 mode-line 显示收件箱待处理数量（如 GTD[5]）。
-  (org-gtd-mode 1)
-
-  ;; modify org capture templates
-  (nconc
-   org-gtd-capture-templates
-   `(
-     ;; Quick Note
-     ("n" "Quick Note"
-      plain (file (lambda () (douo/generate-quick-note (concat douo/writing-home "/_notes/Quick"))))
-      "%i\n%U\n%?\n"
-      :kill-buffer t)
-     ;; 用于 Chrome 通过 org-protocol 捕获当前链接到 inbox
-     ("r"
-      "Store a link to read later"
-      entry (file ,#'org-gtd-inbox-path)
-      ,(format "* %s %%a %%(org-set-tags \"read\")\n%%i\n%%U\n%%?"
-           (alist-get 'todo org-gtd-keyword-mapping))
-      :empty-lines 1
-      :kill-buffer t
-      )
-     )
-   )
   :custom
-    ;; GTD 关键字单独放在一条 sequence 里，后续 writing 系统可再追加自己的 sequence。
-    (org-todo-keywords
-     '((sequence "TODO" "NEXT" "WAIT" "|" "DONE" "CNCL")))
-    ;; 4.x 使用统一 mapping，把 GTD 语义状态映射到全局 TODO 关键字。
-    (org-gtd-keyword-mapping
-     '((todo . "TODO")
-       (next . "NEXT")
-       (wait . "WAIT")
-       (done . "DONE")
-       (canceled . "CNCL")))
-  (org-gtd-directory douo/gtd-home)
-  ;; 收件箱有待处理条目时才显示 mode-line 指示器，避免 GTD[0] 的干扰。
-  (org-gtd-mode-lighter-display 'when-non-zero)
-      ;; 仅在真正需要设置 tags 的时刻，借用源条目文件的 tags 上下文。
-      (org-gtd-organize-hooks '(douo/org-gtd-set-tags-from-source-context))
-
+  ;; 先复用原来的任务目录，方便直接测试旧 inbox.org 和 tasks.org。
+  (org-tasklet-directory douo/gtd-home)
+  ;; 归档文件名沿用旧习惯，避免新旧归档混在两套命名里。
+  (org-tasklet-archive-file-format "gtd_%Y.org")
+  ;; 收件箱有待处理条目时才显示 mode-line 指示器。
+  (org-tasklet-mode-line-display 'when-non-zero)
+  ;; 保留旧浏览器脚本使用的 gtd-capture 协议。
+  (org-tasklet-legacy-protocols '("gtd-capture"))
+  :config
+  ;; 仅个人配置兼容旧 tasks.org 里的拼写 Haits；通用插件默认仍使用 Habits。
+  (setf (plist-get (cdr (assq 'habit org-tasklet-organize-types)) :aliases)
+        '("Haits"))
+  ;; 创建基础文件，加入 agenda，并启用轻量 mode-line 收件箱计数。
+  (org-tasklet-setup)
+  (org-tasklet-mode 1)
+  ;; 显式设置全局键位，避免 `:after org' 场景下 :bind 的注册时机不稳定。
+  ;; 常用键位沿用原 org-gtd 入口；C-c d p 按分类整理当前 inbox item，不进入线性流程。
+  (global-set-key (kbd "C-c c") #'org-tasklet-capture)
+  (global-set-key (kbd "C-c d e") #'org-tasklet-engage)
+  (global-set-key (kbd "C-c d p") #'org-tasklet-triage-current-item)
+  (global-set-key (kbd "C-c d h") #'org-tasklet-help)
+  (global-set-key (kbd "C-c d n") #'org-tasklet-show-next)
+  (global-set-key (kbd "C-c d s") #'org-tasklet-reflect-stuck-projects)
+  ;; 保留原来的 Quick Note 捕获入口 n。
+  (with-eval-after-load 'org-tasklet-capture
+    (add-to-list
+     'org-tasklet-capture-templates
+     `("n" "Quick Note"
+       plain (file (lambda () (douo/generate-quick-note (concat douo/writing-home "/_notes/Quick"))))
+       "%i\n%U\n%?\n"
+       :kill-buffer t)
+     t))
   :bind
-  (("C-c c" . org-gtd-capture)
-   ("C-c d e" . douo/org-gtd-engage)
-   ("C-c d p" . org-gtd-process-inbox)
-   ("C-c d n" . org-gtd-show-all-next)
-   ("C-c d s" . org-gtd-reflect-stuck-projects)
-   :map org-gtd-clarify-mode-map
-   ("C-c C" . org-gtd-organize)
-   :map org-mode-map
-   ("C-c d a" . douo/org-gtd-archive)))
+  (:map org-mode-map
+        ;; 在 Org buffer 中也显式绑定，确保编辑 inbox.org 时可以直接处理当前 item。
+        ("C-c d e" . org-tasklet-engage)
+        ("C-c d p" . org-tasklet-triage-current-item)
+        ("C-c d h" . org-tasklet-help)
+        ("C-c d n" . org-tasklet-show-next)
+        ("C-c d s" . org-tasklet-reflect-stuck-projects)
+        ("C-c d a" . org-tasklet-archive-subtree)))
 
-;; this allows you use `(,org-gtd-directory) for your agenda files
+;; 让 org-tasklet 的任务目录参与 agenda。
 (use-package org-agenda
   :straight nil
-  :after org-gtd
+  :after org-tasklet
   :custom
-  (org-agenda-files `(,org-gtd-directory))
+  (org-agenda-files `(,org-tasklet-directory))
   :bind
   (:map org-agenda-mode-map
         ("t" . douo/org-agenda-todo-dwim)
@@ -464,31 +377,12 @@ buffer 篡改。"
   :defer t)
 (use-package org-contrib ; Includes more than the standard org-mode
   :straight  '(org-contrib :includes org-protocol)
-  :after org-gtd
+  :after org-tasklet
   :config
-  ;; Your other org-mode configurations here
   (require 'org-tempo) ;; <s TAB 补全
+  ;; 浏览器 org-protocol 需要在 Emacs 服务进程中注册处理器。
   (require 'org-protocol)
-  (defun org-gtd-protocol-capture (info)
-    "通过 Org-protocol 外部协议从浏览器等外部应用捕获任务。
-
-该函数作为自定义 Org-protocol 处理器注册，当用户通过
-诸如 \"org-protocol://gtd-capture?url=...&title=...\" 这样的 URL
-触发时被调用。它会解析 INFO 参数中的 URL、标题等信息，
-然后在 Org-GTD 的 inbox 中创建新的 TODO 条目。
-
-这通常与浏览器插件（如 Org-web-clipper）配合使用，
-实现从网页快速收集信息到 GTD 系统的工作流。
-
-INFO 是 org-protocol 解析的参数字典。"
-    ;; 打印接收到的 URL 和其他参数信息，便于调试
-    (message "Org-protocol INFO received: %s" info)
-    ;; 在 Org-GTD 捕获上下文中调用标准 org-protocol-capture 处理器
-    (with-org-gtd-capture
-     (org-protocol-capture info))
-    )
-  ;; 自定义 org-protocol 的 gtd-capture 模板
-  (setq org-protocol-protocol-alist '(("org-gtd-capture"  :protocol "gtd-capture"   :function org-gtd-protocol-capture))))
+  (org-tasklet-register-org-protocol))
 
 
 
