@@ -1983,7 +1983,8 @@
      ;; 英文输入法
      "com.apple.keylayout.ABC"
      ;; 拼音输入法
-     "com.apple.inputmethod.SCIM.ITABC"
+     "com.bytedance.inputmethod.doubaoime.pinyin"
+     ;; "com.apple.inputmethod.SCIM.ITABC"
      ;; "im.rime.inputmethod.Squirrel.Hans"
      'macism))
   ;;https://github.com/daipeihust/im-select
