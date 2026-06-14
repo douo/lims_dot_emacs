@@ -1950,13 +1950,12 @@
          ("g" . grip-mode))
   :init
   ;; 备忘说明：
-  ;; 1. 默认的 grip 是 Python 工具，由 uv 局部安装在了 ~/.emacs.d/.venv 中
-  ;; 2. 但 grip 的 GitHub API 样式更新可能导致表格无边框等丑陋问题
-  ;; 3. 为此我们用 cargo 安装了 mdopen，并软链到 ~/.emacs.d/.venv/bin/mdopen 中
-  ;; 这里将 .venv/bin 注入到 Emacs 的 exec-path 以免依赖全局环境
-  (let ((venv-bin (expand-file-name ".venv/bin" user-emacs-directory)))
-    (when (file-directory-p venv-bin)
-      (add-to-list 'exec-path venv-bin)))
+  ;; 1. grip-mode 原本依赖 Python 的 grip，但因 GitHub API 样式更新导致表格较丑
+  ;; 2. 我们用 cargo 安装了 mdopen，并软链到 ~/.emacs.d/bin/mdopen 中
+  ;; 这里将 bin 目录注入到 Emacs 的 exec-path 以免依赖全局环境
+  (let ((local-bin (expand-file-name "bin" user-emacs-directory)))
+    (when (file-directory-p local-bin)
+      (add-to-list 'exec-path local-bin)))
   :config
   ;; 切换至 mdopen 渲染引擎（以支持更现代的 CSS 和内置主题功能）
   (setq grip-command 'mdopen)
