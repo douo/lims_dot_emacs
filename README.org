@@ -8,6 +8,9 @@
 - [[https://github.com/laishulu/macism][laishulu/macism]] (sis/mac)
 - [[https://github.com/ryanoasis/nerd-fonts][ryanoasis/nerd-fonts]] (nerd-icons)
 - [[https://wiki.archlinux.org/title/locate][locate - ArchWiki]] (consult-locate)
+- [[https://github.com/seagle0128/grip-mode][seagle0128/grip-mode]] (Markdown 实时预览)
+  - 依赖 Python 包管理工具 =uv= 并在 =~/.emacs.d/.venv= 中安装了局部 =grip=
+  - 依赖 =cargo= 安装了 [[https://github.com/immanelg/mdopen][immanelg/mdopen]] 以解决默认 =grip= 样式丑、表格无边框的问题（已软链至 =.venv/bin/mdopen=）
 
 * 本地配置
 

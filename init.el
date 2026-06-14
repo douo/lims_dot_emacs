@@ -1943,6 +1943,39 @@
     (let* ((files (remove "." (mapcar #'file-name-sans-extension (directory-files "."))))
            (selected-file (completing-read "Select article: " files nil t)))
       (insert (format "{%% post_url %s %%}" selected-file)))))
+
+(use-package grip-mode
+  :straight t
+  :bind (:map markdown-mode-command-map
+         ("g" . grip-mode))
+  :init
+  ;; 备忘说明：
+  ;; 1. 默认的 grip 是 Python 工具，由 uv 局部安装在了 ~/.emacs.d/.venv 中
+  ;; 2. 但 grip 的 GitHub API 样式更新可能导致表格无边框等丑陋问题
+  ;; 3. 为此我们用 cargo 安装了 mdopen，并软链到 ~/.emacs.d/.venv/bin/mdopen 中
+  ;; 这里将 .venv/bin 注入到 Emacs 的 exec-path 以免依赖全局环境
+  (let ((venv-bin (expand-file-name ".venv/bin" user-emacs-directory)))
+    (when (file-directory-p venv-bin)
+      (add-to-list 'exec-path venv-bin)))
+  :config
+  ;; 切换至 mdopen 渲染引擎（以支持更现代的 CSS 和内置主题功能）
+  (setq grip-command 'mdopen)
+  ;; 主题配置：'auto（跟随系统 preferred-color-scheme）、'light 或 'dark
+  (setq grip-theme 'auto)
+  
+  ;; Tramp 远程文件的特殊适配：
+  ;; 默认情况下打开远端 Markdown 并在远端启动进程会报错（因为远端没装相关工具）。
+  ;; 我们用 Advice 强制在本地 /tmp 创建临时副本并在本地预览。
+  ;; 局限性：这也导致使用 Tramp 打开的文件在预览时无法加载远程主机的相对路径图片和其他相对路径的 .md 文件。
+  (defun my-grip-preview-md-around (orig-fn &rest args)
+    (if (and buffer-file-name (file-remote-p buffer-file-name))
+        (let ((grip-real-time-refresh t)
+              (default-directory temporary-file-directory))
+          (setq grip--preview-file (make-temp-file "grip-tramp-" nil ".md"))
+          (write-region (point-min) (point-max) grip--preview-file nil 'quiet)
+          (grip-start-process))
+      (apply orig-fn args)))
+  (advice-add 'grip--preview-md :around #'my-grip-preview-md-around))
 ;; end_md
 
 (use-package lua-mode
