@@ -301,12 +301,14 @@
 (use-package image-dired
   ; image-dired 是 Emacs 内置的
   ;; 优化方案背景：
-  ;; 1. 问题：在 Emacs 29+ 中，通过 TRAMP 打开远程目录并生成图片缩略图时，
-  ;;    `image-dired` 会并发调用 `start-file-process` 生成多张缩略图，
-  ;;    这极易导致 TRAMP SSH 链接死锁，导致 Emacs 100% CPU 卡死。
-  ;; 2. 方案：自动拦截远程 TRAMP 路径，通过 macOS macFUSE 的 `fskit` 后端
-  ;;    在后台挂载 SSHFS。因为挂载为本地目录，Emacs 不会调用 TRAMP 机制，
-  ;;    而是直接在本地生成缩略图（并缓存于本地），规避死锁并大幅度提升浏览速度。
+  ;; 1. 问题：默认情况下，内置的 `image-dired` 不支持远程 TRAMP 目录的图片预览（它会
+  ;;    在本地调用 `convert` 处理 TRAMP 路径，导致命令因找不到路径而直接失败）。在之前
+  ;;    的第一版定制尝试中，我们将其改为远程执行 `convert` 或同步拷贝原图至本地，但这
+  ;;    又会因为并发的 SSH 隧道请求导致 TRAMP 链接死锁（Emacs 100% CPU 卡死），或者
+  ;;    因为同步复制在主线程引起界面严重卡顿。
+  ;; 2. 方案：自动拦截远程 TRAMP 路径，静默在后台使用 macOS macFUSE 的 `fskit` 后端
+  ;;    将远程目录挂载为本地目录。这样 Emacs 对其进行纯本地操作，完美规避了 TRAMP 并发
+  ;;    死锁与网络传输带来的卡顿，大大提升了预览生成速度。
   :after dired
   :bind
   (:map image-dired-thumbnail-mode-map
