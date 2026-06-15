@@ -81,7 +81,7 @@ emacs -Q --batch -l scripts/precompile.el -- --force
 
 * roam
 
-存放 ~org-roam-procotol~ 在对应操作系统上的 scheme-handler，其他细节见，[[https://www.orgroam.com/manual.html#Mac-OS][Org-roam User Manual#MacOS]]
+存放 ~org-roam-protocol~ 在对应操作系统上的 scheme-handler，其他细节见，[[https://www.orgroam.com/manual.html#Mac-OS][Org-roam User Manual#MacOS]]
 
 确保 emacs 有作为 server 启动，通过判断变量 ~server-process~ 是否存在可以确定。
 
@@ -89,13 +89,13 @@ emacs -Q --batch -l scripts/precompile.el -- --force
 
 ** macOS
 
-复制 ~assets/macOS/OrgProtocolClient.app~ 到目录 ~/Applications~ 。需要手动运行一遍，让 scheme-handler 注册生效。
+复制 ~assets/roam/macOS/OrgProtocolClient.app~ 到目录 ~/Applications~ 。需要手动运行一遍，让 scheme-handler 注册生效。
 
 
 ** org-protocol.desktop
 
 
-复制 ~assets/linux/org-protocol.desktop~  到目录 ~$HOME/.local/share/applications/~
+复制 ~assets/roam/linux/org-protocol.desktop~  到目录 ~$HOME/.local/share/applications/~
 
 执行一下代码设置 scheme-handler
 #+begin_src shell
@@ -146,9 +146,9 @@ xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
       defaults write com.google.Chrome URLAllowlist -array-add -string 'org-protocol://*'
     #+end_src
   - linux
-    - arch google-chrome: ~/etc/opt/chrome/policies/managed/org-protocol.json~
-    - arch chromium: ~/etc/chromium/policies/managed/org-protocol.json~
-    - ubuntu20.04 chromium: ~/etc/chromium-browser/policies/managed/org-protocol.json~
+    - arch google-chrome: `/etc/opt/chrome/policies/managed/org-protocol.json`
+    - arch chromium: `/etc/chromium/policies/managed/org-protocol.json`
+    - ubuntu20.04 chromium: `/etc/chromium-browser/policies/managed/org-protocol.json`
     #+begin_src js
       {
         "AutoLaunchProtocolsFromOrigins": [
