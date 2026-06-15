@@ -202,7 +202,7 @@ xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
 * 远程图片预览优化 (SSHFS 自动挂载)
 
 ** 上下文与痛点
-当通过 Emacs TRAMP 机制打开远程主机上的图片目录（例如使用 =image-dired= 浏览图片）时，由于 =image-dired= 在加载和渲染缩略图时会启动多个并行的 =convert= 异步子进程，这些进程频繁通过同一个或多个 SSH 隧道请求远程文件，容易在 Emacs 29+ 下触发 TRAMP 并发连接死锁（表现为 CPU 100% 占用，Emacs 界面完全卡死）。
+当通过 Emacs TRAMP 机制打开远程主机上的图片目录（例如使用 =image-dired= 浏览图片）时，在默认行为下，Emacs 会依次发起网络连接拉取原图并在本地转换，浏览速度极其缓慢。如果在之前尝试优化时让其并发启动多个异步进程拉取图片以加速，则会因为 TRAMP 机制无法稳定处理并发的 SSH 管道连接，在 Emacs 29+ 下触发 TRAMP 并发连接死锁（表现为 CPU 100% 占用，Emacs 界面完全卡死）。
 
 ** 解决方案与权衡
 
