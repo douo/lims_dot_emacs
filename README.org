@@ -1,196 +1,148 @@
-* Intro
+#+TITLE: douo's Emacs Configuration
+#+DESCRIPTION: 基于 Emacs 29+ 的个人配置，专为 macOS/Linux 设计，支持原生编译、Tree-sitter、Eglot 及丰富的 Org GTD 流程。
 
-参考自 [[https://github.com/bbatsov/emacs.d/blob/965d39c245bdbe79e88dd228756a9cf621670ac0/init.el][emacs.d/init.el at master · bbatsov/emacs.d]]
+* 简介 (Intro)
+基于 [[https://github.com/bbatsov/emacs.d/blob/965d39c245bdbe79e88dd228756a9cf621670ac0/init.el][bbatsov/emacs.d]] 裁剪定制的个人 Emacs 配置，采用 =straight.el= 管理包，支持原生的 Tree-sitter 和 Eglot LSP，并为知识管理（Org-roam）与远程开发（TRAMP）进行了深度优化。
 
-* 依赖
+* 核心依赖与环境要求 (Prerequisites)
 
-- [[https://github.com/BurntSushi/ripgrep][BurntSushi/ripgrep]] (consult-ripgrep)
-- [[https://github.com/laishulu/macism][laishulu/macism]] (sis/mac)
-- [[https://github.com/ryanoasis/nerd-fonts][ryanoasis/nerd-fonts]] (nerd-icons)
-- [[https://wiki.archlinux.org/title/locate][locate - ArchWiki]] (consult-locate)
-- [[https://github.com/seagle0128/grip-mode][seagle0128/grip-mode]] (Markdown 实时预览)
-  - 通过配置 =mdopen= 作为底层渲染引擎，彻底去除了对 Python =grip= 依赖
-  - 依赖 =cargo= 安装了 [[https://github.com/immanelg/mdopen][immanelg/mdopen]] 以提供极佳的样式和主题切换（已软链至 =bin/mdopen=）
+为了保证所有配置项（如搜索、输入法、图标及 Markdown 预览等）正常工作，请在系统中安装以下依赖：
 
-* 本地配置
+| 依赖名称 | 用途 (对应配置) | 安装/配置指引 |
+|----------+----------------+---------------|
+| [[https://github.com/BurntSushi/ripgrep][ripgrep]] | 模糊搜索 (=consult-ripgrep=) | =brew install rg= 或系统包管理器安装 |
+| [[https://github.com/laishulu/macism][macism]] | 输入法中英文自动切换 (=sis=) | =brew install douo/macism/macism= |
+| [[https://github.com/ryanoasis/nerd-fonts][Nerd Fonts]] | 状态栏及界面图标 (=nerd-icons=) | 安装 Nerd Font 字体，如 /SFMono Nerd Font/ |
+| =locate= | 本地文件快速查找 (=consult-locate=) | Linux 下安装 =plocate= ；macOS 使用系统自带定位 |
+| [[https://github.com/seagle0128/grip-mode][grip-mode]] | Markdown 实时预览 | 使用 [[https://github.com/immanelg/mdopen][mdopen]] 作为底层渲染引擎，已完全去除了 Python =grip= 依赖 |
+| =mdopen= | Markdown 预览后台 | 通过 =cargo install mdopen= 安装，软链接至 =bin/mdopen= |
+| *sshfs* | 远程图片挂载 (=image-dired=) | =brew install sshfs= (依赖 macOS macFUSE fskit 后端) |
+| *系统动态库* | 运行 Emacs 原生编译及图形支持 | 若遇到动态库报错，请安装： =brew install jpeg librsvg zlib libgccjit= |
 
-- =lisp/init-local.el= 存放本地环境相关信息，比如各类 ip ，tramp 跳板等。
-- gitignore 配置忽略
+* 本地安装与初始化 (Getting Started)
 
-* 环境变量
+** 1. 基础克隆
+#+begin_src shell
+git clone https://github.com/douo/lims_dot_emacs.git ~/.emacs.d
+#+end_src
 
-不同主机通过配置环境变量自定义，目前所用环境变量:
-- WRITING_HOME
-- GTD_HOME
-
-使用 [[https://github.com/purcell/exec-path-from-shell][purcell/exec-path-from-shell]] 共享用户 shell 环境变量。
-
-* 开发
-
-手动执行一次：
+** 2. 本地个性化配置 (=init-local.el=)
+在 =~/.emacs.d/lisp/= 下创建 =init-local.el= 文件，用于存放特定机器的配置（此文件已被 =.gitignore= 忽略，不会提交到远程）：
 #+begin_src elisp
-  (treesit-auto-install-all)
+;;; init-local.el -*- lexical-binding: t; -*-
+;; 例如设置本地特定的网络 IP、跳板机、或者自定义字体
 #+end_src
 
-** 启动性能与预编译
-
-懒加载可以减少 Emacs 启动时间，但某些包第一次打开时仍可能现场 native compile，表现为短时间卡顿。
-需要预热时，可以手动运行预编译脚本，把已有包和本地 =lisp/*.el= 提前编译成 =.eln= 缓存。
-
-查看帮助：
-#+begin_src shell
-emacs -Q --batch -l scripts/precompile.el -- --help
+** 3. 初始化 Tree-sitter
+在 Emacs 启动后，手动运行一次以下命令以自动下载并安装所有主流语言的 Tree-sitter 语法解析器：
+#+begin_src elisp
+M-x treesit-auto-install-all
 #+end_src
 
-先查看本次会处理多少文件，不实际生成缓存：
-#+begin_src shell
-emacs -Q --batch -l scripts/precompile.el -- --dry-run
-#+end_src
+** 4. 环境变量配置
+本配置要求当前主机的 Shell 中暴露出以下环境变量，用来定制文件路径及 Conda 环境：
+- =WRITING_HOME= : 个人写作/文档根目录
+- =GTD_HOME= : GTD/日程事务管理根目录
+- =CONDA_EXE= : Miniconda/Anaconda 可执行文件路径 (用于 =conda.el=，例如 =/opt/homebrew/bin/conda=)
 
-列出计划预编译的文件：
-#+begin_src shell
-emacs -Q --batch -l scripts/precompile.el -- --dry-run --list
-#+end_src
+在 GUI 下，配置会自动通过 [[https://github.com/purcell/exec-path-from-shell][exec-path-from-shell]] 将你终端 Shell 的环境变量无缝同步给 Emacs。
 
-执行预编译：
-#+begin_src shell
-emacs -Q --batch -l scripts/precompile.el
-#+end_src
+* 性能优化：启动预编译 (Precompilation)
 
-强制重新生成 =.eln=：
-#+begin_src shell
-emacs -Q --batch -l scripts/precompile.el -- --force
-#+end_src
+虽然配置采用了懒加载（Lazy Loading），但在升级包或大量修改配置后，部分包在首次加载时可能仍会触发原生的 JIT 编译（Native Compilation），引起短时间卡顿。推荐通过配置脚本进行预热编译：
 
-注意事项：
-- 脚本只启动独立的批处理 Emacs 进程，不连接、不重载当前正在使用的 Emacs。
-- 预编译产物写入 =eln-cache/=，不会生成本地配置的 =.elc=。
-- 更新包、切换 Emacs 版本、或者大量修改配置后，建议手动运行一次。
-- 这只能减少 Lisp/native-comp 首次加载成本；外部服务启动、网络请求、Tree-sitter grammar 下载、vterm 动态模块编译等仍需要单独处理。
+- *查看帮助*：
+  #+begin_src shell
+  emacs -Q --batch -l scripts/precompile.el -- --help
+  #+end_src
+- *演练预览*（不生成缓存，只查看待处理文件）：
+  #+begin_src shell
+  emacs -Q --batch -l scripts/precompile.el -- --dry-run
+  #+end_src
+- *执行一键编译*（产物生成于 =eln-cache/= 目录）：
+  #+begin_src shell
+  emacs -Q --batch -l scripts/precompile.el
+  #+end_src
+- *强行重新生成*：
+  #+begin_src shell
+  emacs -Q --batch -l scripts/precompile.el -- --force
+  #+end_src
 
-** lsp
+* 核心功能深度定制 (Key Features)
 
-*** python
+** 1. 远程图片流式浏览优化 (SSHFS 自动挂载)
+*** 痛点与背景
+默认情况下，内置的 =image-dired= 无法直接预览 TRAMP 远程路径下的图片（因为底层外部 =convert= 进程是本地运行的，无法识别远程协议路径）。如果通过 Advice 将其改为 TRAMP 远程调用或同步复制原图，又会因 =image-dired= 并发发起多个网络请求而导致 TRAMP SSH 隧道连接死锁（Emacs 100% CPU 卡死），或由于网络传输导致界面严重卡顿。
 
-需要安装 [[https://github.com/microsoft/pyright][pyright]]
+*** 解决方案与设计
+本配置对 =image-dired-show-all-from-dir= 进行了 Advice 包装拦截：
+1. *检测路径*：若传入的是远程 TRAMP 路径，自动在后台静默通过 SSHFS 挂载远程目录至本地 =/Volumes/image-dired-<host>-<hash>= （采用 macFUSE =fskit= 后端以保证性能）。
+2. *本地渲染*：将挂载点作为本地目录传给 =image-dired= 运行，利用 macOS 缓存技术，流畅快速生成缩略图，且完全规避了 TRAMP 并发死锁。
+3. *自动清理*：当你关闭（Kill）缩略图 buffer 或按 =q= 退出时，Emacs 会自动在后台异步执行 =umount=。由于 FSKit 机制，对应的本地挂载文件夹会被系统内核自动清理删除，不会在本地残留垃圾目录。
 
-启用 conda.el 需要 emacs 运行环境中找到环境变量:
+** 2. 双系统 Org-roam 与浏览器捕获联动
+通过 =org-protocol= 机制，可以实现一键从 Chrome 浏览器抓取网页标题、链接及选中文本并直接保存至 Emacs =org-roam= 库中。
 
-- CONDA_EXE
-- 满足 ~CONDA_EXE=$CONDA_HOME/bin/conda~
+*** 步骤 A：注册系统 Scheme-Handler
+- *macOS*：将 =assets/roam/macOS/OrgProtocolClient.app= 复制到目录 =/Applications= 下。双击手动运行一次，以完成 =org-protocol://= 协议的系统注册。
+- *Linux*：
+  1. 复制 =assets/roam/linux/org-protocol.desktop= 到 =~/.local/share/applications/= 目录。
+  2. 运行终端命令注册 Scheme-Handler：
+     #+begin_src shell
+     xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
+     #+end_src
 
-* roam
+*** 步骤 B：配置 Chrome Shortkeys 扩展
+在 Chrome 浏览器中安装 *Shortkeys* 插件，并按需添加以下快捷键规则：
 
-存放 ~org-roam-protocol~ 在对应操作系统上的 scheme-handler，其他细节见，[[https://www.orgroam.com/manual.html#Mac-OS][Org-roam User Manual#MacOS]]
-
-确保 emacs 有作为 server 启动，通过判断变量 ~server-process~ 是否存在可以确定。
-
-~server-start~ 启动服务。
-
-** macOS
-
-复制 ~assets/roam/macOS/OrgProtocolClient.app~ 到目录 ~/Applications~ 。需要手动运行一遍，让 scheme-handler 注册生效。
-
-
-** org-protocol.desktop
-
-
-复制 ~assets/roam/linux/org-protocol.desktop~  到目录 ~$HOME/.local/share/applications/~
-
-执行一下代码设置 scheme-handler
-#+begin_src shell
-xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
-#+end_src
-
-** Chrome
-- [X] 配置扩展 [[https://chrome.google.com/webstore/detail/logpjaacgmcbpdkdchjiaagddngobkck][Chrome Shortkeys]]
-  - 捕获 To Read 网页
-    - MacOS
-      注意是 =gtd-capture://=
-      快捷键：=ctrl+command+c=
-      Run Javascript：
-      #+begin_src js
-        location.href='org-protocol://gtd-capture://r/'+
-          encodeURIComponent(location.href)+'/'+
-          encodeURIComponent(document.title)+'/'+
-          encodeURIComponent(window.getSelection())
-      #+end_src
-    - Linux
-      注意是 =gtd-capture:/=
-      快捷键：=ctrl+alt+c=
-      Run Javascript：
-      #+begin_src js
-        location.href='org-protocol://gtd-capture:/r/'+
-          encodeURIComponent(location.href)+'/'+
-          encodeURIComponent(document.title)+'/'+
-          encodeURIComponent(window.getSelection())
-      #+end_src
-  - [X] org-roam-protocol 捕获网页
-    快捷键：=ctrl+command+o= / =ctrl+alt+o=
-    作用不大，只是提醒自己有这么一个功能而已
+- *网页捕获 (To Read Inbox)*:
+  - *macOS* (快捷键 =ctrl+cmd+c=, 协议使用 =gtd-capture://=)：
     #+begin_src js
-      location.href =
-          'org-protocol://roam-ref?template=r&ref='
-          + encodeURIComponent(location.href)
-          + '&title='
-          + encodeURIComponent(document.title)
-          + '&body='
-          + encodeURIComponent(window.getSelection())
+    location.href='org-protocol://gtd-capture://r/'+
+      encodeURIComponent(location.href)+'/'+
+      encodeURIComponent(document.title)+'/'+
+      encodeURIComponent(window.getSelection())
     #+end_src
-- [X] Chrome 禁用打开外部链接提醒
-  参考：https://www.reddit.com/r/emacs/comments/icjaie/orgprotocol_users_is_there_a_way_to_disable/
-  可以通过 ~chrome://policy/~ 检查是否生效
-  - macOS
-    终端运行
-    #+begin_src shell
-      defaults write com.google.Chrome URLAllowlist -array-add -string 'org-protocol://*'
-    #+end_src
-  - linux
-    - arch google-chrome: `/etc/opt/chrome/policies/managed/org-protocol.json`
-    - arch chromium: `/etc/chromium/policies/managed/org-protocol.json`
-    - ubuntu20.04 chromium: `/etc/chromium-browser/policies/managed/org-protocol.json`
+  - *Linux* (快捷键 =ctrl+alt+c=, 协议使用 =gtd-capture:/=)：
     #+begin_src js
-      {
-        "AutoLaunchProtocolsFromOrigins": [
-          {
-            "allowed_origins": [ "*" ],
-            "protocol": "org-protocol"
-          }
-        ]
-      }
+    location.href='org-protocol://gtd-capture:/r/'+
+      encodeURIComponent(location.href)+'/'+
+      encodeURIComponent(document.title)+'/'+
+      encodeURIComponent(window.getSelection())
     #+end_src
-    #+begin_src shell
-      sudo chmod 444 /etc/chromium-browser/policies/managed/org-protocol.json
+
+- *网页知识归档 (org-roam-protocol)*:
+  - (快捷键 =ctrl+cmd+o= 或 =ctrl+alt+o=)：
+    #+begin_src js
+    location.href =
+        'org-protocol://roam-ref?template=r&ref='
+        + encodeURIComponent(location.href)
+        + '&title='
+        + encodeURIComponent(document.title)
+        + '&body='
+        + encodeURIComponent(window.getSelection())
     #+end_src
-- [[https://mybrowseraddon.com/content-security-policy.html][CSP]] 部分网站的 CSP 规则导致 Shortkeys 的 Run JavaScript 无法执行。需要这个扩展强制允许
 
-* 远程图片预览优化 (SSHFS 自动挂载)
-
-** 上下文与痛点
-当通过 Emacs TRAMP 机制打开远程主机上的图片目录（例如使用 =image-dired= 浏览图片）时，默认情况下 Emacs 并不能直接生成缩略图（因为它会尝试在本地运行 =convert= 转换远程路径，导致路径无法被本地程序识别而报错失败）。在之前的第一版尝试中，我们通过 Advice 拦截了该过程，将其改为通过 TRAMP 进行远程转换（或将文件同步复制到本地）。但由于 =image-dired= 在渲染缩略图时默认会并发启动多个 =convert= 任务，这在 TRAMP 机制下会产生并发的 SSH 隧道请求，从而频繁触发 TRAMP 链接死锁（表现为 CPU 100% 占用，Emacs 界面完全卡死）；而采用同步复制又会因为网络传输阻塞 Emacs 主线程，导致界面严重卡顿。
-
-** 解决方案与权衡
-
-为了解决死锁并提升浏览性能，对比了以下方案：
-1. *继续使用 TRAMP 异步处理*
-   - *缺点*：无法根治死锁问题，Emacs 官方 TRAMP 机制对并发短连接子进程的稳定性存在隐患。
-2. *远程执行 convert 并拉回缩略图*
-   - *缺点*：远程主机可能未安装 ImageMagick 依赖；且多次单张拉取网络往返开销巨大，浏览几十张图会产生明显的等待感。
-3. *SSHFS 自动挂载方案 (最终选择)*
-   - *优点*：通过 macOS =macFUSE= 的 =fskit= 后端将远程目录挂载为本地目录。Emacs 在使用 =image-dired= 时，操作的是本地文件路径（=/Volumes/image-dired-...=），规避了 TRAMP 多线程死锁。同时利用 macOS 系统级缓存和 SSHFS 本身的长连接重连机制，极大地提升了加载速度与可靠性。
-   - *自动化流程*：
-     - 拦截 =image-dired-show-all-from-dir= 参数。
-     - 若为远程 TRAMP 路径，自动在后台静默挂载 SSHFS 到 =/Volumes/image-dired-<host>-<hash>=。
-     - 本地执行缩略图浏览。
-     - 当杀死（Kill）缩略图 buffer 或按 =q= 退出时，自动在后台异步执行卸载（=umount=），释放挂载点。
-
-** 系统依赖
-实现此方案需要满足以下系统依赖：
-1. 安装 *sshfs*（macOS 下包含 macFUSE 支持）：
-   #+begin_src shell
-   brew install sshfs
-   #+end_src
-2. 确保 Emacs 正常运行所需的相关 Homebrew 动态库（若在系统更新后遇到 launch 报错请安装）：
-   #+begin_src shell
-   brew install jpeg librsvg zlib libgccjit
-   #+end_src
+*** 步骤 C：禁用 Chrome 外部链接弹窗警示
+在点击 Shortkeys 或书签栏捕获时，Chrome 默认会弹窗询问是否打开外部程序，可通过以下设置禁用该弹窗：
+- *macOS*：终端执行
+  #+begin_src shell
+  defaults write com.google.Chrome URLAllowlist -array-add -string 'org-protocol://*'
+  #+end_src
+- *Linux*（写入相应浏览器的 Policy JSON 策略中）：
+  - Arch Google-Chrome: =/etc/opt/chrome/policies/managed/org-protocol.json=
+  - Arch Chromium: =/etc/chromium/policies/managed/org-protocol.json=
+  - Ubuntu Chromium: =/etc/chromium-browser/policies/managed/org-protocol.json=
+  - 策略内容定义如下：
+    #+begin_src js
+    {
+      "AutoLaunchProtocolsFromOrigins": [
+        {
+          "allowed_origins": [ "*" ],
+          "protocol": "org-protocol"
+        }
+      ]
+    }
+    #+end_src
+  - (注：如果文件没有写入权限，可使用 =sudo chmod 444 <path>=)
+  - 通过 Chrome 内部链接 =chrome://policy/= 可以检查策略是否正常生效。
