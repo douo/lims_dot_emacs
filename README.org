@@ -198,3 +198,34 @@ xdg-mime default org-protocol.desktop x-scheme-handler/org-protocol
       sudo chmod 444 /etc/chromium-browser/policies/managed/org-protocol.json
     #+end_src
 - [[https://mybrowseraddon.com/content-security-policy.html][CSP]] 部分网站的 CSP 规则导致 Shortkeys 的 Run JavaScript 无法执行。需要这个扩展强制允许
+
+* 远程图片预览优化 (SSHFS 自动挂载)
+
+** 上下文与痛点
+当通过 Emacs TRAMP 机制打开远程主机上的图片目录（例如使用 =image-dired= 浏览图片）时，由于 =image-dired= 在加载和渲染缩略图时会启动多个并行的 =convert= 异步子进程，这些进程频繁通过同一个或多个 SSH 隧道请求远程文件，容易在 Emacs 29+ 下触发 TRAMP 并发连接死锁（表现为 CPU 100% 占用，Emacs 界面完全卡死）。
+
+** 解决方案与权衡
+
+为了解决死锁并提升浏览性能，对比了以下方案：
+1. *继续使用 TRAMP 异步处理*
+   - *缺点*：无法根治死锁问题，Emacs 官方 TRAMP 机制对并发短连接子进程的稳定性存在隐患。
+2. *远程执行 convert 并拉回缩略图*
+   - *缺点*：远程主机可能未安装 ImageMagick 依赖；且多次单张拉取网络往返开销巨大，浏览几十张图会产生明显的等待感。
+3. *SSHFS 自动挂载方案 (最终选择)*
+   - *优点*：通过 macOS =macFUSE= 的 =fskit= 后端将远程目录挂载为本地目录。Emacs 在使用 =image-dired= 时，操作的是本地文件路径（=/Volumes/image-dired-...=），规避了 TRAMP 多线程死锁。同时利用 macOS 系统级缓存和 SSHFS 本身的长连接重连机制，极大地提升了加载速度与可靠性。
+   - *自动化流程*：
+     - 拦截 =image-dired-show-all-from-dir= 参数。
+     - 若为远程 TRAMP 路径，自动在后台静默挂载 SSHFS 到 =/Volumes/image-dired-<host>-<hash>=。
+     - 本地执行缩略图浏览。
+     - 当杀死（Kill）缩略图 buffer 或按 =q= 退出时，自动在后台异步执行卸载（=umount=），释放挂载点。
+
+** 系统依赖
+实现此方案需要满足以下系统依赖：
+1. 安装 *sshfs*（macOS 下包含 macFUSE 支持）：
+   #+begin_src shell
+   brew install sshfs
+   #+end_src
+2. 确保 Emacs 正常运行所需的相关 Homebrew 动态库（若在系统更新后遇到 launch 报错请安装）：
+   #+begin_src shell
+   brew install jpeg librsvg zlib libgccjit
+   #+end_src

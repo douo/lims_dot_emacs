@@ -300,11 +300,102 @@
 
 (use-package image-dired
   ; image-dired 是 Emacs 内置的
+  ;; 优化方案背景：
+  ;; 1. 问题：在 Emacs 29+ 中，通过 TRAMP 打开远程目录并生成图片缩略图时，
+  ;;    `image-dired` 会并发调用 `start-file-process` 生成多张缩略图，
+  ;;    这极易导致 TRAMP SSH 链接死锁，导致 Emacs 100% CPU 卡死。
+  ;; 2. 方案：自动拦截远程 TRAMP 路径，通过 macOS macFUSE 的 `fskit` 后端
+  ;;    在后台挂载 SSHFS。因为挂载为本地目录，Emacs 不会调用 TRAMP 机制，
+  ;;    而是直接在本地生成缩略图（并缓存于本地），规避死锁并大幅度提升浏览速度。
   :after dired
   :bind
   (:map image-dired-thumbnail-mode-map
         ("n" . image-dired-display-next)
-        ("p" . image-dired-display-previous)))
+        ("p" . image-dired-display-previous)
+        ("q" . my-image-dired-thumbnail-quit))
+  :init
+  (defvar-local my-image-dired-sshfs-mount nil
+    "Buffer-local variable storing the SSHFS mount point for this image-dired buffer.")
+
+  (defun my-image-dired-sshfs-unmount ()
+    "Unmount the SSHFS volume associated with the current buffer."
+    (interactive)
+    (when (and (boundp 'my-image-dired-sshfs-mount)
+               my-image-dired-sshfs-mount)
+      (let ((mount-point my-image-dired-sshfs-mount))
+        (message "Unmounting SSHFS mount: %s" mount-point)
+        (setq my-image-dired-sshfs-mount nil)
+        (let ((proc (start-process "sshfs-unmount" nil "umount" mount-point)))
+          (set-process-sentinel proc
+                                (lambda (process event)
+                                  (when (memq (process-status process) '(exit signal))
+                                    (message "SSHFS unmounted: %s" mount-point))))))))
+
+  (defun my-image-dired-thumbnail-quit ()
+    "Kill the current image-dired thumbnail buffer and its window."
+    (interactive)
+    (quit-window t))
+
+  (defun my-image-dired-sshfs-wrapper (orig-fun dirname &rest args)
+    "Around advice for `image-dired-show-all-from-dir' to support SSHFS auto-mounting."
+    (if (and (stringp dirname) (tramp-tramp-file-p dirname))
+        (let* ((parsed (tramp-dissect-file-name dirname))
+               (host (tramp-file-name-host parsed))
+               (user (tramp-file-name-user parsed))
+               (localname (tramp-file-name-localname parsed))
+               (remote-path (if (string-prefix-p "~/" localname)
+                                (substring localname 2)
+                              localname))
+               (sshfs-target (if user
+                                 (concat user "@" host ":" remote-path)
+                               (concat host ":" remote-path)))
+               (volname (concat "image-dired-" host "-" (substring (md5 dirname) 0 8)))
+               (mount-point (concat "/Volumes/" volname)))
+
+          ;; Ensure any existing mount in the target buffer is cleaned up first
+          (let ((existing-buf (get-buffer image-dired-thumbnail-buffer)))
+            (when existing-buf
+              (with-current-buffer existing-buf
+                (when (and (boundp 'my-image-dired-sshfs-mount)
+                           my-image-dired-sshfs-mount
+                           (not (string= my-image-dired-sshfs-mount mount-point)))
+                  (my-image-dired-sshfs-unmount)))))
+
+          ;; Mount the directory if not already mounted
+          (unless (file-directory-p mount-point)
+            (message "Mounting remote path %s via SSHFS to %s..." sshfs-target mount-point)
+            (let ((proc (start-process "sshfs-mount" nil "sshfs"
+                                       sshfs-target mount-point
+                                       "-o" "backend=fskit"
+                                       "-o" (concat "volname=" volname)
+                                       "-o" "reconnect"
+                                       "-o" "ServerAliveInterval=15"
+                                       "-o" "ServerAliveCountMax=3")))
+              ;; Wait up to 5 seconds for the mount point to appear
+              (let ((counter 0))
+                (while (and (not (file-directory-p mount-point))
+                            (eq (process-status proc) 'run)
+                            (< counter 50))
+                  (accept-process-output proc 0.1)
+                  (setq counter (1+ counter))))
+              (unless (file-directory-p mount-point)
+                (error "Failed to mount %s via SSHFS: mount point did not appear" sshfs-target))))
+
+          ;; Call original function with the local mount point
+          (apply orig-fun (cons mount-point args))
+
+          ;; Hook the unmount process to the thumbnail buffer
+          (let ((thumb-buf (get-buffer image-dired-thumbnail-buffer)))
+            (when thumb-buf
+              (with-current-buffer thumb-buf
+                (setq-local my-image-dired-sshfs-mount mount-point)
+                (add-hook 'kill-buffer-hook #'my-image-dired-sshfs-unmount nil t)))))
+
+      ;; If not a TRAMP path, run the original function normally
+      (apply orig-fun (cons dirname args))))
+
+  :config
+  (advice-add 'image-dired-show-all-from-dir :around #'my-image-dired-sshfs-wrapper))
 
 
 
