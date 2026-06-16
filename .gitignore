@@ -44,3 +44,14 @@ custom-vars.el
 init-local.el
 .aider*
 .env
+
+# Runtime / cache artifacts
+/bin/
+/eln-cache/
+/image-dired/
+/org-persist/
+/tree-sitter/
+bookmarks.eld
+places.eld
+projects.eld
+recentf.eld

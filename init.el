@@ -813,6 +813,165 @@
         ("t" . douo/go-do-translate)
         ))
 
+;; xwidget 只读网页光标导航
+(use-package xwidget
+  :straight nil
+  :preface
+  (defvar douo/xwidget-readonly-caret-script-file
+    (expand-file-name "lisp/xwidget-readonly-caret.js" user-emacs-directory))
+
+  (defvar douo/xwidget-readonly-caret--script-cache nil)
+  (defvar douo/xwidget-readonly-caret--script-mtime nil)
+
+  (defun douo/xwidget-readonly-caret--script ()
+    "Return the JavaScript used for readonly xwidget caret navigation."
+    (let ((mtime (file-attribute-modification-time
+                  (file-attributes douo/xwidget-readonly-caret-script-file))))
+      (unless (and douo/xwidget-readonly-caret--script-cache
+                   (equal mtime douo/xwidget-readonly-caret--script-mtime))
+        (setq douo/xwidget-readonly-caret--script-mtime mtime)
+        (setq douo/xwidget-readonly-caret--script-cache
+              (with-temp-buffer
+                (insert-file-contents douo/xwidget-readonly-caret-script-file)
+                (buffer-string))))
+      douo/xwidget-readonly-caret--script-cache))
+
+  (defun douo/xwidget-readonly-caret--session ()
+    "Return the current xwidget-webkit session."
+    (require 'xwidget)
+    (or (xwidget-at (point-min))
+        (xwidget-webkit-current-session)
+        (user-error "No xwidget-webkit session in current buffer")))
+
+  (defun douo/xwidget-readonly-caret--eval (script &optional callback)
+    "Install readonly caret JavaScript, then evaluate SCRIPT.
+Call CALLBACK with the JavaScript return value when supplied."
+    (xwidget-webkit-execute-script
+     (douo/xwidget-readonly-caret--session)
+     (concat (douo/xwidget-readonly-caret--script) "\n" script)
+     callback))
+
+  (defun douo/xwidget-readonly-caret--move (direction reverse-direction granularity n)
+    "Move the readonly xwidget caret by N using Selection.modify."
+    (let* ((n (or n 1))
+           (direction (if (< n 0) reverse-direction direction))
+           (count (max 1 (abs n))))
+      (douo/xwidget-readonly-caret--eval
+       (format "window.__emacsReadOnlyCaret.move(%S, %S, %d);"
+               direction granularity count))))
+
+  (defun douo/xwidget-readonly-caret-forward-char (&optional n)
+    "Move readonly xwidget caret forward by N characters."
+    (interactive "p")
+    (douo/xwidget-readonly-caret--move "forward" "backward" "character" n))
+
+  (defun douo/xwidget-readonly-caret-backward-char (&optional n)
+    "Move readonly xwidget caret backward by N characters."
+    (interactive "p")
+    (douo/xwidget-readonly-caret--move "backward" "forward" "character" n))
+
+  (defun douo/xwidget-readonly-caret-next-line (&optional n)
+    "Move readonly xwidget caret to the next visual line."
+    (interactive "p")
+    (douo/xwidget-readonly-caret--move "forward" "backward" "line" n))
+
+  (defun douo/xwidget-readonly-caret-previous-line (&optional n)
+    "Move readonly xwidget caret to the previous visual line."
+    (interactive "p")
+    (douo/xwidget-readonly-caret--move "backward" "forward" "line" n))
+
+  (defun douo/xwidget-readonly-caret-beginning-of-line ()
+    "Move readonly xwidget caret to the beginning of the visual line."
+    (interactive)
+    (douo/xwidget-readonly-caret--move "backward" "forward" "lineboundary" 1))
+
+  (defun douo/xwidget-readonly-caret-end-of-line ()
+    "Move readonly xwidget caret to the end of the visual line."
+    (interactive)
+    (douo/xwidget-readonly-caret--move "forward" "backward" "lineboundary" 1))
+
+  (defun douo/xwidget-readonly-caret-forward-word (&optional n)
+    "Move readonly xwidget caret forward by N words."
+    (interactive "p")
+    (douo/xwidget-readonly-caret--move "forward" "backward" "word" n))
+
+  (defun douo/xwidget-readonly-caret-backward-word (&optional n)
+    "Move readonly xwidget caret backward by N words."
+    (interactive "p")
+    (douo/xwidget-readonly-caret--move "backward" "forward" "word" n))
+
+  (defun douo/xwidget-readonly-caret-beginning-of-buffer ()
+    "Move readonly xwidget caret to the beginning of the document."
+    (interactive)
+    (douo/xwidget-readonly-caret--move "backward" "forward" "documentboundary" 1))
+
+  (defun douo/xwidget-readonly-caret-end-of-buffer ()
+    "Move readonly xwidget caret to the end of the document."
+    (interactive)
+    (douo/xwidget-readonly-caret--move "forward" "backward" "documentboundary" 1))
+
+  (defun douo/xwidget-readonly-caret-set-mark ()
+    "Set mark at the readonly xwidget caret."
+    (interactive)
+    (douo/xwidget-readonly-caret--eval
+     "window.__emacsReadOnlyCaret.setMark();"
+     (lambda (_result)
+       (message "Mark set"))))
+
+  (defun douo/xwidget-readonly-caret-keyboard-quit ()
+    "Cancel readonly xwidget selection, leaving caret at the focus end."
+    (interactive)
+    (douo/xwidget-readonly-caret--eval
+     "window.__emacsReadOnlyCaret.clearSelection();"
+     (lambda (_result)
+       (message "Quit"))))
+
+  (defun douo/xwidget-readonly-caret-copy ()
+    "Copy readonly xwidget selection, then clear it."
+    (interactive)
+    (douo/xwidget-readonly-caret--eval
+     "window.__emacsReadOnlyCaret.copyAndClear();"
+     (lambda (text)
+       (if (and (stringp text) (not (string= text "")))
+           (progn
+             (kill-new text)
+             (message "Copied xwidget selection"))
+         (message "No xwidget selection")))))
+
+  (defun douo/xwidget-readonly-caret-bind-map (map)
+    "Bind Emacs-style readonly caret commands into xwidget MAP."
+    (define-key map (kbd "C-f") #'douo/xwidget-readonly-caret-forward-char)
+    (define-key map (kbd "C-b") #'douo/xwidget-readonly-caret-backward-char)
+    (define-key map (kbd "C-n") #'douo/xwidget-readonly-caret-next-line)
+    (define-key map (kbd "C-p") #'douo/xwidget-readonly-caret-previous-line)
+    (define-key map (kbd "C-a") #'douo/xwidget-readonly-caret-beginning-of-line)
+    (define-key map (kbd "C-e") #'douo/xwidget-readonly-caret-end-of-line)
+    (define-key map (kbd "M-f") #'douo/xwidget-readonly-caret-forward-word)
+    (define-key map (kbd "M-b") #'douo/xwidget-readonly-caret-backward-word)
+    (define-key map (kbd "M-<") #'douo/xwidget-readonly-caret-beginning-of-buffer)
+    (define-key map (kbd "M->") #'douo/xwidget-readonly-caret-end-of-buffer)
+    (define-key map (kbd "C-SPC") #'douo/xwidget-readonly-caret-set-mark)
+    (define-key map (kbd "C-@") #'douo/xwidget-readonly-caret-set-mark)
+    (define-key map (kbd "M-w") #'douo/xwidget-readonly-caret-copy)
+    (define-key map (kbd "C-g") #'douo/xwidget-readonly-caret-keyboard-quit)
+    (define-key map [remap forward-char] #'douo/xwidget-readonly-caret-forward-char)
+    (define-key map [remap right-char] #'douo/xwidget-readonly-caret-forward-char)
+    (define-key map [remap backward-char] #'douo/xwidget-readonly-caret-backward-char)
+    (define-key map [remap left-char] #'douo/xwidget-readonly-caret-backward-char)
+    (define-key map [remap next-line] #'douo/xwidget-readonly-caret-next-line)
+    (define-key map [remap previous-line] #'douo/xwidget-readonly-caret-previous-line)
+    (define-key map [remap move-beginning-of-line] #'douo/xwidget-readonly-caret-beginning-of-line)
+    (define-key map [remap move-end-of-line] #'douo/xwidget-readonly-caret-end-of-line)
+    (define-key map [remap forward-word] #'douo/xwidget-readonly-caret-forward-word)
+    (define-key map [remap backward-word] #'douo/xwidget-readonly-caret-backward-word)
+    (define-key map [remap beginning-of-buffer] #'douo/xwidget-readonly-caret-beginning-of-buffer)
+    (define-key map [remap end-of-buffer] #'douo/xwidget-readonly-caret-end-of-buffer)
+    (define-key map [remap set-mark-command] #'douo/xwidget-readonly-caret-set-mark)
+    (define-key map [remap kill-ring-save] #'douo/xwidget-readonly-caret-copy))
+
+  :config
+  (douo/xwidget-readonly-caret-bind-map xwidget-webkit-mode-map))
+
 
 ;; begin_epub
 (use-package nov
@@ -835,6 +994,7 @@
   :after nov
   :config
   (define-key nov-mode-map (kbd "o") 'nov-xwidget-view)
+  (douo/xwidget-readonly-caret-bind-map nov-xwidget-webkit-mode-map)
   (add-hook 'nov-mode-hook 'nov-xwidget-inject-all-files)
   :bind
   (:map nov-xwidget-webkit-mode-map
