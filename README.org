@@ -16,7 +16,7 @@
 | =locate= | 本地文件快速查找 (=consult-locate=) | Linux 下安装 =plocate= ；macOS 使用系统自带定位 |
 | [[https://github.com/seagle0128/grip-mode][grip-mode]] | Markdown 实时预览 | 使用 [[https://github.com/immanelg/mdopen][mdopen]] 作为底层渲染引擎，已完全去除了 Python =grip= 依赖 |
 | =mdopen= | Markdown 预览后台 | 通过 =cargo install mdopen= 安装，软链接至 =bin/mdopen= |
-| *sshfs* | 远程图片挂载 (=image-dired=) | =brew install sshfs= (依赖 macOS macFUSE fskit 后端) |
+| *sshfs* | 远程图片挂载 (=image-dired=) | macOS： =brew install sshfs= (依赖 macFUSE fskit 后端)；Linux： =pacman -S sshfs= (依赖 FUSE，提供 =fusermount=) |
 | *系统动态库* | 运行 Emacs 原生编译及图形支持 | 若遇到动态库报错，请安装： =brew install jpeg librsvg zlib libgccjit= |
 
 * 本地安装与初始化 (Getting Started)
@@ -75,10 +75,25 @@ M-x treesit-auto-install-all
 默认情况下，内置的 =image-dired= 无法直接预览 TRAMP 远程路径下的图片（因为底层外部 =convert= 进程是本地运行的，无法识别远程协议路径）。如果通过 Advice 将其改为 TRAMP 远程调用或同步复制原图，又会因 =image-dired= 并发发起多个网络请求而导致 TRAMP SSH 隧道连接死锁（Emacs 100% CPU 卡死），或由于网络传输导致界面严重卡顿。
 
 *** 解决方案与设计
-本配置对 =image-dired-show-all-from-dir= 进行了 Advice 包装拦截：
-1. *检测路径*：若传入的是远程 TRAMP 路径，自动在后台静默通过 SSHFS 挂载远程目录至本地 =/Volumes/image-dired-<host>-<hash>= （采用 macFUSE =fskit= 后端以保证性能）。
-2. *本地渲染*：将挂载点作为本地目录传给 =image-dired= 运行，利用 macOS 缓存技术，流畅快速生成缩略图，且完全规避了 TRAMP 并发死锁。
-3. *自动清理*：当你关闭（Kill）缩略图 buffer 或按 =q= 退出时，Emacs 会自动在后台异步执行 =umount=。由于 FSKit 机制，对应的本地挂载文件夹会被系统内核自动清理删除，不会在本地残留垃圾目录。
+相关实现已模块化至 =lisp/init-image-dired.el= ，并对 =image-dired-show-all-from-dir= 进行 Advice 包装拦截：
+1. *检测路径*：若传入的是远程 TRAMP 路径，自动在后台静默通过 SSHFS 挂载远程目录至本地 =<挂载基目录>/image-dired-<host>-<hash>= 。
+2. *本地渲染*：将挂载点作为本地目录传给 =image-dired= 运行，利用系统缓存技术流畅快速生成缩略图，且完全规避了 TRAMP 并发死锁。
+3. *自动清理*：当你关闭（Kill）缩略图 buffer 或按 =q= 退出时，Emacs 会自动在后台异步卸载该挂载，并清理可能残留的孤儿 =sshfs= 进程；挂载点目录在 macOS 由系统随卸载移除、在 Linux 由模块删除（见下方“跨平台行为”），避免本地堆积垃圾。
+4. *退出兜底*：由于 =kill-buffer-hook= 在退出 Emacs 时不会触发，模块额外在 =kill-emacs-hook= 上同步卸载所有活动挂载；并在每次启动时扫描挂载基目录，清理上次会话异常退出（或崩溃）遗留的挂载，确保不会跨会话累积。是否已挂载通过解析 =mount= 表判断（而非 =file-directory-p= ，后者在挂载僵死时会因 =EPERM= 误判为未挂载，从而在同一点叠加挂载、导致卸载后目录仍残留）。
+5. *手动清理*：随时可执行 =M-x my-image-dired-sshfs-cleanup-stale= 一键卸载并删除挂载基目录下所有遗留（含僵死）的 image-dired 挂载。
+
+*** 跨平台行为
+挂载/卸载的差异全部收敛在 =lisp/init-image-dired.el= 的平台辅助函数中，按 =system-type= 自动分发：
+
+| 维度 | macOS | Linux | 其它系统 |
+|------+-------+-------+----------|
+| 挂载基目录 | =/Volumes= | =$XDG_RUNTIME_DIR= （回退 =/tmp= ） | 不挂载 |
+| 挂载后端 | macFUSE =fskit= ＋ =volname= | 标准 FUSE（最小参数，需先 =mkdir= 挂载点） | — |
+| 卸载命令 | =diskutil unmount force= （可卸僵死挂载并自动删目录） | =fusermount3 -u= ／ =fusermount -u= ＋手动删目录 | — |
+
+在不支持的系统上，Advice 会直接回退到 =image-dired= 的原始行为，不做任何挂载。
+
+*注（macOS 权限）*：=/Volumes= 归 =root= 所有，普通用户无写权限，因此挂载点目录由系统（fskit）创建、并在 =diskutil unmount= 成功时由系统一并移除——模块不会（也无法）在 =/Volumes= 下手动 =mkdir= / =rmdir= 。判断是否已挂载一律通过 =mount= 表，而非 =file-directory-p= （后者在挂载尚未完成或僵死时会误判，把空目录当成挂载结果）。Linux 下挂载基目录归当前用户所有，则由模块自行创建与删除空目录。
 
 ** 2. 双系统 Org-roam 与浏览器捕获联动
 通过 =org-protocol= 机制，可以实现一键从 Chrome 浏览器抓取网页标题、链接及选中文本并直接保存至 Emacs =org-roam= 库中。
