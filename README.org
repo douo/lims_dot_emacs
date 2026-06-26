@@ -70,7 +70,22 @@ M-x treesit-auto-install-all
 
 * 核心功能深度定制 (Key Features)
 
-** 1. 远程图片流式浏览优化 (SSHFS 自动挂载)
+** 1. Markdown/xwidget 预览与键盘选择
+Markdown 文件通过 =grip-mode= 调用 =mdopen= 渲染，并优先使用 Emacs 内置 xwidget WebKit 预览。预览 buffer 里的普通导航键默认映射到 xwidget 原生滚动，避免网页 Selection 和滚动位置出现两个不同步的隐藏光标。
+
+*** 键盘光标与选择
+在 xwidget 预览 buffer 中：
+1. 按 =C-SPC= 进入 =Caret= 模式，只显示网页内光标，不立即选择文本。
+2. 在 =Caret= 模式下，使用 =C-f= / =C-b= / =C-n= / =C-p= / =C-a= / =C-e= / =M-f= / =M-b= 等移动网页光标。
+3. 再按一次 =C-SPC= 进入 =Select= 模式，从当前光标位置开始扩展选择。
+4. 按 =M-w= 复制当前网页选择并退出；按 =C-g= 取消选择并退出。
+
+*** TRAMP 远程 Markdown 预览
+远程 Markdown 文件不会在远端启动 =mdopen= 。配置会在本地为每个预览创建独立临时目录，将远程文件内容写入其中，再从本地启动 =mdopen --reload= 。这样既能实时刷新当前预览，又避免 =mdopen= 监听整个系统临时目录，导致无关临时文件变化触发 xwidget 页面重载并清空网页选择。
+
+按 =q= 或 =Q= 关闭 xwidget 预览时，会停止对应源 buffer 的 =grip-mode= 预览进程，并清理该预览的临时目录。
+
+** 2. 远程图片流式浏览优化 (SSHFS 自动挂载)
 *** 痛点与背景
 默认情况下，内置的 =image-dired= 无法直接预览 TRAMP 远程路径下的图片（因为底层外部 =convert= 进程是本地运行的，无法识别远程协议路径）。如果通过 Advice 将其改为 TRAMP 远程调用或同步复制原图，又会因 =image-dired= 并发发起多个网络请求而导致 TRAMP SSH 隧道连接死锁（Emacs 100% CPU 卡死），或由于网络传输导致界面严重卡顿。
 
@@ -95,7 +110,7 @@ M-x treesit-auto-install-all
 
 *注（macOS 权限）*：=/Volumes= 归 =root= 所有，普通用户无写权限，因此挂载点目录由系统（fskit）创建、并在 =diskutil unmount= 成功时由系统一并移除——模块不会（也无法）在 =/Volumes= 下手动 =mkdir= / =rmdir= 。判断是否已挂载一律通过 =mount= 表，而非 =file-directory-p= （后者在挂载尚未完成或僵死时会误判，把空目录当成挂载结果）。Linux 下挂载基目录归当前用户所有，则由模块自行创建与删除空目录。
 
-** 2. 双系统 Org-roam 与浏览器捕获联动
+** 3. 双系统 Org-roam 与浏览器捕获联动
 通过 =org-protocol= 机制，可以实现一键从 Chrome 浏览器抓取网页标题、链接及选中文本并直接保存至 Emacs =org-roam= 库中。
 
 *** 步骤 A：注册系统 Scheme-Handler

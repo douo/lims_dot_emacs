@@ -1,5 +1,5 @@
 (function () {
-  var VERSION = "2026-06-16";
+  var VERSION = "2026-06-26";
 
   if (window.__emacsReadOnlyCaret
       && window.__emacsReadOnlyCaret.version === VERSION) {
@@ -10,7 +10,8 @@
     version: VERSION,
     markActive: false,
     caret: null,
-    style: null
+    style: null,
+    anchor: null
   };
 
   function ensureStyle() {
@@ -101,19 +102,197 @@
       && document.documentElement.contains(range.endContainer);
   }
 
-  function ensureSelection(atEnd) {
+  function currentSelection() {
     var selection = window.getSelection();
 
     if (selection.rangeCount > 0 && rangeInDocument(selection.getRangeAt(0))) {
       return selection;
     }
 
-    var node = textNode(!atEnd);
-    var range = document.createRange();
+    return null;
+  }
 
-    if (node) {
+  function rangeFromPoint(x, y) {
+    var position;
+    var range;
+
+    if (document.caretRangeFromPoint) {
+      return document.caretRangeFromPoint(x, y);
+    }
+
+    if (document.caretPositionFromPoint) {
+      position = document.caretPositionFromPoint(x, y);
+      if (position && position.offsetNode) {
+        range = document.createRange();
+        range.setStart(position.offsetNode, position.offset);
+        range.collapse(true);
+        return range;
+      }
+    }
+
+    return null;
+  }
+
+  function visibleViewportRange(atEnd) {
+    var root = document.body || document.documentElement;
+    var walker = document.createTreeWalker(
+      root,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function (node) {
+          return visibleTextNode(node)
+            ? NodeFilter.FILTER_ACCEPT
+            : NodeFilter.FILTER_REJECT;
+        }
+      }
+    );
+    var margin = 24;
+    var current;
+    var range;
+    var rects;
+    var rect;
+    var index;
+    var score;
+    var best = null;
+    var bestScore = Infinity;
+    var x;
+    var y;
+
+    while ((current = walker.nextNode())) {
+      range = document.createRange();
+      range.selectNodeContents(current);
+      rects = range.getClientRects();
+
+      for (index = 0; index < rects.length; index += 1) {
+        rect = rects[index];
+        if (rect.bottom < margin
+            || rect.top > window.innerHeight - margin
+            || rect.right < 0
+            || rect.left > window.innerWidth) {
+          continue;
+        }
+
+        score = atEnd
+          ? Math.abs(rect.bottom - (window.innerHeight - margin))
+          : Math.abs(rect.top - margin);
+
+        if (score < bestScore) {
+          bestScore = score;
+          best = {
+            node: current,
+            rect: rect
+          };
+        }
+      }
+    }
+
+    if (!best) {
+      return null;
+    }
+
+    x = atEnd
+      ? Math.max(0, Math.min(window.innerWidth - 1, best.rect.right - 1))
+      : Math.max(0, Math.min(window.innerWidth - 1, best.rect.left + 1));
+    y = Math.max(0, Math.min(window.innerHeight - 1,
+                             best.rect.top + (best.rect.height / 2)));
+    range = rangeFromPoint(x, y);
+
+    if (range && rangeInDocument(range)) {
+      range.collapse(true);
+      return range;
+    }
+
+    range = document.createRange();
+    range.setStart(best.node, atEnd ? best.node.nodeValue.length : 0);
+    range.collapse(true);
+    return range;
+  }
+
+  function captureAnchor(range) {
+    if (!range) {
+      state.anchor = null;
+      return;
+    }
+
+    state.anchor = {
+      node: range.startContainer,
+      offset: range.startOffset,
+      atEnd: range.collapsed ? true : false
+    };
+  }
+
+  function restoreAnchor() {
+    var anchor = state.anchor;
+    var range;
+
+    if (!anchor || !document.documentElement.contains(anchor.node)) {
+      return null;
+    }
+
+    range = document.createRange();
+    range.setStart(anchor.node, anchor.offset);
+    range.collapse(true);
+    return range;
+  }
+
+  function placeAnchorAtViewport(atEnd) {
+    var selection = window.getSelection();
+    var range = visibleViewportRange(atEnd);
+
+    if (!selection || !range) {
+      return false;
+    }
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+    collapseToFocus(selection);
+    captureAnchor(range);
+    placeCaret(rectFromRange(range));
+    return true;
+  }
+
+  function startCaret() {
+    state.markActive = false;
+    return placeAnchorAtViewport(false);
+  }
+
+  function ensureSelection(atEnd, preferViewport) {
+    var selection = currentSelection();
+    var range;
+
+    if (selection) {
+      return selection;
+    }
+
+    if (state.anchor) {
+      range = restoreAnchor();
+      if (range) {
+        selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        return selection;
+      }
+      state.anchor = null;
+    }
+
+    if (preferViewport) {
+      placeAnchorAtViewport(atEnd);
+      selection = window.getSelection();
+      selection = currentSelection();
+      if (selection) {
+        return selection;
+      }
+    }
+
+    range = preferViewport ? visibleViewportRange(atEnd) : null;
+
+    var node = textNode(!atEnd);
+
+    if (!range && node) {
+      range = document.createRange();
       range.setStart(node, atEnd ? node.nodeValue.length : 0);
-    } else {
+    } else if (!range) {
+      range = document.createRange();
       range.selectNodeContents(document.body || document.documentElement);
       if (atEnd) {
         range.collapse(false);
@@ -218,6 +397,12 @@
     caret.style.height = height + "px";
   }
 
+  function hideCaret() {
+    if (state.caret && document.documentElement.contains(state.caret)) {
+      state.caret.style.display = "none";
+    }
+  }
+
   function scrollRectIntoView(rect) {
     if (!rect) {
       return;
@@ -237,12 +422,20 @@
     }
   }
 
-  function updateCaret() {
-    var selection = ensureSelection(false);
+  function updateCaret(shouldScroll) {
+    var selection = currentSelection();
     var range = focusRange(selection);
     var rect = rectFromRange(range);
 
-    scrollRectIntoView(rect);
+    if (!selection) {
+      hideCaret();
+      state.anchor = null;
+      return false;
+    }
+
+    if (shouldScroll) {
+      scrollRectIntoView(rect);
+    }
     window.requestAnimationFrame(function () {
       placeCaret(rectFromRange(focusRange(window.getSelection())));
     });
@@ -250,7 +443,7 @@
   }
 
   function move(direction, granularity, count) {
-    var selection = ensureSelection(direction === "backward");
+    var selection = ensureSelection(direction === "backward", true);
     var alter = state.markActive ? "extend" : "move";
     var steps = Math.max(1, count || 1);
     var index;
@@ -263,57 +456,62 @@
       collapseToFocus(selection);
     }
 
-    if (document.activeElement && document.activeElement.blur) {
-      document.activeElement.blur();
-    }
-
     for (index = 0; index < steps; index += 1) {
       selection.modify(alter, direction, granularity);
     }
 
-    updateCaret();
+    updateCaret(true);
     return true;
   }
 
   function setMark() {
-    var selection = ensureSelection(false);
+    var selection = ensureSelection(false, true);
 
     if (!selection.isCollapsed) {
       collapseToFocus(selection);
     }
 
     state.markActive = true;
-    updateCaret();
+    updateCaret(false);
     return true;
   }
 
   function clearSelection() {
-    var selection = ensureSelection(false);
+    var selection = currentSelection();
 
-    collapseToFocus(selection);
+    if (selection) {
+      selection.removeAllRanges();
+    }
     state.markActive = false;
-    updateCaret();
+    state.anchor = null;
+    hideCaret();
     return true;
   }
 
   function copyAndClear() {
-    var selection = ensureSelection(false);
-    var text = selection.toString();
+    var selection = currentSelection();
+    var text = selection ? selection.toString() : "";
 
-    collapseToFocus(selection);
+    if (selection) {
+      selection.removeAllRanges();
+    }
     state.markActive = false;
-    updateCaret();
+    state.anchor = null;
+    hideCaret();
     return text;
   }
 
   window.__emacsReadOnlyCaret = {
     version: VERSION,
     move: move,
+    startCaret: startCaret,
     setMark: setMark,
+    placeAnchorAtViewport: placeAnchorAtViewport,
     clearSelection: clearSelection,
     copyAndClear: copyAndClear,
+    hideCaret: hideCaret,
     updateCaret: updateCaret
   };
 
-  return updateCaret();
+  return true;
 })();

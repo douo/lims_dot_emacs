@@ -714,7 +714,7 @@
         ("t" . douo/go-do-translate)
         ))
 
-;; xwidget 只读网页光标导航
+;; xwidget 网页导航
 (use-package xwidget
   :straight nil
   :preface
@@ -819,6 +819,14 @@ Call CALLBACK with the JavaScript return value when supplied."
      (lambda (_result)
        (message "Mark set"))))
 
+  (defun douo/xwidget-readonly-caret-start-caret ()
+    "Start readonly xwidget caret mode without selecting text."
+    (interactive)
+    (douo/xwidget-readonly-caret--eval
+     "window.__emacsReadOnlyCaret.startCaret();"
+     (lambda (_result)
+       (message "Caret set"))))
+
   (defun douo/xwidget-readonly-caret-keyboard-quit ()
     "Cancel readonly xwidget selection, leaving caret at the focus end."
     (interactive)
@@ -839,39 +847,219 @@ Call CALLBACK with the JavaScript return value when supplied."
              (message "Copied xwidget selection"))
          (message "No xwidget selection")))))
 
+  (defun douo/xwidget-selection-next-page (&optional n)
+    "Extend readonly xwidget selection forward by N pages."
+    (interactive "p")
+    (douo/xwidget-readonly-caret-next-line
+     (* (or n 1) (max 1 (- (window-body-height) 2)))))
+
+  (defun douo/xwidget-selection-previous-page (&optional n)
+    "Extend readonly xwidget selection backward by N pages."
+    (interactive "p")
+    (douo/xwidget-readonly-caret-previous-line
+     (* (or n 1) (max 1 (- (window-body-height) 2)))))
+
+  (defvar-local douo/xwidget-selection--mark-active nil
+    "Non-nil when xwidget caret mode is extending a selection.")
+
+  (defun douo/xwidget-selection-set-mark ()
+    "Start extending the xwidget caret selection from the current caret."
+    (interactive)
+    (let ((buffer (current-buffer)))
+      (douo/xwidget-readonly-caret--eval
+       "window.__emacsReadOnlyCaret.setMark();"
+       (lambda (_result)
+         (when (buffer-live-p buffer)
+           (with-current-buffer buffer
+             (setq douo/xwidget-selection--mark-active t)
+             (force-mode-line-update)))
+         (message "Mark set")))))
+
+  (defvar douo/xwidget-selection-mode-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "C-f") #'douo/xwidget-readonly-caret-forward-char)
+      (define-key map (kbd "C-b") #'douo/xwidget-readonly-caret-backward-char)
+      (define-key map (kbd "C-n") #'douo/xwidget-readonly-caret-next-line)
+      (define-key map (kbd "C-p") #'douo/xwidget-readonly-caret-previous-line)
+      (define-key map (kbd "C-a") #'douo/xwidget-readonly-caret-beginning-of-line)
+      (define-key map (kbd "C-e") #'douo/xwidget-readonly-caret-end-of-line)
+      (define-key map (kbd "M-f") #'douo/xwidget-readonly-caret-forward-word)
+      (define-key map (kbd "M-b") #'douo/xwidget-readonly-caret-backward-word)
+      (define-key map (kbd "C-v") #'douo/xwidget-selection-next-page)
+      (define-key map (kbd "M-v") #'douo/xwidget-selection-previous-page)
+      (define-key map (kbd "M-<") #'douo/xwidget-readonly-caret-beginning-of-buffer)
+      (define-key map (kbd "M->") #'douo/xwidget-readonly-caret-end-of-buffer)
+      (define-key map (kbd "C-SPC") #'douo/xwidget-selection-set-mark)
+      (define-key map (kbd "C-@") #'douo/xwidget-selection-set-mark)
+      (define-key map (kbd "M-w") #'douo/xwidget-selection-copy)
+      (define-key map (kbd "C-g") #'douo/xwidget-selection-cancel)
+      (define-key map [remap kill-ring-save] #'douo/xwidget-selection-copy)
+      map)
+    "Keymap used while selecting text inside xwidget webkit buffers.")
+
+  (define-minor-mode douo/xwidget-selection-mode
+    "Temporarily navigate or select xwidget web text with a JavaScript caret."
+    :init-value nil
+    :lighter (:eval (if douo/xwidget-selection--mark-active " Select" " Caret"))
+    :keymap douo/xwidget-selection-mode-map
+    (if douo/xwidget-selection-mode
+        (progn
+          (setq douo/xwidget-selection--mark-active nil)
+          (douo/xwidget-readonly-caret-start-caret))
+      (setq douo/xwidget-selection--mark-active nil)
+      (douo/xwidget-readonly-caret-keyboard-quit)))
+
+  (defun douo/xwidget-selection-start ()
+    "Enter keyboard caret mode for the current xwidget web page."
+    (interactive)
+    (douo/xwidget-selection-mode 1))
+
+  (defun douo/xwidget-selection-cancel ()
+    "Cancel keyboard selection mode for the current xwidget web page."
+    (interactive)
+    (douo/xwidget-selection-mode -1))
+
+  (defun douo/xwidget-selection-copy ()
+    "Copy xwidget keyboard selection, then leave selection mode."
+    (interactive)
+    (let ((buffer (current-buffer)))
+      (douo/xwidget-readonly-caret--eval
+       "window.__emacsReadOnlyCaret.copyAndClear();"
+       (lambda (text)
+         (when (buffer-live-p buffer)
+           (with-current-buffer buffer
+             (setq douo/xwidget-selection-mode nil)
+             (setq douo/xwidget-selection--mark-active nil)
+             (force-mode-line-update)))
+         (if (and (stringp text) (not (string= text "")))
+             (progn
+               (kill-new text)
+               (message "Copied xwidget selection"))
+           (message "No xwidget selection"))))))
+
+  (defun douo/grip--normalize-preview-url (url)
+    "Return URL without transient query, fragment, or trailing slash."
+    (when url
+      (replace-regexp-in-string
+       "/\\'" ""
+       (replace-regexp-in-string "[?#].*\\'" "" url))))
+
+  (defun douo/grip--same-preview-url-p (left right)
+    "Return non-nil when LEFT and RIGHT refer to the same grip preview."
+    (let ((left (douo/grip--normalize-preview-url left))
+          (right (douo/grip--normalize-preview-url right)))
+      (and left right (string= left right))))
+
+  (defun douo/grip--source-buffer-for-url (url)
+    "Return the Markdown/Org buffer serving grip preview URL."
+    (catch 'found
+      (dolist (buf (buffer-list))
+        (with-current-buffer buf
+          (when (and (bound-and-true-p grip-mode)
+                     (boundp 'grip--process)
+                     (process-live-p grip--process)
+                     (boundp 'grip--preview-file)
+                     grip--preview-file
+                     (fboundp 'grip--preview-url)
+                     (douo/grip--same-preview-url-p url
+                                                    (ignore-errors
+                                                      (grip--preview-url))))
+            (throw 'found buf))))
+      nil))
+
+  (defun douo/grip--kill-xwidget-buffers (url)
+    "Kill every live xwidget buffer displaying grip preview URL."
+    (when (and url
+               (boundp 'xwidget-list)
+               (fboundp 'xwidget-buffer)
+               (fboundp 'xwidget-webkit-uri))
+      (dolist (xwidget xwidget-list)
+        (let ((uri (ignore-errors (xwidget-webkit-uri xwidget))))
+          (when (douo/grip--same-preview-url-p url uri)
+            (let ((buf (xwidget-buffer xwidget))
+                  (kill-buffer-query-functions nil))
+              (when (buffer-live-p buf)
+                (kill-buffer buf))))))))
+
+  (defun douo/grip-xwidget-quit ()
+    "Quit the xwidget grip preview and stop its source buffer preview."
+    (interactive)
+    (let* ((session (douo/xwidget-readonly-caret--session))
+           (url (when (fboundp 'xwidget-webkit-uri)
+                  (xwidget-webkit-uri session)))
+           (source-buffer (douo/grip--source-buffer-for-url url)))
+      (if (buffer-live-p source-buffer)
+          (with-current-buffer source-buffer
+            (grip-mode -1))
+        (let ((kill-buffer-query-functions nil))
+          (kill-buffer (current-buffer))))))
+
+  (defun douo/grip--xwidget-buffer-for-url (url)
+    "Return a live xwidget buffer already displaying grip preview URL."
+    (catch 'found
+      (when (and url
+                 (boundp 'xwidget-list)
+                 (fboundp 'xwidget-buffer)
+                 (fboundp 'xwidget-webkit-uri))
+        (dolist (xwidget xwidget-list)
+          (when (douo/grip--same-preview-url-p
+                 url
+                 (ignore-errors (xwidget-webkit-uri xwidget)))
+            (let ((buf (xwidget-buffer xwidget)))
+              (when (buffer-live-p buf)
+                (throw 'found buf))))))))
+
+  (defvar-local douo/grip--preview-directory nil
+    "Dedicated temporary directory used for one grip/mdopen preview.")
+
+  (defun douo/grip--cleanup-preview-directory (&rest _)
+    "Remove the dedicated temporary directory for the current grip preview."
+    (when (and douo/grip--preview-directory
+               (file-directory-p douo/grip--preview-directory)
+               (file-in-directory-p douo/grip--preview-directory
+                                    temporary-file-directory))
+      (delete-directory douo/grip--preview-directory t))
+    (setq douo/grip--preview-directory nil))
+
   (defun douo/xwidget-readonly-caret-bind-map (map)
-    "Bind Emacs-style readonly caret commands into xwidget MAP."
-    (define-key map (kbd "C-f") #'douo/xwidget-readonly-caret-forward-char)
-    (define-key map (kbd "C-b") #'douo/xwidget-readonly-caret-backward-char)
-    (define-key map (kbd "C-n") #'douo/xwidget-readonly-caret-next-line)
-    (define-key map (kbd "C-p") #'douo/xwidget-readonly-caret-previous-line)
-    (define-key map (kbd "C-a") #'douo/xwidget-readonly-caret-beginning-of-line)
-    (define-key map (kbd "C-e") #'douo/xwidget-readonly-caret-end-of-line)
-    (define-key map (kbd "M-f") #'douo/xwidget-readonly-caret-forward-word)
-    (define-key map (kbd "M-b") #'douo/xwidget-readonly-caret-backward-word)
-    (define-key map (kbd "M-<") #'douo/xwidget-readonly-caret-beginning-of-buffer)
-    (define-key map (kbd "M->") #'douo/xwidget-readonly-caret-end-of-buffer)
-    (define-key map (kbd "C-SPC") #'douo/xwidget-readonly-caret-set-mark)
-    (define-key map (kbd "C-@") #'douo/xwidget-readonly-caret-set-mark)
-    (define-key map (kbd "M-w") #'douo/xwidget-readonly-caret-copy)
-    (define-key map (kbd "C-g") #'douo/xwidget-readonly-caret-keyboard-quit)
-    (define-key map [remap forward-char] #'douo/xwidget-readonly-caret-forward-char)
-    (define-key map [remap right-char] #'douo/xwidget-readonly-caret-forward-char)
-    (define-key map [remap backward-char] #'douo/xwidget-readonly-caret-backward-char)
-    (define-key map [remap left-char] #'douo/xwidget-readonly-caret-backward-char)
-    (define-key map [remap next-line] #'douo/xwidget-readonly-caret-next-line)
-    (define-key map [remap previous-line] #'douo/xwidget-readonly-caret-previous-line)
-    (define-key map [remap move-beginning-of-line] #'douo/xwidget-readonly-caret-beginning-of-line)
-    (define-key map [remap move-end-of-line] #'douo/xwidget-readonly-caret-end-of-line)
-    (define-key map [remap forward-word] #'douo/xwidget-readonly-caret-forward-word)
-    (define-key map [remap backward-word] #'douo/xwidget-readonly-caret-backward-word)
-    (define-key map [remap beginning-of-buffer] #'douo/xwidget-readonly-caret-beginning-of-buffer)
-    (define-key map [remap end-of-buffer] #'douo/xwidget-readonly-caret-end-of-buffer)
-    (define-key map [remap set-mark-command] #'douo/xwidget-readonly-caret-set-mark)
-    (define-key map [remap kill-ring-save] #'douo/xwidget-readonly-caret-copy))
+    "Bind Emacs-style navigation to xwidget's native scroll commands.
+
+Avoid the JavaScript readonly caret here: mixing Selection.modify with
+xwidget's native scrolling creates two independent positions."
+    (define-key map (kbd "C-f") #'xwidget-webkit-scroll-forward)
+    (define-key map (kbd "C-b") #'xwidget-webkit-scroll-backward)
+    (define-key map (kbd "C-n") #'xwidget-webkit-scroll-up-line)
+    (define-key map (kbd "C-p") #'xwidget-webkit-scroll-down-line)
+    (define-key map (kbd "C-a") #'xwidget-webkit-scroll-backward)
+    (define-key map (kbd "C-e") #'xwidget-webkit-scroll-forward)
+    (define-key map (kbd "M-f") #'xwidget-webkit-scroll-forward)
+    (define-key map (kbd "M-b") #'xwidget-webkit-scroll-backward)
+    (define-key map (kbd "C-v") #'xwidget-webkit-scroll-up)
+    (define-key map (kbd "M-v") #'xwidget-webkit-scroll-down)
+    (define-key map (kbd "M-<") #'xwidget-webkit-scroll-top)
+    (define-key map (kbd "M->") #'xwidget-webkit-scroll-bottom)
+    (define-key map (kbd "M-w") #'xwidget-webkit-copy-selection-as-kill)
+    (define-key map (kbd "C-g") #'keyboard-quit)
+    (define-key map (kbd "C-SPC") #'douo/xwidget-selection-start)
+    (define-key map (kbd "C-@") #'douo/xwidget-selection-start)
+    (define-key map [remap forward-char] #'xwidget-webkit-scroll-forward)
+    (define-key map [remap right-char] #'xwidget-webkit-scroll-forward)
+    (define-key map [remap backward-char] #'xwidget-webkit-scroll-backward)
+    (define-key map [remap left-char] #'xwidget-webkit-scroll-backward)
+    (define-key map [remap next-line] #'xwidget-webkit-scroll-up-line)
+    (define-key map [remap previous-line] #'xwidget-webkit-scroll-down-line)
+    (define-key map [remap move-beginning-of-line] #'xwidget-webkit-scroll-backward)
+    (define-key map [remap move-end-of-line] #'xwidget-webkit-scroll-forward)
+    (define-key map [remap forward-word] #'xwidget-webkit-scroll-forward)
+    (define-key map [remap backward-word] #'xwidget-webkit-scroll-backward)
+    (define-key map [remap beginning-of-buffer] #'xwidget-webkit-scroll-top)
+    (define-key map [remap end-of-buffer] #'xwidget-webkit-scroll-bottom)
+    (define-key map [remap kill-ring-save] #'xwidget-webkit-copy-selection-as-kill))
 
   :config
-  (douo/xwidget-readonly-caret-bind-map xwidget-webkit-mode-map))
+  (douo/xwidget-readonly-caret-bind-map xwidget-webkit-mode-map)
+  (define-key xwidget-webkit-mode-map (kbd "q") #'douo/grip-xwidget-quit)
+  (define-key xwidget-webkit-mode-map (kbd "Q") #'douo/grip-xwidget-quit))
 
 
 ;; begin_epub
@@ -2122,13 +2310,36 @@ Call CALLBACK with the JavaScript return value when supplied."
   ;; 局限性：这也导致使用 Tramp 打开的文件在预览时无法加载远程主机的相对路径图片和其他相对路径的 .md 文件。
   (defun my-grip-preview-md-around (orig-fn &rest args)
     (if (and buffer-file-name (file-remote-p buffer-file-name))
-        (let ((grip-real-time-refresh t)
-              (default-directory temporary-file-directory))
-          (setq grip--preview-file (make-temp-file "grip-tramp-" nil ".md"))
+        (let* ((grip-real-time-refresh t)
+               (preview-directory (make-temp-file "grip-tramp-" t))
+               (default-directory preview-directory))
+          (setq douo/grip--preview-directory preview-directory)
+          (setq grip--preview-file
+                (expand-file-name
+                 (concat (file-name-base buffer-file-name) ".md")
+                 preview-directory))
           (write-region (point-min) (point-max) grip--preview-file nil 'quiet)
           (grip-start-process))
       (apply orig-fn args)))
-  (advice-add 'grip--preview-md :around #'my-grip-preview-md-around))
+  (advice-add 'grip--preview-md :around #'my-grip-preview-md-around)
+  (advice-add 'grip--kill-process :after #'douo/grip--cleanup-preview-directory)
+
+  (defun my-grip-browse-url-around (orig-fn url)
+    "Use one xwidget session per grip preview URL."
+    (if (and grip-preview-in-webkit
+             (display-graphic-p)
+             (featurep 'xwidget-internal))
+        (save-selected-window
+          (let ((buf (and (fboundp 'douo/grip--xwidget-buffer-for-url)
+                          (douo/grip--xwidget-buffer-for-url url))))
+            (unless (buffer-live-p buf)
+              (xwidget-webkit-browse-url url t)
+              (setq buf (xwidget-buffer (xwidget-webkit-current-session))))
+            (when (buffer-live-p buf)
+              (and (eq buf (current-buffer)) (quit-window))
+              (pop-to-buffer buf))))
+      (funcall orig-fn url)))
+  (advice-add 'grip--browse-url :around #'my-grip-browse-url-around))
 ;; end_md
 
 (use-package lua-mode
