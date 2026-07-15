@@ -239,9 +239,15 @@ ARGS 是传递给原始函数的参数列表。"
                                                       ((eq system-type 'gnu/linux) "paplay ")
                                                       )
                                                      org-clock-sound)))))
-  ;; 增加 latex preview 尺寸
-  ;; arch 需安装 texlive 组
-  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.5))
+  ;; 调整 latex preview 尺寸以匹配编辑器字体大小 (xelatex 矢量图推荐 0.8 - 1.0)
+  ;; (setq org-format-latex-options (plist-put org-format-latex-options :scale 0.9))
+  ;; 使用 xelatex 渲染高清矢量公式图片 (完美支持 fontspec / 中文等)
+  (setq org-preview-latex-default-process 'xelatex)
+  ;; 让 LaTeX 预览图片使用无衬线字体 (Sans-Serif)，与编辑器文本字体风格保持协调一致
+  (unless (string-match-p "sansmath" org-format-latex-header)
+    (setq org-format-latex-header
+          (concat org-format-latex-header
+                  "\n\\renewcommand{\\familydefault}{\\sfdefault}\n\\usepackage{sansmath}\n\\sansmath\n")))
   :custom
   (org-M-RET-may-split-line
    '((item . nil)     ;; 插入 item 时不 split
