@@ -2082,8 +2082,8 @@ xwidget's native scrolling creates two independent positions."
     "Drop Pyright 'variable not accessed' notes from DIAGS."
     (list (seq-remove (lambda (d)
                         (and (eq (flymake-diagnostic-type d) 'eglot-note)
-                             (s-starts-with? "Pyright:" (flymake-diagnostic-text d))
-                             (s-ends-with? "is not accessed" (flymake-diagnostic-text d))))
+                             (string-prefix-p "Pyright:" (flymake-diagnostic-text d))
+                             (string-suffix-p "is not accessed" (flymake-diagnostic-text d))))
                       (car diags))))
   :config
   (advice-add 'eglot--report-to-flymake :filter-args #'my-filter-eglot-diagnostics)
