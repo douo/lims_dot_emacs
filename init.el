@@ -1215,15 +1215,6 @@ xwidget's native scrolling creates two independent positions."
   (crux-reopen-as-root-mode 1)
   )
 
-(use-package undo-tree
-  :straight t
-  :config
-  ;; autosave the undo-tree history
-  (setq undo-tree-history-directory-alist
-        `((".*" . ,temporary-file-directory)))
-  (setq undo-tree-auto-save-history t))
-
-
 ;; 核心扩展
 (use-package dired
   :config
