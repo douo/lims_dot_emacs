@@ -660,6 +660,7 @@
 ;; temporarily highlight changes from yanking, etc
 (use-package volatile-highlights
   :straight t
+  :diminish "闪"
   :config
   (volatile-highlights-mode +1))
 
@@ -1843,13 +1844,6 @@ xwidget's native scrolling creates two independent positions."
   :diminish "键";;"  "
   :config
   (which-key-mode))
-
-;; temporarily highlight changes from yanking, etc
-(use-package volatile-highlights
-  :straight t
-  :diminish "闪"
-  :config
-  (volatile-highlights-mode +1))
 
 ;; 使用叠加层高亮符号
 (use-package symbol-overlay
