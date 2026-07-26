@@ -664,10 +664,19 @@
   :init
   (dolist (hook '(prog-mode-hook))
     (add-hook hook #'whitespace-mode))
-  (add-hook 'before-save-hook #'whitespace-cleanup)
   :diminish "空";;"  "
   :config
   (setq whitespace-style '(face tabs empty trailing )))
+
+;; 保存时只清理自己改动过的行的尾随空白。
+;; 代替之前挂在全局 before-save-hook 上的 whitespace-cleanup：
+;; 1. 不再给他人仓库中本就存在的尾随空白制造无关 diff；
+;; 2. 不再与 super-save / sis-inline-tighten-tail-rule 冲突
+;;    （之前自动保存会顺手吃掉正在输入的行尾空格）。
+(use-package ws-butler
+  :straight t
+  :diminish
+  :hook (prog-mode . ws-butler-mode))
 
 ;; temporarily highlight changes from yanking, etc
 (use-package volatile-highlights
