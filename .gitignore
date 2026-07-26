@@ -51,6 +51,8 @@ init-local.el
 /image-dired/
 /org-persist/
 /tree-sitter/
+# url 包的 cache（含 cookies，属敏感数据，绝不能入库）
+/url/
 bookmarks.eld
 places.eld
 projects.eld
