@@ -1096,10 +1096,8 @@ xwidget's native scrolling creates two independent positions."
 (use-package pdf-tools
   :straight t
   :config
-  (custom-set-variables
-   '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
-  (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
-
+  ;; 注意：不要硬编码 epdfinfo 路径（旧值 /usr/local/bin/epdfinfo 已不存在），
+  ;; 交给下方 `pdf-tools-install' 自动定位/编译 epdfinfo。
   ;; 自定义 pdf 翻译文本提取器
   ;; 如果有高亮返回高亮文本，无则返回整页文本
   (defun douo/gts-pdf-view-selection-texter ()
