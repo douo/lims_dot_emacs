@@ -1958,10 +1958,6 @@ xwidget's native scrolling creates two independent positions."
   :after yasnippet
   )
 
-(use-package markdown-mode
-  :straight t
-  )
-
 ;; treesit start
 ;; read https://blog.markhepburn.com/posts/experimenting-with-the-built-in-treesitter-support-in-emacs/
 ;; download os relate module from: https://github.com/emacs-tree-sitter/tree-sitter-langs
