@@ -566,7 +566,8 @@ ARG：前缀参数，非 nil 时表示在其他窗口打开笔记。"
     :parent embark-general-map
     "RET" #'org-menu-fix-timestamp ; harmless default
     "t" #'org-toggle-timestamp-type
-    "e" (lambda (_) "edit a time stamp." nil (org-time-stamp nil))
+    ;; keymap 里必须绑定 interactive 命令，否则按键报 commandp 错误
+    "e" (lambda () "Edit a time stamp." (interactive) (org-time-stamp nil))
     )
   ;; modify default embark key for org-mode
   (defun douo/setup-embark-org-keymap ()
