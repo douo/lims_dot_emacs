@@ -106,7 +106,10 @@
 
 ;; 长行优化
 ;; https://emacs-china.org/t/topic/25811/9
-(setq-default bidi-display-reordering nil)
+;; 注意：不要设置 bidi-display-reordering 为 nil——官方文档明确它是内部变量、
+;; 置 nil 不受支持（C 层假设其为 t），可能产生渲染/光标移动异常。
+;; 受支持的做法是固定段落方向 + 关闭括号匹配算法（BPA）。
+(setq-default bidi-paragraph-direction 'left-to-right)
 (setq bidi-inhibit-bpa t
       long-line-threshold 1000
       large-hscroll-threshold 1000
