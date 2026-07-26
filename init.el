@@ -2449,7 +2449,7 @@ xwidget's native scrolling creates two independent positions."
                                   ))
   (sis-respect-go-english-triggers '(embark-act
                                      ace-window
-                                     aw-show-dispatch-helpn
+                                     aw-show-dispatch-help
                                      douo/multi-vterm-dedicated-toggle))
   (sis-respect-restore-triggers '(embark-act
                                   ace-window
