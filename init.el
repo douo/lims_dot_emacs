@@ -2211,9 +2211,12 @@ xwidget's native scrolling creates two independent positions."
 
 (use-package jsonian
   :straight t
-  :after so-long
-  :custom
-  (jsonian-no-so-long-mode))
+  :defer t
+  :init
+  ;; `jsonian-no-so-long-mode' 是函数不是变量（之前误放在 :custom 里等于没生效），
+  ;; 且它要求 so-long 已加载，所以挂在 so-long 加载之后调用。
+  (with-eval-after-load 'so-long
+    (jsonian-no-so-long-mode)))
 
 ;; end_web
 
