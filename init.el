@@ -1955,7 +1955,8 @@ xwidget's native scrolling creates two independent positions."
 ;; read https://blog.markhepburn.com/posts/experimenting-with-the-built-in-treesitter-support-in-emacs/
 ;; download os relate module from: https://github.com/emacs-tree-sitter/tree-sitter-langs
 (when (and (not (version< emacs-version "29")) (treesit-available-p))
-  (setq treesit-extra-load-path (list (concat (file-name-directory user-init-file) "tree-sitter")))
+  ;; 用 user-emacs-directory 而不是 user-init-file：后者在 --batch/-q 下为 nil
+  (setq treesit-extra-load-path (list (expand-file-name "tree-sitter" user-emacs-directory)))
   (dolist (mapping
            '((c-mode . c-ts-mode)
              (c++-mode . c++-ts-mode)

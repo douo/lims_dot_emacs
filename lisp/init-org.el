@@ -261,7 +261,7 @@ ARGS 是传递给原始函数的参数列表。"
 
   ;; (org-preview-latex-default-process 'dvisvgm)
   ;; 设置 timer 的提示音
-  (org-clock-sound  (concat (file-name-directory user-init-file) "assets/org-timer.wav"))
+  (org-clock-sound (expand-file-name "assets/org-timer.wav" user-emacs-directory))
 
   ;; begin_refile
   (org-refile-targets `(
