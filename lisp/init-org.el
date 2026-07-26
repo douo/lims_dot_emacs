@@ -92,8 +92,10 @@ TODO 状态的能力。"
   ;; 检查当前光标是否已在 Org 链接内
   (let* ((point-in-link (org-in-regexp org-link-any-re 1))
          ;; 从剪切板获取 URL（若剪切板内容匹配 HTTP 协议则视为有效 URL）
-         (clipboard-url (when (string-match-p "^http" (current-kill 0))
-                          (current-kill 0)))
+         ;; kill ring 为空时 `current-kill' 会报错，用 ignore-errors 兜底
+         (clipboard-url (let ((kill (ignore-errors (current-kill 0))))
+                          (when (and kill (string-match-p "^http" kill))
+                            kill)))
          ;; 获取当前选中的文本
          (region-content (when (region-active-p)
                            (buffer-substring-no-properties (region-beginning)
