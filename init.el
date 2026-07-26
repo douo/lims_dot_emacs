@@ -1736,16 +1736,6 @@ xwidget's native scrolling creates two independent positions."
   ;;         embark-minimal-indicator  ; default is embark-mixed-indicator
   ;;         embark-highlight-indicator ; 高亮当前的作用区域
   ;;         embark-isearch-highlight-indicator))
-  ;; begin_ace_window
-  ;; 配合 ace-window 指定 window 打开目标
-  (eval-when-compile
-    (defmacro my/embark-ace-action (fn)
-      `(defun ,(intern (concat "my/embark-ace-" (symbol-name fn))) ()
-         (interactive)
-         (with-demoted-errors "%s"
-           (let ((aw-dispatch-always t))
-             (aw-switch-to-window (aw-select nil))
-             (call-interactively (symbol-function ',fn)))))))
   ;; begin_sudo_find_file
   ;; root 权限打开文件
   (defun sudo-find-file (file)
@@ -1874,8 +1864,6 @@ xwidget's native scrolling creates two independent positions."
 (use-package flymake
   :straight (:type built-in)
   :config
-  (repeat-mode 1)
-
   ;; 定义 prefix keymap C-c !
   (define-prefix-command 'flymake-repeat-prefix-map)
   (global-set-key (kbd "C-c !") 'flymake-repeat-prefix-map)

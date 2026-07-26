@@ -572,11 +572,7 @@ ARG：前缀参数，非 nil 时表示在其他窗口打开笔记。"
     ;; keymap 里必须绑定 interactive 命令，否则按键报 commandp 错误
     "e" (lambda () "Edit a time stamp." (interactive) (org-time-stamp nil))
     )
-  ;; modify default embark key for org-mode
-  (defun douo/setup-embark-org-keymap ()
-    "为 org-mode 的 region 目标补充时间戳动作键映射。"
-    (add-to-list 'embark-keymap-alist '(region . embark-org-timestamp-map))
-    ))
+  )
 
 ;; org-ql
 ;; 该包提供了 Org 文件的查询语言。它提供两种语法风格：类似 Lisp 的 sexps 和类似搜索引擎的关键字。

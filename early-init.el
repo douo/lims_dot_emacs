@@ -26,8 +26,7 @@
  'after-init-hook
  (lambda ()
    (setq gc-cons-threshold (car (get 'gc-cons-threshold 'standard-value)))
-   (efs/display-startup-time)
-   (makunbound 'my/emacs-start-time)))
+   (efs/display-startup-time)))
 
 ;; 检查变量 `server-process' 是否存在可判断是否已经启动了服务。
 ;; 注意：延后到初始化加载后，并跳过批处理启动，避免测试/脚本启动时创建服务套接字。
