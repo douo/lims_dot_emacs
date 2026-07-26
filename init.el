@@ -469,11 +469,13 @@
 
 
 (use-package recentf
-  :bind (("C-x C-r" . 'recentf-open-files))
+  :bind (("C-x C-r" . recentf-open-files))
+  ;; 注意：必须在启动阶段就启用，否则 :bind 隐式延迟会导致
+  ;; 第一次按 C-x C-r 之前访问的文件都不会被记录。
+  :hook (after-init . recentf-mode)
   :config
   (setq recentf-max-menu-items 10
-        recentf-max-saved-items 25)
-  (recentf-mode +1))
+        recentf-max-saved-items 25))
 
 ;; 高亮当前行
 (use-package hl-line
