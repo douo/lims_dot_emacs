@@ -1793,14 +1793,11 @@ xwidget's native scrolling creates two independent positions."
                 ("h" . helpful-at-point))
           (:map embark-file-map
                 ("S" . sudo-find-file)
-                ("o" . find-file)
-                ("U" . 0x0-dwim))
+                ("o" . find-file))
           (:map embark-buffer-map
                 ("o" . switch-to-buffer))
           (:map embark-bookmark-map
                 ("o" . bookmark-jump))
-          (:map embark-region-map
-                ("U" . 0x0-dwim))
           ;; 支持多选，通过 `embark-select'(SPC) 选择，通过 `embark-act-all'(A) 执行
           ;; `embark-export'/`embark-collect' 进入 *特定*/embark-collection-mode(fallback) buffer 处理当前候选项
           ;; `embark-act-all' `embark-export' 和 `embark-collect' 优先临时目标列表。
