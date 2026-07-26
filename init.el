@@ -65,8 +65,8 @@
 (column-number-mode t)
 (size-indication-mode t)
 
-;; enable y/n answers
-(fset 'yes-or-no-p 'y-or-n-p)
+;; enable y/n answers (Emacs 28+ 官方替代 (fset 'yes-or-no-p 'y-or-n-p))
+(setq use-short-answers t)
 
 ;; more useful frame title, that show either a file or a
 ;; buffer name (if the buffer isn't visiting a file)
