@@ -185,7 +185,9 @@
             ("dolphin-llama3" . ,(douo/llm-ollama-provider "dolphin-llama3:8b-v2.9-fp16"))
             ("qwen" . ,(douo/llm-ollama-provider "qwen:32b"))
             ("gpt4o" . ,(douo/llm-gpt4o-provider))
-            ("gemini-2.0-flash" . ,(douo/llm-gemini-provider))
+            ;; 标签与实际模型保持一致：flash 对应 flash provider，pro 单独一项
+            ("gemini-2.5-flash" . ,(douo/llm-gemini-flash-provider))
+            ("gemini-2.5-pro" . ,(douo/llm-gemini-provider))
             ("copilot" . ,(douo/llm-copilot-provider))
             ))
   ;; 使用 llm 为新会话命名。
