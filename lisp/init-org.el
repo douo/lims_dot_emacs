@@ -160,15 +160,18 @@ TODO 状态的能力。"
 
   函数通过 `unwind-protect' 确保 `consult-ripgrep-args' 的值在
   搜索结束后总能被恢复，即使发生错误。"
+  ;; advice 先于 autoload 执行；若本会话第一个 consult 命令就是
+  ;; consult-ripgrep，consult 尚未加载、变量未定义，需先声明。
+  (defvar consult-ripgrep-args)
+  (require 'consult)
   (let ((original consult-ripgrep-args))
-    (if (douo/inside-writing)
-        (setq consult-ripgrep-args
-              (concat consult-ripgrep-args " --hidden")))
     (unwind-protect
-        (apply orig-fun args) ; Execute the original function
-      (setq consult-ripgrep-args original))  ; Restore the original value
-    )
-  )
+        (progn
+          (when (douo/inside-writing)
+            (setq consult-ripgrep-args
+                  (concat consult-ripgrep-args " --hidden")))
+          (apply orig-fun args)) ; Execute the original function
+      (setq consult-ripgrep-args original))))  ; Restore the original value
 
 (advice-add 'consult-ripgrep :around #'douo/writing-consult-ripgrep-include-hidden-advice)
 
