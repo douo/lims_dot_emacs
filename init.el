@@ -2439,11 +2439,12 @@ xwidget's native scrolling creates two independent positions."
 ;; End
 
 ;; 在 mode-line 显示时间
+;; 注意：不显示秒数——每秒唤醒重绘 mode-line 在笔记本上有可感耗电
 (use-package time
   :custom
-  (display-time-format "%H:%M:%S")
+  (display-time-format "%H:%M")
   (display-time-24hr-format 1)
-  (display-time-interval 1)
+  (display-time-interval 60)
   :config
   (display-time-mode 1))
 
