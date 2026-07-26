@@ -2526,7 +2526,7 @@ xwidget's native scrolling creates two independent positions."
      ;;  (lambda (msg) (message (plist-get msg :message))))
      :custom
      (copilot-idle-delay 0.8)
-     (copilot-server-args '("--stdio" "--debug")))
+     (copilot-server-args '("--stdio")))
 ;; end_copilot
 
 ;; start_GhostText
