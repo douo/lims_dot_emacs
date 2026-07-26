@@ -2369,22 +2369,24 @@ xwidget's native scrolling creates two independent positions."
   (setq sis--ism-inited nil)
   (sis-global-respect-mode)
   ;; Emacs 焦点切换的时候不要切换到英文输入法
-  (defun sis--respect-focus-out-handler ()
-  "Handler for `focus-out-hook'."
-
-  ;; `mouse-drag-region' causes lots of noise.
-  (unless (eq this-command 'mouse-drag-region)
-    ;; can't use `sis--save-to-buffer' directly
-    ;; because OS may has already changed input source
-    ;; when other windows get focus.
-    ;; so, don't get the current OS input source
-    (setq sis--for-buffer-locked t)
-    ;(sis--set-english)
-    )
-
-  (when sis-log-mode
-    (message "Handle save hook, save [%s] to [%s]."
-             sis--for-buffer (current-buffer))))
+  ;; 用显式 advice 覆盖，而不是直接 defun 重定义：包更新时不会被悄悄冲掉，
+  ;; 且 describe-function 能看到覆盖关系。与原实现的差别是去掉了 sis--set-english。
+  (defun douo/sis--respect-focus-out-handler ()
+    "Handler for `focus-out-hook'."
+    ;; `mouse-drag-region' causes lots of noise.
+    (unless (eq this-command 'mouse-drag-region)
+      ;; can't use `sis--save-to-buffer' directly
+      ;; because OS may has already changed input source
+      ;; when other windows get focus.
+      ;; so, don't get the current OS input source
+      (setq sis--for-buffer-locked t)
+      ;;(sis--set-english)
+      )
+    (when sis-log-mode
+      (message "Handle save hook, save [%s] to [%s]."
+               sis--for-buffer (current-buffer))))
+  (advice-add 'sis--respect-focus-out-handler
+              :override #'douo/sis--respect-focus-out-handler)
   ;; hack end
   ;; 将一些忘记切换拼音输入法时容易误按的快捷键映射到实际意图
   (let ((keys '("C-；" "C-;"
