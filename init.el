@@ -1371,9 +1371,10 @@ xwidget's native scrolling creates two independent positions."
           ("C-c w" . ace-swap-window)))
 
 ;; 内置的 winner-mode 可以记忆窗口布局
-(use-package winner-mode
-  :config
-  (winner-mode 1)
+;; 注意：feature 名是 `winner' 而不是 `winner-mode'，写错会让 use-package
+;; 生成指向不存在文件的 autoload，winner-undo/redo 按键直接报错。
+(use-package winner
+  :hook (after-init . winner-mode)
   :bind (;; 回退窗口布局
          ("M-S-<left>" . winner-undo)
          ("M-S-<right>" . winner-redo)
