@@ -2199,10 +2199,15 @@ xwidget's native scrolling creates two independent positions."
   :straight t
   :defer t
   :init
+  (defvar douo/jsonian-no-so-long-configured-p nil
+    "Non-nil once Jsonian has been excluded from `so-long-mode'.")
   ;; `jsonian-no-so-long-mode' 是函数不是变量（之前误放在 :custom 里等于没生效），
-  ;; 且它要求 so-long 已加载，所以挂在 so-long 加载之后调用。
+  ;; 且它要求 so-long 已加载，所以挂在 so-long 加载之后调用。该函数会包装
+  ;; `so-long-predicate'，重复调用会形成递归，因此重新加载配置时必须跳过。
   (with-eval-after-load 'so-long
-    (jsonian-no-so-long-mode)))
+    (unless douo/jsonian-no-so-long-configured-p
+      (jsonian-no-so-long-mode)
+      (setq douo/jsonian-no-so-long-configured-p t))))
 
 ;; end_web
 
@@ -2264,6 +2269,7 @@ xwidget's native scrolling creates two independent positions."
 
 (use-package grip-mode
   :straight t
+  :after markdown-mode
   :bind (:map markdown-mode-command-map
          ("g" . grip-mode))
   :init
