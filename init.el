@@ -2352,6 +2352,24 @@ xwidget's native scrolling creates two independent positions."
 ;; 输入法
 (use-package sis
   :straight t
+  :init
+  ;; SIS 的这些选项由 `defvar' 声明，不能依赖 use-package 的 :custom
+  ;; 在包加载前生效；respect mode 启用时就会读取它们并生成 advice/keymap。
+  (setq sis-prefix-override-keys '("C-c" "C-x" "C-h"
+                                   ;; avy & consult
+                                   "M-g" "M-s")
+        sis-respect-go-english-triggers '(embark-act
+                                          ace-window
+                                          aw-show-dispatch-help
+                                          douo/multi-vterm-dedicated-toggle)
+        sis-respect-restore-triggers '(embark-act
+                                       ace-window
+                                       aw-show-dispatch-help
+                                       douo/multi-vterm-dedicated-toggle)
+        sis-default-cursor-color "white"
+        sis-other-cursor-color "orange"
+        sis-inline-tighten-head-rule 'one
+        sis-inline-tighten-tail-rule 'one)
   :config
   ;; macos
   ;; 使用系统输入法
@@ -2383,7 +2401,7 @@ xwidget's native scrolling creates two independent positions."
   ;; emacs 启动的时候 sis-global-respect-mode 调用 sis--ensure-ism 导致 sis--ism-inited 被置 t。默认 macos 没问题，其他系统没法正确初始化。
   ;; 手动重置一下
   (setq sis--ism-inited nil)
-  (sis-global-respect-mode)
+  (sis-global-respect-mode +1)
   ;; Emacs 焦点切换的时候不要切换到英文输入法
   ;; 用显式 advice 覆盖，而不是直接 defun 重定义：包更新时不会被悄悄冲掉，
   ;; 且 describe-function 能看到覆盖关系。与原实现的差别是去掉了 sis--set-english。
@@ -2403,6 +2421,23 @@ xwidget's native scrolling creates two independent positions."
                sis--for-buffer (current-buffer))))
   (advice-add 'sis--respect-focus-out-handler
               :override #'douo/sis--respect-focus-out-handler)
+
+  ;; SIS 在 prefix 序列结束时会临时关闭全局覆盖 map；若命令恰好切换到
+  ;; Dired 等禁用覆盖的 buffer，其 timer 会跳过恢复，导致所有普通 buffer
+  ;; 也永久失去 prefix 切换。保留各 buffer 的局部禁用值，只修复全局默认值。
+  (defun douo/sis--restore-prefix-override-default (&rest _)
+    "Keep the global SIS prefix override enabled after a key sequence."
+    (when sis-global-respect-mode
+      (set-default 'sis--prefix-override-map-enable t)))
+  (advice-add 'sis--respect-post-cmd-timer-fn
+              :after #'douo/sis--restore-prefix-override-default)
+
+  ;; Dired 虽然只读，但其中仍有 C-x k、M-g 等需要英文输入的命令序列。
+  (defun douo/sis-enable-prefix-override-in-dired ()
+    "Enable SIS prefix override in the current Dired buffer."
+    (setq-local sis-prefix-override-buffer-disable-predicates nil)
+    (sis-prefix-override-buffer-enable))
+  (add-hook 'dired-mode-hook #'douo/sis-enable-prefix-override-in-dired)
   ;; hack end
   ;; 将一些忘记切换拼音输入法时容易误按的快捷键映射到实际意图
   (let ((keys '("C-；" "C-;"
@@ -2418,30 +2453,14 @@ xwidget's native scrolling creates two independent positions."
             (dst (pop keys)))
         (define-key key-translation-map (kbd src) (kbd dst)))))
 
-  :custom
   ;; enable the /cursor color/ mode
-  (sis-global-cursor-color-mode t)
-  (sis-default-cursor-color "white")
-  (sis-other-cursor-color "orange")
+  (sis-global-cursor-color-mode +1)
   ;; enable the /respect/ mode
   ;; - 使用指定语言启动 Emacs `sis-respect-start'
   ;; - 离开 evil insert 模式时切换到 english
   ;; - 按特定 prefix key `sis-prefix-override-keys' 后切换到 english
   ;; - 切换 buffer (或者 frame 重新获得焦点)时恢复 buffer input source
   ;; - 执行特定的命令前切换到 english `sis-respect-go-english-triggers'
-  (sis-prefix-override-keys (list "C-c" "C-x" "C-h"
-                                  ;; avy & consult
-                                  "M-g" "M-s"
-                                  ))
-  (sis-respect-go-english-triggers '(embark-act
-                                     ace-window
-                                     aw-show-dispatch-help
-                                     douo/multi-vterm-dedicated-toggle))
-  (sis-respect-restore-triggers '(embark-act
-                                  ace-window
-                                  aw-show-dispatch-help
-                                  douo/multi-vterm-dedicated-toggle))
-  (sis-global-respect-mode t)
   ;; enable the /context/ mode for all buffers
   ;; `sis-context-hooks' 触发时会触发 `sis-context'
   ;; 根据当前光标位置的前后字符判断合适输入法
@@ -2452,10 +2471,8 @@ xwidget's native scrolling creates two independent positions."
   ;; (sis-global-context-mode nil)
 
   ;; enable the /inline english/ mode for all buffers
-  (sis-global-inline-mode t)
-  (sis-inline-tighten-head-rule 'one)
+  (sis-global-inline-mode +1)
   ;; FIXME 退出 inline 时，会触发自动保存，自动格式清理会删除尾部的空格。导致这个变量设置了没有意义
-  (sis-inline-tighten-tail-rule 'one)
   )
 ;; End
 
