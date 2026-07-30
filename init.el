@@ -2369,7 +2369,9 @@ xwidget's native scrolling creates two independent positions."
         sis-default-cursor-color "white"
         sis-other-cursor-color "orange"
         sis-inline-tighten-head-rule 'one
-        sis-inline-tighten-tail-rule 'one)
+        sis-inline-tighten-tail-rule 'one
+        ;; inline region 使用连续两个空格退出，而不是一个空格。
+        sis-inline-single-space-close nil)
   :config
   ;; macos
   ;; 使用系统输入法
@@ -2471,6 +2473,29 @@ xwidget's native scrolling creates two independent positions."
   ;; (sis-global-context-mode nil)
 
   ;; enable the /inline english/ mode for all buffers
+  ;; `- '、`+ '、`* ' 后通常准备继续输入中文，不应仅因这个空格进入
+  ;; inline English；之后输入中文再按空格时，仍沿用 SIS 原有的切换行为。
+  (defun douo/sis--inline-check-after-symbol-advice (orig-fun &rest args)
+    "Avoid starting inline English after -, +, *, or another space."
+    (if (and (memq (char-before) '(?\s ?\u3000))
+             (memq (char-before (1- (point))) '(?- ?+ ?* ?\s ?\u3000)))
+        (setq sis--inline-first-space-point nil)
+      (apply orig-fun args)))
+  (advice-add 'sis--inline-check-to-activate
+              :around #'douo/sis--inline-check-after-symbol-advice)
+
+  ;; SIS 默认要求 inline 区域中已有非空字符，`中文  ' 这种仅包含两个
+  ;; 空格的区域不会退出。这里让活动区域末尾的连续两个空格无条件退出。
+  (defun douo/sis--inline-deactivate-on-double-space (&rest _)
+    "Deactivate the active SIS inline region after two spaces."
+    (when (and sis-inline-mode
+               (overlayp sis--inline-overlay)
+               (= (point) (sis--inline-overlay-end))
+               (memq (char-before) '(?\s ?\u3000))
+               (memq (char-before (1- (point))) '(?\s ?\u3000)))
+      (sis--inline-deactivate)))
+  (advice-add 'sis--inline-fly-check-deactivate
+              :before #'douo/sis--inline-deactivate-on-double-space)
   (sis-global-inline-mode +1)
   ;; FIXME 退出 inline 时，会触发自动保存，自动格式清理会删除尾部的空格。导致这个变量设置了没有意义
   )
