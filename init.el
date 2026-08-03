@@ -1362,9 +1362,8 @@ xwidget's native scrolling creates two independent positions."
   (setq aw-display-mode-overlay nil)
   ;; (ace-window-posframe-mode nil)
   :bind  (
-          ;; 代替 `ace-window' 不用按 ? 就能显示帮助(打印到*Message*)
-          ;; 会导致即便关闭 `aw-dispatch-always' 也会一直显示帮助
-          ("M-o" . aw-show-dispatch-help)
+          ;; 需要时在 ace-window 选择界面按 ? 显示 dispatch 帮助。
+          ("M-o" . ace-window)
           ("C-c w" . ace-swap-window)))
 
 ;; 内置的 winner-mode 可以记忆窗口布局
