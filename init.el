@@ -2354,7 +2354,8 @@ xwidget's native scrolling creates two independent positions."
   :init
   ;; SIS 的这些选项由 `defvar' 声明，不能依赖 use-package 的 :custom
   ;; 在包加载前生效；respect mode 启用时就会读取它们并生成 advice/keymap。
-  (setq sis-prefix-override-keys '("C-c" "C-x" "C-h"
+  (setq sis-prefix-override-buffer-disable-predicates nil
+        sis-prefix-override-keys '("C-c" "C-x" "C-h"
                                    ;; avy & consult
                                    "M-g" "M-s")
         sis-respect-go-english-triggers '(embark-act
@@ -2403,6 +2404,20 @@ xwidget's native scrolling creates two independent positions."
   ;; 手动重置一下
   (setq sis--ism-inited nil)
   (sis-global-respect-mode +1)
+
+  ;; SIS 默认排除 minibuffer、只读 buffer 和大多数 *special* buffer，且会把
+  ;; 禁用状态保存为 buffer-local 值。这里统一移除这些例外，并清理配置重载前
+  ;; 已经写入 Calendar、Org Agenda、Dired 等 buffer 的局部禁用状态。
+  (defun douo/sis-enable-prefix-override-everywhere ()
+    "Enable SIS prefix override in every existing and future buffer."
+    (setq sis-prefix-override-buffer-disable-predicates nil)
+    (set-default 'sis--prefix-override-map-enable t)
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (local-variable-p 'sis--prefix-override-map-enable)
+          (kill-local-variable 'sis--prefix-override-map-enable)))))
+  (douo/sis-enable-prefix-override-everywhere)
+
   ;; Emacs 焦点切换的时候不要切换到英文输入法
   ;; 用显式 advice 覆盖，而不是直接 defun 重定义：包更新时不会被悄悄冲掉，
   ;; 且 describe-function 能看到覆盖关系。与原实现的差别是去掉了 sis--set-english。
@@ -2423,22 +2438,14 @@ xwidget's native scrolling creates two independent positions."
   (advice-add 'sis--respect-focus-out-handler
               :override #'douo/sis--respect-focus-out-handler)
 
-  ;; SIS 在 prefix 序列结束时会临时关闭全局覆盖 map；若命令恰好切换到
-  ;; Dired 等禁用覆盖的 buffer，其 timer 会跳过恢复，导致所有普通 buffer
-  ;; 也永久失去 prefix 切换。保留各 buffer 的局部禁用值，只修复全局默认值。
+  ;; SIS 在 prefix 序列结束时会临时关闭全局覆盖 map；无论命令是否切换
+  ;; buffer，都确保全局默认值恢复，避免后续 buffer 一并失去 prefix 切换。
   (defun douo/sis--restore-prefix-override-default (&rest _)
     "Keep the global SIS prefix override enabled after a key sequence."
     (when sis-global-respect-mode
       (set-default 'sis--prefix-override-map-enable t)))
   (advice-add 'sis--respect-post-cmd-timer-fn
               :after #'douo/sis--restore-prefix-override-default)
-
-  ;; Dired 虽然只读，但其中仍有 C-x k、M-g 等需要英文输入的命令序列。
-  (defun douo/sis-enable-prefix-override-in-dired ()
-    "Enable SIS prefix override in the current Dired buffer."
-    (setq-local sis-prefix-override-buffer-disable-predicates nil)
-    (sis-prefix-override-buffer-enable))
-  (add-hook 'dired-mode-hook #'douo/sis-enable-prefix-override-in-dired)
   ;; hack end
   ;; 将一些忘记切换拼音输入法时容易误按的快捷键映射到实际意图
   (let ((keys '("C-；" "C-;"
