@@ -31,6 +31,16 @@ git clone https://github.com/douo/lims_dot_emacs.git ~/.emacs.d
 #+begin_src elisp
 ;;; init-local.el -*- lexical-binding: t; -*-
 ;; 例如设置本地特定的网络 IP、跳板机、或者自定义字体
+
+;; 可选：让额外的 Org 文件参与 Tasklet，并按标签从 inbox 自动分流。
+(setq douo/org-tasklet-extra-task-specs
+      '((:file "work.org"
+         :tag "Work"
+         :capture-key "w"
+         :capture-label "Work")))
+(douo/org-tasklet-configure-extra-task-files)
+
+(provide 'init-local)
 #+end_src
 
 ** 3. 初始化 Tree-sitter

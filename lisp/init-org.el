@@ -12,6 +12,160 @@
 (defvar douo/roam-home (concat (file-name-as-directory douo/writing-home) "_roam"))
 (defvar  douo/gtd-home (concat (file-name-as-directory douo/roam-home) "_gtd"))
 
+(defvar douo/org-tasklet-primary-task-file-name "tasks.org"
+  "org-tasklet 的个人主任务文件名。")
+
+(defvar douo/org-tasklet-extra-task-specs nil
+  "参与个人 Tasklet 工作流的额外正式任务文件配置。
+
+每项为 plist，支持 :file、:tag、:capture-key 和 :capture-label。机器或
+用户特有的值应放在被 Git 忽略的 init-local.el 中。")
+
+(defvar douo/org-tasklet--extra-capture-keys nil
+  "由额外任务文件配置注册的 capture key。")
+
+(defun douo/org-tasklet-extra-task-file-names ()
+  "返回额外正式任务文件名。"
+  (delq nil
+        (mapcar (lambda (spec) (plist-get spec :file))
+                douo/org-tasklet-extra-task-specs)))
+
+(defun douo/org-tasklet-task-file-names ()
+  "返回参与个人 Tasklet 工作流的全部正式任务文件名。"
+  (cons douo/org-tasklet-primary-task-file-name
+        (douo/org-tasklet-extra-task-file-names)))
+
+(defun douo/org-tasklet-task-files ()
+  "返回参与个人 Tasklet 工作流的全部正式任务文件路径。"
+  (mapcar (lambda (file-name)
+            (expand-file-name file-name douo/gtd-home))
+          (douo/org-tasklet-task-file-names)))
+
+(defun douo/org-tasklet--subtree-local-tags (text)
+  "返回 Org 子树 TEXT 根标题上的本地标签。"
+  (require 'org)
+  (with-temp-buffer
+    (insert text)
+    (org-mode)
+    (goto-char (point-min))
+    (when (re-search-forward org-heading-regexp nil t)
+      (org-back-to-heading t)
+      (org-get-tags nil t))))
+
+(defun douo/org-tasklet--target-file-name-for-subtree (text)
+  "根据 Org 子树 TEXT 的标签返回额外任务文件名。"
+  (let ((tags (douo/org-tasklet--subtree-local-tags text)))
+    (catch 'target
+      (dolist (spec douo/org-tasklet-extra-task-specs)
+        (let ((tag (plist-get spec :tag))
+              (file (plist-get spec :file)))
+          (when (and tag file (member tag tags))
+            (throw 'target file)))))))
+
+(defun douo/org-tasklet--route-extra-task-item (original type text)
+  "按 TEXT 的标签选择额外任务文件，再调用 ORIGINAL 处理 TYPE。"
+  (let ((org-tasklet-tasks-file-name
+         (or (douo/org-tasklet--target-file-name-for-subtree text)
+             org-tasklet-tasks-file-name)))
+    (funcall original type text)))
+
+(defun douo/org-tasklet-refile-targets ()
+  "返回所有正式任务文件对应的 Org refile targets。"
+  (mapcar (lambda (file-name)
+            `(,(expand-file-name file-name douo/gtd-home) :maxlevel . 3))
+          (douo/org-tasklet-task-file-names)))
+
+(defun douo/org-tasklet--extra-capture-template (spec)
+  "根据额外任务文件配置 SPEC 构造 capture template。"
+  (let ((key (plist-get spec :capture-key))
+        (tag (plist-get spec :tag))
+        (label (plist-get spec :capture-label)))
+    (when (and key tag)
+      `(,key ,(or label (format "%s task" tag))
+        entry (file ,#'org-tasklet-capture-inbox-file)
+        ,(format "* TODO %%? :%s:\n:PROPERTIES:\n:CREATED: %%(org-tasklet--inactive-timestamp)\n:END:\n\n%%i"
+                 tag)
+        :empty-lines 1
+        :kill-buffer t))))
+
+(defun douo/org-tasklet--refresh-extra-capture-templates ()
+  "根据额外任务文件配置刷新 Tasklet capture templates。"
+  (dolist (key douo/org-tasklet--extra-capture-keys)
+    (setq org-tasklet-capture-templates
+          (assoc-delete-all key org-tasklet-capture-templates)))
+  (setq douo/org-tasklet--extra-capture-keys nil)
+  (dolist (spec douo/org-tasklet-extra-task-specs)
+    (when-let* ((template (douo/org-tasklet--extra-capture-template spec)))
+      (add-to-list 'org-tasklet-capture-templates template t)
+      (push (car template) douo/org-tasklet--extra-capture-keys))))
+
+(defun douo/org-tasklet-configure-extra-task-files ()
+  "应用额外 Tasklet 任务文件、refile 和 capture 配置。"
+  (interactive)
+  (setq org-refile-targets (douo/org-tasklet-refile-targets)
+        org-refile-use-outline-path
+        (if douo/org-tasklet-extra-task-specs 'file t)
+        org-refile-target-table nil)
+  (when (featurep 'org-tasklet-capture)
+    (douo/org-tasklet--refresh-extra-capture-templates)))
+
+(defun douo/org-tasklet--project-candidates ()
+  "返回所有正式任务文件中的 Tasklet 项目候选。"
+  (let (candidates)
+    (dolist (file (douo/org-tasklet-task-files))
+      (when (file-readable-p file)
+        (with-current-buffer (find-file-noselect file)
+          (org-mode)
+          (org-with-wide-buffer
+           (goto-char (point-min))
+           (when (org-tasklet--goto-top-level-heading '("Projects"))
+             (let* ((projects-level (org-outline-level))
+                    (end (save-excursion (org-end-of-subtree t t))))
+               (forward-line 1)
+               (while (re-search-forward org-heading-regexp end t)
+                 (when (= (org-outline-level) (1+ projects-level))
+                   (let* ((title (org-get-heading t t t t))
+                          (line (line-number-at-pos))
+                          (label (format "%s / %s  (line %d)"
+                                         (file-name-base file) title line)))
+                     (push (cons label (point-marker)) candidates))))))))))
+    (nreverse candidates)))
+
+(defun douo/org-tasklet--append-extra-agenda-files (files)
+  "将额外正式任务文件追加到 Tasklet agenda FILES。"
+  (delete-dups
+   (append files
+           (mapcar (lambda (file-name)
+                     (expand-file-name file-name douo/gtd-home))
+                   (douo/org-tasklet-extra-task-file-names)))))
+
+(defun douo/org-tasklet--stuck-projects-in-all-files (original &rest args)
+  "在所有正式任务文件上调用 ORIGINAL 并合并卡住的项目。"
+  (let (projects)
+    (dolist (file-name (douo/org-tasklet-task-file-names))
+      (let ((org-tasklet-tasks-file-name file-name))
+        (setq projects (nconc projects (apply original args)))))
+    projects))
+
+(defun douo/org-tasklet--refresh-all-project-files (original &rest args)
+  "在所有正式任务文件上调用 ORIGINAL 刷新项目状态。"
+  (let ((changed 0))
+    (dolist (file-name (douo/org-tasklet-task-file-names))
+      (let ((org-tasklet-tasks-file-name file-name))
+        (setq changed (+ changed (apply original args)))))
+    (message "已刷新所有 GTD 文件，共调整 %d 个状态" changed)
+    changed))
+
+(defun douo/org-tasklet--archive-extra-done (original &rest args)
+  "调用 ORIGINAL 后归档额外正式任务文件里的已关闭条目。"
+  (let ((count (apply original args)))
+    (dolist (file-name (douo/org-tasklet-extra-task-file-names))
+      (let ((file (expand-file-name file-name douo/gtd-home)))
+        (when (file-readable-p file)
+          (setq count (+ count (org-tasklet--archive-done-in-file file))))))
+    (message "已归档所有 GTD 文件中的 %d 个条目" count)
+    count))
+
 (defun douo/org-gtd-archive ()
   "使用 org-tasklet 将当前条目归档到年度归档文件。"
   (interactive)
@@ -19,10 +173,44 @@
   (org-tasklet-archive-subtree))
 
 (defun douo/org-gtd-engage ()
-  "显示 org-tasklet 总览 agenda。"
+  "显示包含全部正式任务文件的 org-tasklet 总览 agenda。"
   (interactive)
-  ;; 兼容旧函数名；新的总览不再包含 WAIT，因为该状态已从工作流移除。
-  (org-tasklet-engage))
+  (require 'org-tasklet-agenda)
+  (let* ((inbox (org-tasklet-inbox-file))
+         (task-files (douo/org-tasklet-task-files))
+         (org-agenda-files (cons inbox task-files))
+         (org-agenda-custom-commands
+          `(("t" "Tasklet"
+             ((agenda ""
+                      ((org-agenda-span 1)
+                       (org-agenda-start-day nil)
+                       (org-agenda-skip-additional-timestamps-same-entry t)
+                       (org-agenda-overriding-header "今天")))
+              (tags "LEVEL=1"
+                    ((org-agenda-files '(,inbox))
+                     (org-agenda-skip-function #'org-tasklet--agenda-skip-closed)
+                     (org-agenda-overriding-header "Inbox")))
+              (todo "NEXT"
+                    ((org-agenda-files ',task-files)
+                     (org-agenda-overriding-header "项目下一步")))
+              (todo "TODO"
+                    ((org-agenda-files ',task-files)
+                     (org-agenda-overriding-header "普通任务和项目待办"))))
+             ((org-agenda-inhibit-startup t))))))
+    (org-agenda nil "t")
+    (goto-char (point-min))))
+
+(defun douo/org-tasklet-show-next ()
+  "显示全部正式任务文件中的 NEXT 条目。"
+  (interactive)
+  (require 'org-tasklet-agenda)
+  (let ((org-agenda-files (douo/org-tasklet-task-files))
+        (org-agenda-custom-commands
+         '(("n" "Tasklet NEXT"
+            ((todo "NEXT" ((org-agenda-overriding-header "项目下一步"))))
+            ((org-agenda-inhibit-startup t))))))
+    (org-agenda nil "n")
+    (goto-char (point-min))))
 
 (defun douo/org-agenda-todo-dwim (&optional arg)
   "在 Agenda 中以 toggle 方式切换 org-tasklet 条目的 TODO 状态。
@@ -264,12 +452,10 @@ ARGS 是传递给原始函数的参数列表。"
   (org-clock-sound (expand-file-name "assets/org-timer.wav" user-emacs-directory))
 
   ;; begin_refile
-  (org-refile-targets `(
-                        (,(concat (file-name-as-directory douo/gtd-home) "tasks.org") :maxlevel . 3)
-                        ))
-  ;; 显示 refile 的 outline 层级
-  ;; 设置为 `file' 会显示文件名，对于我的 gtd 系统来说不是很有用
-  (org-refile-use-outline-path 't)
+  (org-refile-targets (douo/org-tasklet-refile-targets))
+  ;; 多任务文件显示文件名，单任务文件保持原来的 outline path。
+  (org-refile-use-outline-path
+   (if douo/org-tasklet-extra-task-specs 'file t))
   ;; refile 直接显示目标，而不是通过 outline 层级一层层进入(默认，与 vertico 不兼容)
   (org-outline-path-complete-in-steps nil)
   ;; verico 要使用 outline-path-complete-in-steps 见 https://github.com/minad/vertico#org-refile
@@ -347,13 +533,48 @@ S 是当前标题的内容字符串，通常由 org-get-heading 获得。"
   ;; 创建基础文件，加入 agenda，并启用轻量 mode-line 收件箱计数。
   (org-tasklet-setup)
   (org-tasklet-mode 1)
+  (douo/org-tasklet-configure-extra-task-files)
+  (with-eval-after-load 'org-tasklet-agenda
+    (unless (advice-member-p #'douo/org-tasklet--append-extra-agenda-files
+                             'org-tasklet--agenda-files)
+      (advice-add 'org-tasklet--agenda-files :filter-return
+                  #'douo/org-tasklet--append-extra-agenda-files))
+    (unless (advice-member-p #'douo/org-gtd-engage 'org-tasklet-engage)
+      (advice-add 'org-tasklet-engage :override #'douo/org-gtd-engage))
+    (unless (advice-member-p #'douo/org-tasklet-show-next
+                             'org-tasklet-show-next)
+      (advice-add 'org-tasklet-show-next :override
+                  #'douo/org-tasklet-show-next)))
+  (with-eval-after-load 'org-tasklet-triage
+    (unless (advice-member-p #'douo/org-tasklet--route-extra-task-item
+                             'org-tasklet--insert-subtree-into-type)
+      (advice-add 'org-tasklet--insert-subtree-into-type :around
+                  #'douo/org-tasklet--route-extra-task-item))
+    (unless (advice-member-p #'douo/org-tasklet--project-candidates
+                             'org-tasklet--project-candidates)
+      (advice-add 'org-tasklet--project-candidates :override
+                  #'douo/org-tasklet--project-candidates)))
+  (with-eval-after-load 'org-tasklet-project
+    (unless (advice-member-p #'douo/org-tasklet--stuck-projects-in-all-files
+                             'org-tasklet-stuck-projects)
+      (advice-add 'org-tasklet-stuck-projects :around
+                  #'douo/org-tasklet--stuck-projects-in-all-files))
+    (unless (advice-member-p #'douo/org-tasklet--refresh-all-project-files
+                             'org-tasklet-refresh-all-projects)
+      (advice-add 'org-tasklet-refresh-all-projects :around
+                  #'douo/org-tasklet--refresh-all-project-files)))
+  (with-eval-after-load 'org-tasklet-archive
+    (unless (advice-member-p #'douo/org-tasklet--archive-extra-done
+                             'org-tasklet-archive-done)
+      (advice-add 'org-tasklet-archive-done :around
+                  #'douo/org-tasklet--archive-extra-done)))
   ;; 显式设置全局键位，避免 `:after org' 场景下 :bind 的注册时机不稳定。
   ;; 常用键位沿用原 org-gtd 入口；C-c d p 按分类整理当前 inbox item，不进入线性流程。
   (global-set-key (kbd "C-c c") #'org-tasklet-capture)
-  (global-set-key (kbd "C-c d e") #'org-tasklet-engage)
+  (global-set-key (kbd "C-c d e") #'douo/org-gtd-engage)
   (global-set-key (kbd "C-c d p") #'org-tasklet-triage-current-item)
   (global-set-key (kbd "C-c d h") #'org-tasklet-help)
-  (global-set-key (kbd "C-c d n") #'org-tasklet-show-next)
+  (global-set-key (kbd "C-c d n") #'douo/org-tasklet-show-next)
   (global-set-key (kbd "C-c d s") #'org-tasklet-reflect-stuck-projects)
   ;; 保留原来的 Quick Note 捕获入口 n。
   (with-eval-after-load 'org-tasklet-capture
@@ -364,13 +585,15 @@ S 是当前标题的内容字符串，通常由 org-get-heading 获得。"
        "%i\n%U\n%?\n"
        :kill-buffer t)
      t))
+  (with-eval-after-load 'org-tasklet-capture
+    (douo/org-tasklet--refresh-extra-capture-templates))
   :bind
   (:map org-mode-map
         ;; 在 Org buffer 中也显式绑定，确保编辑 inbox.org 时可以直接处理当前 item。
-        ("C-c d e" . org-tasklet-engage)
+        ("C-c d e" . douo/org-gtd-engage)
         ("C-c d p" . org-tasklet-triage-current-item)
         ("C-c d h" . org-tasklet-help)
-        ("C-c d n" . org-tasklet-show-next)
+        ("C-c d n" . douo/org-tasklet-show-next)
         ("C-c d s" . org-tasklet-reflect-stuck-projects)
         ("C-c d a" . org-tasklet-archive-subtree)))
 
