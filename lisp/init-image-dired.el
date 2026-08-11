@@ -33,6 +33,12 @@
   "Auto-mount remote TRAMP directories via SSHFS for `image-dired'."
   :group 'image-dired)
 
+(defcustom my-image-dired-sshfs-enabled nil
+  "Whether to mount remote Image-Dired directories through SSHFS.
+This legacy path is disabled while remote galleries use `rimg-dired'."
+  :type 'boolean
+  :group 'my-image-dired-sshfs)
+
 (defvar my-image-dired-sshfs-platform
   (cond ((eq system-type 'darwin) 'macos)
         ((eq system-type 'gnu/linux) 'linux)
@@ -225,6 +231,7 @@ Emacs 异常退出 / 崩溃，或在僵死挂载上叠加挂载时都会残留�
 Auto-mount remote TRAMP DIRNAME via SSHFS before handing a local path to
 ORIG-FUN; ARGS are forwarded unchanged."
   (if (and (stringp dirname)
+           my-image-dired-sshfs-enabled
            (tramp-tramp-file-p dirname)
            (not (eq my-image-dired-sshfs-platform 'unsupported)))
       (let* ((parsed (tramp-dissect-file-name dirname))
@@ -309,13 +316,25 @@ ORIG-FUN; ARGS are forwarded unchanged."
         ("p" . image-dired-display-previous)
         ("q" . my-image-dired-thumbnail-quit))
   :config
-  (advice-add 'image-dired-show-all-from-dir :around #'my-image-dired-sshfs-wrapper))
+  (when my-image-dired-sshfs-enabled
+    (advice-add 'image-dired-show-all-from-dir
+                :around #'my-image-dired-sshfs-wrapper)))
 
-;; 退出 Emacs 时兜底卸载所有活动挂载（`kill-buffer-hook' 在退出时不触发）。
-(add-hook 'kill-emacs-hook #'my-image-dired-sshfs-unmount-all)
+(use-package rimg
+  :load-path "~/playground/rimg/emacs"
+  ;; rimg 按命令懒加载；远程 Dired 中运行 `rimg-dired'，不再经过 SSHFS。
+  :commands (rimg-dired
+             rimg-connect
+             rimg-disconnect
+             rimg-reconnect
+             rimg-clear-local-cache
+             rimg-prune-remote-cache))
 
-;; 启动时清理上次会话遗留（异常退出 / 崩溃）的挂载，避免逐渐堆积。
-(my-image-dired-sshfs-cleanup-stale)
+(when my-image-dired-sshfs-enabled
+  ;; 退出 Emacs 时兜底卸载所有活动挂载（`kill-buffer-hook' 在退出时不触发）。
+  (add-hook 'kill-emacs-hook #'my-image-dired-sshfs-unmount-all)
+  ;; 启动时清理上次会话遗留（异常退出 / 崩溃）的挂载，避免逐渐堆积。
+  (my-image-dired-sshfs-cleanup-stale))
 
 (provide 'init-image-dired)
 
