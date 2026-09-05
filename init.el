@@ -311,6 +311,7 @@
   :after dired)
 
 (require 'init-image-dired)
+(require 'init-rvid)
 
 
 

@@ -17,6 +17,7 @@
 | [[https://github.com/seagle0128/grip-mode][grip-mode]] | Markdown 实时预览 | 使用 [[https://github.com/immanelg/mdopen][mdopen]] 作为底层渲染引擎，已完全去除了 Python =grip= 依赖 |
 | =mdopen= | Markdown 预览后台 | 通过 =cargo install mdopen= 安装，软链接至 =bin/mdopen= |
 | *rimg* | TRAMP 远程图片加速 (=image-dired=) | 本地项目位于 =~/playground/rimg=；远端首次使用时自动部署 =rimgd= |
+| *rvid* | TRAMP 远程视频流式播放 | 与 =rimg= 共享项目；本地 mpv 为推荐后端，也可使用当前 Emacs 的 xwidget WebKit |
 | *系统动态库* | 运行 Emacs 原生编译及图形支持 | 若遇到动态库报错，请安装： =brew install jpeg librsvg zlib libgccjit= |
 
 * 本地安装与初始化 (Getting Started)
@@ -108,7 +109,17 @@ Markdown 文件通过 =grip-mode= 调用 =mdopen= 渲染，并优先使用 Emacs
 
 旧 SSHFS 实现仍保留在同一模块中以便回退，但 =my-image-dired-sshfs-enabled= 默认为 =nil= 。因此启动时不会安装 SSHFS advice、扫描挂载点或注册退出卸载 hook；rimg 的正常使用也不依赖 SSHFS/macFUSE。
 
-** 3. 双系统 Org-roam 与浏览器捕获联动
+** 3. 远程视频流式播放 (rvid)
+相关入口独立位于 =lisp/init-rvid.el=，不依赖 rimg、Image-Dired 或 Dired，客户端从 =~/playground/rimg/emacs= 懒加载。
+
+1. 在 Dired、minibuffer、Consult 等任意能产生 Embark file target 的位置选中远程视频，按 =C-. V=。配置会将受支持扩展名的 TRAMP 视频细分为 =rvid-remote-video=；只有这种目标才提供 =V=，目录、远程图片和本地视频不会占用该键。
+2. =rvid-play= 默认自动选择播放器：优先使用本地 mpv，不存在时回退到 Emacs xwidget WebKit。视频数据通过支持 HTTP Range 的 SSH 隧道直接进入播放器，不经过 Emacs Lisp buffer，因此可以边传边播和跳转。
+3. 也可以在 Embark 中通过 =M-x= 执行 =rvid-play=，或直接执行 =M-x rvid-play= 并选择任意远程文件；用 =M-x rvid-play-in-emacs= 可强制使用 WebKit。原生 =embark-open-externally= 对 TRAMP 文件仍会执行完整复制，不是 rvid 的流式入口。
+4. 使用 =M-x rvid-stop= 停止播放并撤销当前文件的临时 capability URL；=rvid-disconnect= 会同时关闭 SSH 会话和远端 =rvidd=。
+
+=rvidd= 与 =rimgd= 是独立远端进程，但共享 =rbridge.el= 中的 TRAMP 引导、版本化二进制部署、Unix socket、SSH loopback 转发和健康检查实现。
+
+** 4. 双系统 Org-roam 与浏览器捕获联动
 通过 =org-protocol= 机制，可以实现一键从 Chrome 浏览器抓取网页标题、链接及选中文本并直接保存至 Emacs =org-roam= 库中。
 
 *** 步骤 A：注册系统 Scheme-Handler
