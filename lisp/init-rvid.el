@@ -1,4 +1,4 @@
-;;; init-rvid.el --- Remote video playback actions -*- lexical-binding: t -*-
+;;; init-rvid.el --- Remote audio and video playback actions -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;;
@@ -24,6 +24,19 @@ Classification is case-insensitive and performs no remote file access."
   :type '(repeat string)
   :group 'rvid)
 
+(defcustom my-rvid-embark-audio-extensions
+  '("mp3" "m4a" "aac" "flac" "ogg" "opus" "wav")
+  "Audio extensions offered for remote playback by Embark."
+  :type '(repeat string)
+  :group 'rvid)
+
+(defun my-rvid--embark-remote-audio-p (file)
+  "Return non-nil when FILE names a supported remote audio target."
+  (and (stringp file)
+       (file-remote-p file)
+       (when-let* ((extension (file-name-extension file)))
+         (member (downcase extension) my-rvid-embark-audio-extensions))))
+
 (defvar my-rvid--embark-base-file-transformer nil
   "Embark's file transformer wrapped by rvid target classification.")
 
@@ -35,15 +48,18 @@ Classification is case-insensitive and performs no remote file access."
          (member (downcase extension) my-rvid-embark-video-extensions))))
 
 (defun my-rvid--embark-file-transformer (type target)
-  "Preserve Embark's TYPE/TARGET transform and classify remote videos."
+  "Preserve Embark's TYPE/TARGET transform and classify remote audio and video."
   (let* ((transformed
           (if my-rvid--embark-base-file-transformer
               (funcall my-rvid--embark-base-file-transformer type target)
             (cons type target)))
          (transformed-target (cdr transformed)))
-    (if (my-rvid--embark-remote-video-p transformed-target)
-        (cons 'rvid-remote-video transformed-target)
-      transformed)))
+    (cond
+     ((my-rvid--embark-remote-video-p transformed-target)
+      (cons 'rvid-remote-video transformed-target))
+     ((my-rvid--embark-remote-audio-p transformed-target)
+      (cons 'rvid-remote-audio transformed-target))
+     (t transformed))))
 
 (use-package rvid
   :load-path "~/playground/rimg/emacs"
@@ -78,6 +94,15 @@ Classification is case-insensitive and performs no remote file access."
         'my-rvid-embark-remote-video-map)
   ;; Retain file-style export behavior for the refined target type.
   (setf (alist-get 'rvid-remote-video embark-exporters-alist)
+        #'embark-export-dired)
+
+  (defvar-keymap my-rvid-embark-remote-audio-map
+    :doc "Embark actions for remote audio file targets."
+    :parent embark-file-map
+    "V" #'rvid-play)
+  (setf (alist-get 'rvid-remote-audio embark-keymap-alist)
+        'my-rvid-embark-remote-audio-map
+        (alist-get 'rvid-remote-audio embark-exporters-alist)
         #'embark-export-dired))
 
 (provide 'init-rvid)
